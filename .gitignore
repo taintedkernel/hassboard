@@ -1,0 +1,5 @@
+*.o
+*.sym
+*.log
+smartgirder
+smartgirder.txt

@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"makefile.launchConfigurations": [
+			{
+				"cwd": "/root/smartgirder",
+				"binaryPath": "/root/smartgirder/smartgirder",
+				"binaryArgs": []
+			}
+		],
+		"files.associations": {
+			"string": "cpp",
+			"*.tcc": "cpp",
+			"array": "cpp",
+			"vector": "cpp",
+			"string_view": "cpp",
+			"functional": "cpp",
+			"limits": "cpp",
+			"ostream": "cpp",
+			"ranges": "cpp",
+			"streambuf": "cpp",
+			"tuple": "cpp"
+		}
+	}
+}

@@ -1,0 +1,229 @@
+#include "datetime.h"
+#include "display.h"
+#include "logger.h"
+#include "widget.h"
+
+#include <canvas.h>
+#include <led-matrix.h>
+
+#include <cstring>
+
+using rgb_matrix::RGBMatrix;
+using rgb_matrix::DrawText;
+using rgb_matrix::Canvas;
+using rgb_matrix::Color;
+using rgb_matrix::Font;
+
+Color colorBlack    = Color(0, 0, 0);
+Color colorDarkGrey = Color(16, 16, 16);
+Color colorWhite    = Color(255, 255, 255);
+Color colorDate     = Color(125, 200, 255);
+Color colorTime     = Color(250, 80, 0);
+Color colorText     = Color(125, 200, 255);
+
+rgb_matrix::RGBMatrix *matrix;
+rgb_matrix::Font *defaultFont;
+rgb_matrix::PixelMapper *mapper;
+
+extern int8_t clockOffset;
+extern uint8_t rowDayStart;
+extern uint8_t rowDateStart;
+extern uint8_t rowTimeStart;
+
+bool setupDisplay()
+{
+  RGBMatrix::Options displaySettings;
+  rgb_matrix::RuntimeOptions runtimeSettings;
+
+   _log("initializing display");
+
+  // Configure settings for display
+  displaySettings.hardware_mapping = "adafruit-hat-pwm";
+  displaySettings.cols = 64;
+  displaySettings.rows = 32;
+  displaySettings.chain_length = 4;
+  displaySettings.parallel = 1;
+  // displaySettings.show_refresh_rate = true;
+  displaySettings.pixel_mapper_config = "U-mapper";
+  displaySettings.brightness = 50;
+  displaySettings.led_rgb_sequence = "RBG";
+
+  runtimeSettings.daemon = 0;
+  runtimeSettings.drop_privileges = 1;
+
+  // Initialize matrix
+  matrix = RGBMatrix::CreateFromOptions(displaySettings, runtimeSettings);
+  if (matrix == NULL)
+  {
+    _error("unable to initialize matrix, exiting");
+    return false;
+  }
+
+  // Clearing matrix
+  matrix->Fill(0, 0, 0);
+  matrix->SetBrightness(50);
+
+  // Load font
+  _debug("loading font");
+  defaultFont = new rgb_matrix::Font;
+  defaultFont->LoadFont(FONT_FILE);
+
+  return true;
+}
+
+void shutdownDisplay()
+{
+  matrix->Clear();
+  delete matrix;
+}
+
+Color hexColorBright2RGB(uint16_t hexValue, int br)
+{
+  unsigned r = (hexValue & 0xF800) >> 8;       // rrrrr... ........ -> rrrrr000
+  unsigned g = (hexValue & 0x07E0) >> 3;       // .....ggg ggg..... -> gggggg00
+  unsigned b = (hexValue & 0x1F) << 3;         // ............bbbbb -> bbbbb000
+  // return display.color565(r*br/100,g*br/100,b*br/100);
+  return Color(r*br/100, g*br/100 ,b*br/100);
+  // return Color(r, g, b);
+}
+
+// Render text in color at (x,y)
+// int drawText(uint8_t x, uint8_t y, Font font, Color color, const char *text)
+int drawText(uint8_t x, uint8_t y, Color color, const char *text, Font *font)
+{
+  if (font == NULL) {
+    font = defaultFont;
+  }
+  _debug("drawText x,y,msg: %d,%d,\"%s\" (font @ 0x%p)", x, y, text, font);
+
+  // Library references bottom-left corner as origin (instead of top)
+  //
+  // Add a fixed-offset to compensate, the benefit here is easily
+  // tweaking the vertical position/placement
+  //
+  // Using font.height() resulted in too large of gap
+  return DrawText(matrix, *font, x, y+FONT_HEIGHT, color, NULL, text, 0);
+}
+
+// Draw a filled rectangle at (x,y) with width, height and color
+void drawRect(uint16_t x_start, uint16_t y_start,
+  uint16_t width, uint16_t height, Color color)
+{
+  // _debug("drawRect x,y,w,h: %d,%d,%d,%d", x_start, y_start, width, height);
+  for (uint16_t x = x_start; x < x_start + width; x++) {
+    for (uint16_t y = y_start; y < y_start + height; y++) {
+      matrix->SetPixel(x, y, color.r, color.g, color.b);
+    }
+  }
+}
+
+// Draw an image of width, height at (x,y)
+void drawIcon(int x, int y, int width, int height, const uint8_t *image)
+{
+  SetImage(matrix, x, y, image, width * height * 3, width, height, false);
+}
+
+// Show the day of week, date and time
+void displayClock(bool force)
+{
+  char dateText[6], timeText[6];
+  static uint8_t lMinute = 0;
+
+  time_t local = time(0);
+  tm *localtm = localtime(&local);
+
+  /* thisHour = hour(localtm);
+  if ((thisHour == dimHour) and not (brightness == dimBrightness)) {
+    brightness = dimBrightness;
+    forceRefresh = true;
+  }
+  else if ((thisHour == brightHour) and not (brightness == brightBrightness)) {
+    brightness = brightBrightness;
+    forceRefresh = true;;
+  } */
+
+  //
+  // Skip if no change and not forced
+  //
+  // This assumes/relies that every clock field update
+  // will include a change in the "minute", which is
+  // correct unless we include seconds in the clock
+  //
+  if (minute(localtm) == lMinute && !force) {
+    return;
+  }
+  else {
+    lMinute = minute(localtm);
+  }
+
+  int xOffset = clockOffset;
+  drawRect(xOffset + 32, 0, 32, 32, colorBlack);
+
+  // Render the day of week
+  int dayPos = (32 - (strlen(s_weekday(localtm)) * 6)) / 2;
+  int xDay = xOffset + 32 + dayPos;
+  drawText(xDay, rowDayStart, colorDate, s_weekday(localtm));
+
+  // Render the date
+  snprintf(dateText, 6, "%02d/%02d", month(localtm), day(localtm));
+  drawText(xOffset + 32, rowDateStart, colorDate, dateText);
+
+  // Render the time
+  snprintf(timeText, 6, "%02d:%02d", hour(localtm), minute(localtm));
+  drawText(xOffset + 32, rowTimeStart, colorTime, timeText);
+}
+
+// Debugging routine to draw some rainbow stripes
+/* void _debugRainbowStripes()
+{
+  uint16_t red = display.color565(255, 0, 0);
+  uint16_t yellow = display.color565(255, 255, 0);
+  uint16_t green = display.color565(0, 255, 0);
+  uint16_t cyan = display.color565(0, 255, 255);
+  uint16_t blue = display.color565(0, 0, 255);
+  uint16_t purple = display.color565(255, 0, 255);
+  uint16_t white = display.color565(255, 255, 255);
+
+  uint8_t x = 0;
+  uint16_t c = red;
+  display.drawPixel(x,0,c);
+  display.drawPixel(x,1,c);
+  display.drawPixel(x,2,c);
+  display.drawPixel(x,3,c);
+
+  x = 1; c = yellow;
+  display.drawPixel(x,0,c);
+  display.drawPixel(x,1,c);
+  display.drawPixel(x,2,c);
+  display.drawPixel(x,3,c);
+
+  x = 2; c = green;
+  display.drawPixel(x,0,c);
+  display.drawPixel(x,1,c);
+  display.drawPixel(x,2,c);
+  display.drawPixel(x,3,c);
+
+  x = 3; c = cyan;
+  display.drawPixel(x,0,c);
+  display.drawPixel(x,1,c);
+  display.drawPixel(x,2,c);
+  display.drawPixel(x,3,c);
+
+  x = 4; c = blue;
+  display.drawPixel(x,0,c);
+  display.drawPixel(x,1,c);
+  display.drawPixel(x,2,c);
+  display.drawPixel(x,3,c);
+
+  x = 5; c = purple;
+  display.drawPixel(x,0,c);
+  display.drawPixel(x,1,c);
+  display.drawPixel(x,2,c);
+  display.drawPixel(x,3,c);
+
+  x = 6; c = white;
+  display.drawPixel(x,0,c);
+  display.drawPixel(x,1,c);
+  display.drawPixel(x,2,c);
+  display.drawPixel(x,3,c);
+} */
