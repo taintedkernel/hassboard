@@ -5,6 +5,7 @@
 
 #include <canvas.h>
 #include <led-matrix.h>
+#include <string.h>
 
 #include <cstring>
 
@@ -18,8 +19,13 @@ Color colorBlack    = Color(0, 0, 0);
 Color colorDarkGrey = Color(16, 16, 16);
 Color colorWhite    = Color(255, 255, 255);
 Color colorDate     = Color(125, 200, 255);
-Color colorTime     = Color(250, 80, 0);
-Color colorText     = Color(125, 200, 255);
+// Color colorTime     = Color(250, 80, 0);
+Color colorTime     = Color(248, 96, 8);
+// Color colorText     = Color(125, 200, 255);
+// Color colorText     = Color(80, 160, 224);
+// Color colorText     = Color(64, 148, 192);
+// Color colorText     = Color(128, 148, 160);
+Color colorText     = Color(112, 148, 176);
 
 rgb_matrix::RGBMatrix *matrix;
 rgb_matrix::Font *defaultFont;
@@ -77,7 +83,7 @@ void shutdownDisplay()
   delete matrix;
 }
 
-Color hexColorBright2RGB(uint16_t hexValue, int br)
+/* Color hexColorBright2RGB(uint16_t hexValue, int br)
 {
   unsigned r = (hexValue & 0xF800) >> 8;       // rrrrr... ........ -> rrrrr000
   unsigned g = (hexValue & 0x07E0) >> 3;       // .....ggg ggg..... -> gggggg00
@@ -85,7 +91,7 @@ Color hexColorBright2RGB(uint16_t hexValue, int br)
   // return display.color565(r*br/100,g*br/100,b*br/100);
   return Color(r*br/100, g*br/100 ,b*br/100);
   // return Color(r, g, b);
-}
+} */
 
 // Render text in color at (x,y)
 // int drawText(uint8_t x, uint8_t y, Font font, Color color, const char *text)
@@ -94,7 +100,63 @@ int drawText(uint8_t x, uint8_t y, Color color, const char *text, Font *font)
   if (font == NULL) {
     font = defaultFont;
   }
-  _debug("drawText x,y,msg: %d,%d,\"%s\" (font @ 0x%p)", x, y, text, font);
+  _debug("drawText x,y,msg: %d,%d,\"%s\"", x, y, text);
+
+  if (strchr(text, '.') != NULL && strlen(text) != 3) {
+      _warn("unable to autoparse text for custom rendering, using default");
+  }
+  else if (strchr(text, '.') != NULL && strlen(text) == 3)
+  {
+    uint8_t len = strlen(text);
+    // _debug("strlen=%d", len);
+    // _debug("%c", *(text+len-1));
+
+    // Create buffer to store single character
+    char digit[2];
+    digit[0] = *(text+len-1); // Grab the last character/digit
+    digit[1] = '\0';          // Terminate string
+
+    // Render last character
+    DrawText(matrix, *font, x + 6*2, y+FONT_HEIGHT, color, NULL, digit, 0);
+
+    // Make a copy of our existing string
+    char *newText = new char[len];
+    strncpy(newText, text, len);
+
+    // Small period
+    /* matrix->SetPixel(x + 10, y+FONT_HEIGHT-1, color.r, color.g, color.b);
+    newText[len-2] = '\0';
+    x += 4; */
+
+    // Larger/default period
+    // Replace last digit with null to remove from string
+    // newText[len-1] = '\0';
+    // Advance x to set spacing
+    // x += 1;
+
+    // Larger custom period with 2 adjustments
+    digit[0] = '.';   //*(text+len-2);
+
+    // Render decimal point
+    DrawText(matrix, *font, x + 6*1 + 2, y+FONT_HEIGHT, color, NULL, digit, 0);
+
+    digit[0] = *(text);
+
+    // Render decimal point
+    return DrawText(matrix, *font, x + 3, y+FONT_HEIGHT, color, NULL, digit, 0);
+
+
+    // Replace last digit with null to remove from string
+    newText[len-1] = '\0';
+
+
+
+
+    // Advance x to set spacing
+    x += 1;
+
+    return DrawText(matrix, *font, x, y+FONT_HEIGHT, color, NULL, newText, 0);
+  }
 
   // Library references bottom-left corner as origin (instead of top)
   //

@@ -2,15 +2,17 @@
 #include "widget.h"
 #include "logger.h"
 
-#include <led-matrix.h>
 #include <cstring>
+#include <algorithm>
+
+#include <led-matrix.h>
 #include <stdio.h>
 
 
 uint16_t cloudsLocal[ICON_SZ], cloudsSunLocal[ICON_SZ];
 uint16_t sunLocal[ICON_SZ], cloudsShowersLocal[ICON_SZ];
 
-uint8_t refreshDelay = 30;
+uint8_t refreshDelay = 5;
 
 extern uint8_t brightness;
 extern uint8_t boldBrightnessIncrease;
@@ -250,6 +252,7 @@ void DashboardWidget::setCustomTextConfig(uint8_t x, uint8_t y,
 // leverage the clock we have
 void DashboardWidget::updateText(char *text, uint32_t cycle = 0)
 {
+  // If new text is not different, don't update
   if (strncmp(text, this->textData, WIDGET_TEXT_LEN) == 0)
     return;
 
@@ -267,7 +270,7 @@ void DashboardWidget::updateText(char *text, uint32_t cycle = 0)
   this->render();
 }
 
-// Call helper to do some logic, then update same as above
+// Update text with helper, then update same as above
 void DashboardWidget::updateText(char *data, void(helperFunc)(char*, char*), uint32_t cycle)
 {
   char buffer[WIDGET_TEXT_LEN];
@@ -364,13 +367,20 @@ void DashboardWidget::renderText(bool debug) // char *text = NULL)
     return;
   }
 
+  Color tColor = Color(this->textColor);
+  tColor.r = std::min(tColor.r + this->textTempBrightness, 255);
+  tColor.g = std::min(tColor.g + this->textTempBrightness, 255);
+  tColor.b = std::min(tColor.b + this->textTempBrightness, 255);
+
   if (debug) {
     _debug("renderText(%s) = %s", this->name, this->textData);
-    _debug("renderText x,textX = %d, %d", this->x, this->textX);
-    _debug("renderText calc,offset = %d, %d", offsetCalc, offset);
+    _debug("- x,textX = %d, %d", this->x, this->textX);
+    _debug("- len,offset = %d, %d", offsetCalc, offset);
+    _debug("- color = %d,%d,%d", this->textColor.r, this->textColor.g, this->textColor.b);
+    _debug("- newColor = %d,%d,%d", tColor.r, tColor.g, tColor.b);
   }
 
-  drawText(offset, this->y + this->textY, this->textColor, this->textData, this->textFont);
+  drawText(offset, this->y + this->textY, tColor, this->textData, this->textFont);
   // drawText(offset, this->y + this->textY, this->textColor, this->textData);
 }
 
@@ -402,7 +412,7 @@ void DashboardWidget::render(bool debug)
 
   // Render widget assets
   this->renderIcon();
-  this->renderText();
+  this->renderText(true);
 
   // Debugging bounding box for widget
   // Calculated from icon height & fixed width

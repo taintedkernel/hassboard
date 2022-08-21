@@ -41,7 +41,7 @@ const int8_t dimBrightness = 10;
 const int8_t brightBrightness = 50;
 uint8_t brightness = dimBrightness;
 uint8_t iconExtraBrightness = 0;
-uint8_t boldBrightnessIncrease = 30;
+uint8_t boldBrightnessIncrease = 100;
 uint8_t numWidgets = 0;
 
 DashboardWidget wHouseTemp("houseTemp");
@@ -117,9 +117,9 @@ void setupDashboard()
   widget->setOrigin(weatherOffset, 0);
   widget->setSize(DashboardWidget::WIDGET_XLARGE);
   widget->setIconImage(32, 25, clouds);
-  widget->setCustomTextConfig(WIDGET_WIDTH_XLARGE, 24,
+  widget->setCustomTextConfig(WIDGET_WIDTH_XLARGE, 26,
     colorWhite, DashboardWidget::ALIGN_CENTER, customFont);
-  widget->setBounds(32, 32);
+  widget->setBounds(32, 34);
 
   widgetCollection[numWidgets++] = &wHouseTemp;
   widgetCollection[numWidgets++] = &wHouseDewpoint;
