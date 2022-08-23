@@ -3,9 +3,9 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
                 "/root/rpi-rgb-led-matrix/include/**",
-                "/root/smartgirder/include/**"
+                "/root/smartgirder/include/**",
+                "${workspaceFolder}/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
@@ -14,9 +14,9 @@
             "intelliSenseMode": "linux-gcc-arm64",
             "browse": {
                 "path": [
-                    "${workspaceFolder}",
                     "/root/rpi-rgb-led-matrix/include",
-                    "/root/smartgirder/include"
+                    "/root/smartgirder/include",
+                    "${workspaceFolder}"
                 ]
             }
         }

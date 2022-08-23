@@ -227,12 +227,24 @@ void displayClock(bool force)
   drawText(xDay, rowDayStart, colorDate, s_weekday(localtm));
 
   // Render the date
-  snprintf(dateText, 6, "%02d/%02d", month(localtm), day(localtm));
+  snprintf(dateText, 6, "%2d/%02d", month(localtm), day(localtm));
   drawText(xOffset + 32, rowDateStart, colorDate, dateText);
 
   // Render the time
-  snprintf(timeText, 6, "%02d:%02d", hour(localtm), minute(localtm));
-  drawText(xOffset + 32, rowTimeStart, colorTime, timeText);
+  // snprintf(timeText, 6, "%02d:%02d", hour(localtm), minute(localtm));
+  // drawText(xOffset + 32, rowTimeStart, colorTime, timeText);
+  snprintf(timeText, 3, "%02d", hour(localtm));
+  drawText(xOffset + 32+2, rowTimeStart, colorTime, timeText);
+  snprintf(timeText, 3, "%02d", minute(localtm));
+  drawText(xOffset + 32+6*3, rowTimeStart, colorTime, timeText);
+  matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+    rowTimeStart+2, colorTime.r, colorTime.g, colorTime.b);
+  matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+    rowTimeStart+3, colorTime.r, colorTime.g, colorTime.b);
+  matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+    rowTimeStart+5, colorTime.r, colorTime.g, colorTime.b);
+  matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+    rowTimeStart+6, colorTime.r, colorTime.g, colorTime.b);
 }
 
 // Debugging routine to draw some rainbow stripes
