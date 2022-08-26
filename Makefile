@@ -12,8 +12,8 @@ clean:
 
 smartgirder: smartgirder.o $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) -o smartgirder $(LDFLAGS)
+	objdump -Sdr $(BINARIES) > $(BINARIES).txt
+	nm -lnC $(BINARIES) > $(BINARIES).sym
 
 %.o : %.cpp include/*.h
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
-	objdump -Sdr $(BINARIES).o > $(BINARIES).txt
-	objdump -t $(BINARIES).o > $(BINARIES).sym

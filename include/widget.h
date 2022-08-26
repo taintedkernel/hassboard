@@ -106,7 +106,7 @@ public:
   // Functions - Text
   void autoTextConfig(textAlignType = ALIGN_RIGHT, Color = colorText);
   void setCustomTextConfig(uint8_t, uint8_t, Color = colorText, textAlignType = ALIGN_RIGHT, rgb_matrix::Font *textFont = NULL);
-  void updateText(char *, uint32_t);
+  void updateText(char *, uint32_t = 0);
   void updateText(char *, void(helperFunc)(char*, char*), uint32_t);
 
   // Functions - Icon

@@ -250,7 +250,7 @@ void DashboardWidget::setCustomTextConfig(uint8_t x, uint8_t y,
 // Update text and set temporary bold brightness
 // TODO: Stop using cycles to track duration and
 // leverage the clock we have
-void DashboardWidget::updateText(char *text, uint32_t cycle = 0)
+void DashboardWidget::updateText(char *text, uint32_t cycle)
 {
   // If new text is not different, don't update
   if (strncmp(text, this->textData, WIDGET_TEXT_LEN) == 0)

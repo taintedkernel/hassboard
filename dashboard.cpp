@@ -74,19 +74,22 @@ void setupDashboard()
   widget->setOrigin(colOneStart, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
-  widget->setIconImage(7, 7, house);
+  widget->setIconImage(8, 7, big_house);
+  widget->setIconConfig(0, 1);
 
   widget = &wHouseDewpoint;
   widget->setOrigin(colTwoStart, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
-  widget->setIconImage(7, 7, house_drop);
+  widget->setIconImage(8, 7, big_house_drop);
+  widget->setIconConfig(0, 1);
 
   // Row 2
   widget = &wOutdoorRainGauge;
   widget->setOrigin(colOneStart, rowTwoStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
+  // widget->updateText((char *)"0.0", 0);
   widget->setIconImage(8, 8, rain_gauge);
 
   widget = &wOutdoorDewpoint;
@@ -249,9 +252,11 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   {
     showMessage(topic, payloadAsChars);
     if (strcmp(payloadAsChars, "heating") == 0) {
-      heating = true;
-    } else {
-      heating = false;
+      wHouseTemp.setIconImage(8, 7, big_house_heat);
+    } else if (strcmp(payloadAsChars, "cooling") == 0) {
+      wHouseTemp.setIconImage(8, 7, big_house_cool);
+    } else if (strcmp(payloadAsChars, "idle") == 0) {
+      wHouseTemp.setIconImage(8, 7, big_house);
     }
     displayDashboard();
   }

@@ -105,15 +105,18 @@ int drawText(uint8_t x, uint8_t y, Color color, const char *text, Font *font)
   if (strchr(text, '.') != NULL && strlen(text) != 3) {
       _warn("unable to autoparse text for custom rendering, using default");
   }
+  // TODO: Make this generic and able to handle strings beyond only "d.d" format
   else if (strchr(text, '.') != NULL && strlen(text) == 3)
   {
     uint8_t len = strlen(text);
+
     // _debug("strlen=%d", len);
     // _debug("%c", *(text+len-1));
 
     // Create buffer to store single character
     char digit[2];
-    digit[0] = *(text+len-1); // Grab the last character/digit
+    // digit[0] = *(text+len-1); // Grab the last character/digit
+    digit[0] = *(text+2);     // Grab the last character/digit
     digit[1] = '\0';          // Terminate string
 
     // Render last character
@@ -123,37 +126,41 @@ int drawText(uint8_t x, uint8_t y, Color color, const char *text, Font *font)
     char *newText = new char[len];
     strncpy(newText, text, len);
 
-    // Small period
-    /* matrix->SetPixel(x + 10, y+FONT_HEIGHT-1, color.r, color.g, color.b);
-    newText[len-2] = '\0';
-    x += 4; */
+    u_int8_t customRender = 3;
+    if (customRender == 1)
+    {
+      // Small period
+      matrix->SetPixel(x + 10, y+FONT_HEIGHT-1, color.r, color.g, color.b);
+      newText[len-2] = '\0';
+      x += 4;
+    }
+    else if (customRender == 2)
+    {
+      // Larger/default period
+      // Replace last digit with null to remove from string
+      newText[len-1] = '\0';
 
-    // Larger/default period
-    // Replace last digit with null to remove from string
-    // newText[len-1] = '\0';
-    // Advance x to set spacing
-    // x += 1;
+      // Advance x to set spacing
+      x += 1;
+    }
+    else if (customRender == 3)
+    {
+      // Larger custom period with 2 adjustments and custom spacing
+      // Adjust spacing for "skinny" digits
+      if (digit[0] == '0' || digit[0] == '1') {
+        x++;
+      }
 
-    // Larger custom period with 2 adjustments
-    digit[0] = '.';   //*(text+len-2);
+      // // Render decimal point
+      // digit[0] = '.';   // *(text+len-2);
+      // DrawText(matrix, *font, x + 6*1 + 2, y+FONT_HEIGHT, color, NULL, digit, 0);
+      matrix->SetPixel(x + 10, y+FONT_HEIGHT-1, color.r, color.g, color.b);
 
-    // Render decimal point
-    DrawText(matrix, *font, x + 6*1 + 2, y+FONT_HEIGHT, color, NULL, digit, 0);
+      digit[0] = *(text);
 
-    digit[0] = *(text);
-
-    // Render decimal point
-    return DrawText(matrix, *font, x + 3, y+FONT_HEIGHT, color, NULL, digit, 0);
-
-
-    // Replace last digit with null to remove from string
-    newText[len-1] = '\0';
-
-
-
-
-    // Advance x to set spacing
-    x += 1;
+      // Render first digit
+      return DrawText(matrix, *font, x + 4, y+FONT_HEIGHT, color, NULL, digit, 0);
+    }
 
     return DrawText(matrix, *font, x, y+FONT_HEIGHT, color, NULL, newText, 0);
   }
