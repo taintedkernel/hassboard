@@ -106,12 +106,11 @@ Color DashboardWidget::color2RGB(uint8_t color[3]) {
   return Color(color[0], color[1], color[2]);
 }
 void DashboardWidget::_setText(char *text) {
-  this->_logName();
-  _debug("- setting text to: %s", text);
+  _debug("widget %s: setting text to: %s", this->name, text);
   strncpy(this->textData, text, WIDGET_TEXT_LEN);
 }
 
-// Calculate color from rgb parameters + brightness
+/* // Calculate color from rgb parameters + brightness
 Color DashboardWidget::colorBright(uint8_t r,
     uint8_t g, uint8_t b, int br)
 {
@@ -145,7 +144,7 @@ Color DashboardWidget::colorBright(uint16_t value, int br) {
   unsigned b = (value & 0x1F) << 3;         // ............bbbbb -> bbbbb000
 
   return DashboardWidget::colorBright(r, g, b, br);
-}
+} */
 
 /*
     r & 248 (0b 1111 1000) << 8
@@ -256,9 +255,12 @@ void DashboardWidget::updateText(char *text, uint32_t cycle)
   if (strncmp(text, this->textData, WIDGET_TEXT_LEN) == 0)
     return;
 
-  this->_logName();
-  _debug("- updating to '%s' from old text: '%s', "
-    "bright until cycle %d", text, this->textData,
+  if (strcmp(text, "0.0") == 0) {
+    text = (char *) "0";
+  }
+
+  _debug("widget %s: updating to '%s' from old text: '%s', "
+    "bright until cycle %d", this->name, text, this->textData,
     cycle + refreshDelay);
 
   this->_setText(text);
@@ -374,10 +376,10 @@ void DashboardWidget::renderText(bool debug) // char *text = NULL)
 
   if (debug) {
     _debug("renderText(%s) = %s", this->name, this->textData);
-    _debug("- x,textX = %d, %d", this->x, this->textX);
-    _debug("- len,offset = %d, %d", offsetCalc, offset);
-    _debug("- color = %d,%d,%d", this->textColor.r, this->textColor.g, this->textColor.b);
-    _debug("- newColor = %d,%d,%d", tColor.r, tColor.g, tColor.b);
+    _debug("- x,textX,len,offset = %d, %d, %d, %d",
+      this->x, this->textX, offsetCalc, offset);
+    _debug("- color,newColor = %d,%d,%d %d,%d,%d", this->textColor.r,
+      this->textColor.g, this->textColor.b, tColor.r, tColor.g, tColor.b);
   }
 
   drawText(offset, this->y + this->textY, tColor, this->textData, this->textFont);

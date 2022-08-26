@@ -55,8 +55,7 @@ DashboardWidget wOutdoorWeather("outdoorWeather");
 // TODO: fix this, eg: add a widget manager
 DashboardWidget *widget, *widgetCollection[MAX_WIDGETS];
 
-using rgb_matrix::Font;
-Font *customFont;
+rgb_matrix::Font *customFont;
 
 extern uint32_t cycle;
 extern bool forceRefresh;
@@ -78,7 +77,7 @@ void setupDashboard()
   widget->setIconConfig(0, 1);
 
   widget = &wHouseDewpoint;
-  widget->setOrigin(colTwoStart-1, rowOneStart);
+  widget->setOrigin(colTwoStart, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
   widget->setIconImage(8, 7, big_house_drop);
@@ -114,7 +113,7 @@ void setupDashboard()
 
   // Primary weather row (2nd display)
   widget = &wOutdoorWeather;
-  customFont = new Font;
+  customFont = new rgb_matrix::Font;
   customFont->LoadFont(FONT_FILE_2);
   _debug("loaded custom font @ 0x%p", customFont);
   widget->setOrigin(weatherOffset, 0);
@@ -135,13 +134,6 @@ void setupDashboard()
 
 void displayDashboard(unsigned int updatedData)
 {
-  // Draw the house icon and stats
-  // if (heating) {
-  //   drawIcon(colOneStart, 8, 7, 7, house_heat);
-  // } else {
-  //   drawIcon(colOneStart, 8, 7, 7, house);
-  // }
-
   // Render active widgets
   for (int i=0; i<numWidgets; i++) {
     widgetCollection[i]->render();

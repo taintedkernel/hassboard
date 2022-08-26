@@ -92,9 +92,9 @@ public:
   static const uint8_t textDefaultWidth = FONT_WIDTH;
 
   // Functions - Color helper functions
-  static Color colorBright(uint8_t, uint8_t, uint8_t, int);
-  static Color colorBright(uint8_t[], int);
-  static Color colorBright(uint16_t, int);
+  // static Color colorBright(uint8_t, uint8_t, uint8_t, int);
+  // static Color colorBright(uint8_t[], int);
+  // static Color colorBright(uint16_t, int);
   static void color565_2RGB(uint16_t, uint8_t *);
 
   // Functions - Init / config
