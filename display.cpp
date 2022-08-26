@@ -234,24 +234,56 @@ void displayClock(bool force)
   drawText(xDay, rowDayStart, colorDate, s_weekday(localtm));
 
   // Render the date
-  snprintf(dateText, 6, "%2d/%02d", month(localtm), day(localtm));
-  drawText(xOffset + 32, rowDateStart, colorDate, dateText);
+  uint8_t dateType = 2;
+  if (dateType == 1)
+  {
+    snprintf(dateText, 6, "%2d/%02d", month(localtm), day(localtm));
+    drawText(xOffset + 32, rowDateStart, colorDate, dateText);
+  }
+  else if (dateType == 2)
+  {
+    snprintf(dateText, 3, "%2d", month(localtm));
+    drawText(xOffset + 32, rowDateStart, colorDate, dateText);
+    snprintf(dateText, 3, "%02d", day(localtm));
+    drawText(xOffset + 32 + 6*3, rowDateStart, colorDate, dateText);
+    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+      rowDateStart+1, colorDate.r, colorDate.g, colorDate.b);
+    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+      rowDateStart+2, colorDate.r, colorDate.g, colorDate.b);
+    matrix->SetPixel(xOffset + 32 + 6*2 + 2,
+      rowDateStart+3, colorDate.r, colorDate.g, colorDate.b);
+    matrix->SetPixel(xOffset + 32 + 6*2 + 2,
+      rowDateStart+4, colorDate.r, colorDate.g, colorDate.b);
+    matrix->SetPixel(xOffset + 32 + 6*2 + 2,
+      rowDateStart+5, colorDate.r, colorDate.g, colorDate.b);
+    matrix->SetPixel(xOffset + 32 + 6*2 + 1,
+      rowDateStart+6, colorDate.r, colorDate.g, colorDate.b);
+    matrix->SetPixel(xOffset + 32 + 6*2 + 1,
+      rowDateStart+7, colorDate.r, colorDate.g, colorDate.b);
+  }
 
   // Render the time
-  // snprintf(timeText, 6, "%02d:%02d", hour(localtm), minute(localtm));
-  // drawText(xOffset + 32, rowTimeStart, colorTime, timeText);
-  snprintf(timeText, 3, "%02d", hour(localtm));
-  drawText(xOffset + 32+2, rowTimeStart, colorTime, timeText);
-  snprintf(timeText, 3, "%02d", minute(localtm));
-  drawText(xOffset + 32+6*3, rowTimeStart, colorTime, timeText);
-  matrix->SetPixel(xOffset + 32 + 6*2 + 3,
-    rowTimeStart+2, colorTime.r, colorTime.g, colorTime.b);
-  matrix->SetPixel(xOffset + 32 + 6*2 + 3,
-    rowTimeStart+3, colorTime.r, colorTime.g, colorTime.b);
-  matrix->SetPixel(xOffset + 32 + 6*2 + 3,
-    rowTimeStart+5, colorTime.r, colorTime.g, colorTime.b);
-  matrix->SetPixel(xOffset + 32 + 6*2 + 3,
-    rowTimeStart+6, colorTime.r, colorTime.g, colorTime.b);
+  uint8_t timeType = 2;
+  if (timeType == 1)
+  {
+    snprintf(timeText, 6, "%02d:%02d", hour(localtm), minute(localtm));
+    drawText(xOffset + 32, rowTimeStart, colorTime, timeText);
+  }
+  else if (timeType == 2)
+  {
+    snprintf(timeText, 3, "%02d", hour(localtm));
+    drawText(xOffset + 32+2, rowTimeStart, colorTime, timeText);
+    snprintf(timeText, 3, "%02d", minute(localtm));
+    drawText(xOffset + 32+6*3, rowTimeStart, colorTime, timeText);
+    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+      rowTimeStart+2, colorTime.r, colorTime.g, colorTime.b);
+    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+      rowTimeStart+3, colorTime.r, colorTime.g, colorTime.b);
+    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+      rowTimeStart+5, colorTime.r, colorTime.g, colorTime.b);
+    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+      rowTimeStart+6, colorTime.r, colorTime.g, colorTime.b);
+  }
 }
 
 // Debugging routine to draw some rainbow stripes
