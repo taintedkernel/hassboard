@@ -255,6 +255,8 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
       wHouseTemp.setIconImage(8, 7, big_house_heat);
     } else if (strcmp(payloadAsChars, "cooling") == 0) {
       wHouseTemp.setIconImage(8, 7, big_house_cool);
+    } else if (strcmp(payloadAsChars, "fan_running") == 0) {
+      wHouseTemp.setIconImage(8, 7, big_house_fan);
     } else if (strcmp(payloadAsChars, "idle") == 0) {
       wHouseTemp.setIconImage(8, 7, big_house);
     }
