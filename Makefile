@@ -15,5 +15,29 @@ smartgirder: smartgirder.o $(OBJECTS)
 	objdump -Sdr $(BINARIES) > $(BINARIES).txt
 	nm -lnC $(BINARIES) > $(BINARIES).sym
 
-%.o : %.cpp include/*.h
+# %.o : %.cpp include/*.h
+# 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+
+smartgirder.o : smartgirder.cpp include/dashboard.h include/logger.h include/display.h include/mqtt.h include/widget.h
+	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+
+dashboard.o : dashboard.cpp include/dashboard.h include/logger.h include/widget.h include/icons.h include/mqtt.h
+	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+
+widget.o : widget.cpp include/display.h include/logger.h include/widget.h
+	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+
+display.o : display.cpp include/display.h include/logger.h include/widget.h include/datetime.h
+	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+
+mqtt.o : mqtt.cpp include/mqtt.h include/logger.h
+	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+
+datetime.o : datetime.cpp include/datetime.h
+	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+
+logger.o : logger.cpp include/logger.h
+	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+
+secrets.o : secrets.cpp
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
