@@ -71,14 +71,14 @@ void setupDashboard()
 
   // Row 1
   widget = &wHouseTemp;
-  widget->setOrigin(colOneStart, rowOneStart);
+  widget->setOrigin(colOneStart-1, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
   widget->setIconImage(8, 7, big_house);
   widget->setIconConfig(0, 1);
 
   widget = &wHouseDewpoint;
-  widget->setOrigin(colTwoStart, rowOneStart);
+  widget->setOrigin(colTwoStart-1, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
   widget->setIconImage(8, 7, big_house_drop);
@@ -109,7 +109,7 @@ void setupDashboard()
   widget->setOrigin(colTwoStart, rowThreeStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
-  widget->setIconImage(7, 7, air);
+  widget->setIconImage(7, 8, air);
   // widget->setTextConfig(WIDGET_WIDTH_SMALL, 0);
 
   // Primary weather row (2nd display)
