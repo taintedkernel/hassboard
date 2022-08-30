@@ -23,6 +23,7 @@ int8_t clockOffset = 65;
 uint8_t rowDayStart = 2;
 uint8_t rowDateStart = rowDayStart + 10;
 uint8_t rowTimeStart = rowDateStart + 10;
+uint8_t rowTempStart = 26;
 
 uint8_t colOneStart = dashOffset + 1;
 uint8_t colOneEnd = dashOffset + 30;
@@ -51,16 +52,17 @@ DashboardWidget wOutdoorDewpoint("outdoorDewpoint");
 DashboardWidget wOutdoorWind("outdoorWind");
 DashboardWidget wOutdoorPM25("outdoorPM25");
 DashboardWidget wOutdoorWeather("outdoorWeather");
+DashboardWidget wOutdoorForecast("outdoorForecast");
 
 // TODO: fix this, eg: add a widget manager
 DashboardWidget *widget, *widgetCollection[MAX_WIDGETS];
 
-rgb_matrix::Font *customFont;
+rgb_matrix::Font *customFont, *smallFont;
 
 extern uint32_t cycle;
 extern bool forceRefresh;
 extern rgb_matrix::RGBMatrix *matrix;
-extern rgb_matrix::Color colorWhite;
+extern rgb_matrix::Color colorWhite, colorGrey, colorDarkText;
 extern rgb_matrix::Font *defaultFont;
 
 
@@ -119,9 +121,21 @@ void setupDashboard()
   widget->setOrigin(weatherOffset, 0);
   widget->setSize(DashboardWidget::WIDGET_XLARGE);
   widget->setIconImage(32, 25, clouds);
-  widget->setCustomTextConfig(WIDGET_WIDTH_XLARGE, 26,
+  widget->setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart,
     colorWhite, DashboardWidget::ALIGN_CENTER, customFont);
   widget->setBounds(32, 34);
+
+  widget = &wOutdoorForecast;
+  widget->setActive(false);
+  widget->setOrigin(weatherOffset, 0);
+  widget->setSize(DashboardWidget::WIDGET_XLARGE);
+  widget->setIconImage(32, 25, clouds);
+  widget->setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart,
+    colorWhite, DashboardWidget::ALIGN_CENTER, defaultFont);
+
+  smallFont = new rgb_matrix::Font;
+  smallFont->LoadFont(FONT_FILE_SMALL);
+  _debug("loaded small font @ 0x%p", smallFont);
 
   widgetCollection[numWidgets++] = &wHouseTemp;
   widgetCollection[numWidgets++] = &wHouseDewpoint;
@@ -130,6 +144,7 @@ void setupDashboard()
   widgetCollection[numWidgets++] = &wOutdoorWind;
   widgetCollection[numWidgets++] = &wOutdoorPM25;
   widgetCollection[numWidgets++] = &wOutdoorWeather;
+  widgetCollection[numWidgets++] = &wOutdoorForecast;
 }
 
 void displayDashboard(unsigned int updatedData)
@@ -172,43 +187,43 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   if (strcmp(topic, HASS_OUT_TEMP) == 0)
   {
     showMessage(topic, payloadAsChars);
-    wOutdoorWeather.updateText(payloadAsChars, tempIntHelper, cycle);
+    wOutdoorWeather.updateText(payloadAsChars, tempIntHelper);
   }
 
   else if (strcmp(topic, HASS_OUT_DEW) == 0)
   {
     showMessage(topic, payloadAsChars);
-    wOutdoorDewpoint.updateText(payloadAsChars, tempC2FHelper, cycle);
+    wOutdoorDewpoint.updateText(payloadAsChars, tempC2FHelper);
   }
 
   else if (strcmp(topic, HASS_OUT_PM25) == 0)
   {
     showMessage(topic, payloadAsChars);
-    wOutdoorPM25.updateText(payloadAsChars, floatStrLen, cycle);
+    wOutdoorPM25.updateText(payloadAsChars, floatStrLen);
   }
 
   else if (strcmp(topic, HASS_LR_TEMP) == 0)
   {
     showMessage(topic, payloadAsChars);
-    wHouseTemp.updateText(payloadAsChars, tempC2FHelper, cycle);
+    wHouseTemp.updateText(payloadAsChars, tempC2FHelper);
   }
 
   else if (strcmp(topic, HASS_LR_DEW) == 0)
   {
     showMessage(topic, payloadAsChars);
-    wHouseDewpoint.updateText(payloadAsChars, tempC2FHelper, cycle);
+    wHouseDewpoint.updateText(payloadAsChars, tempC2FHelper);
   }
 
   else if (strcmp(topic, PIWEATHER_WIND) == 0)
   {
     showMessage(topic, payloadAsChars);
-    wOutdoorWind.updateText(payloadAsChars, floatStrLen, cycle);
+    wOutdoorWind.updateText(payloadAsChars, floatStrLen);
   }
 
   else if (strcmp(topic, PIWEATHER_RAINFALL) == 0)
   {
     showMessage(topic, payloadAsChars);
-    wOutdoorRainGauge.updateText(payloadAsChars, floatStrLen, cycle);
+    wOutdoorRainGauge.updateText(payloadAsChars, floatStrLen);
   }
 
   // TODO: Animated icons?
@@ -228,6 +243,38 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     else
       _error("unknown sun state received, skipping update");
     wOutdoorWeather.updateIcon(NULL, weatherIconHelper);
+  }
+
+  else if (strcmp(topic, WEATHER_FORECAST) == 0)
+  {
+    showMessage(topic, payloadAsChars);
+
+    char existingText[WIDGET_TEXT_LEN+1];
+    strncpy(existingText, wOutdoorWeather.getText(), WIDGET_TEXT_LEN);
+    // if (strcmp(payloadAsChars, "above_horizon") == 0)
+    //   daytime = true;
+    // else if (strcmp(payloadAsChars, "below_horizon") == 0)
+    //   daytime = false;
+    // else
+    //   _error("unknown sun state received, skipping update");
+    // wOutdoorWeather.updateIcon(payloadAsChars, forecastTextHelper);
+
+    bool showForecast = true;
+    if (showForecast)
+    {
+      // This is a hack: the update here sets the temporary brightness
+      // automatically.  We want the actual color to be dim and not bright,
+      // so we artifically darken the color
+      //
+      // Also move the text due to smaller font used
+      wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart-2,
+    colorDarkText, DashboardWidget::ALIGN_CENTER, smallFont, false);
+      wOutdoorWeather.updateText(payloadAsChars);
+
+      wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart,
+    colorWhite, DashboardWidget::ALIGN_CENTER, customFont, false);
+      wOutdoorWeather._setText(existingText);
+    }
   }
 
   else if (strcmp(topic, SIGN_BRIGHTNESS) == 0)

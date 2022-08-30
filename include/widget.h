@@ -4,6 +4,7 @@
 #include "display.h"
 
 #include <graphics.h>
+#include <time.h>
 
 #define WIDGET_NAME_LEN         32
 #define WIDGET_TEXT_LEN         16
@@ -42,6 +43,7 @@ private:
   uint8_t width = 0;
   uint8_t height = 0;
   widgetSizeType size = WIDGET_SMALL;
+  bool active = true;
 
   // Icon config/data
   int8_t iconX = 0;
@@ -69,7 +71,7 @@ private:
   // uint8_t resetBoundX, resetBoundY;
 
   // Initialization / config
-  uint32_t resetCycle;      // Track when temp brightness resets
+  clock_t resetTime;        // Track when temp brightness resets
   bool iconInit = false;
   bool textInit = false;
 
@@ -78,7 +80,9 @@ private:
   uint8_t   _getWidth();
   uint8_t   _getHeight();
   uint16_t  _getIconSize();
+public:
   void      _setText(char *);
+private:
   Color     color2RGB(uint8_t[3]);
 
   // Functions - Rendering
@@ -99,21 +103,25 @@ public:
 
   // Functions - Init / config
   DashboardWidget(const char *);
-  void setOrigin(uint8_t, uint8_t);
+  char* getText();
+  void setActive(bool);
+  void setOrigin(uint8_t x, uint8_t y);
   void setSize(widgetSizeType);
-  void setBounds(uint8_t, uint8_t);
+  void setBounds(uint8_t width, uint8_t height);
 
   // Functions - Text
-  void autoTextConfig(textAlignType = ALIGN_RIGHT, Color = colorText);
-  void setCustomTextConfig(uint8_t, uint8_t, Color = colorText, textAlignType = ALIGN_RIGHT, rgb_matrix::Font *textFont = NULL);
-  void updateText(char *, uint32_t = 0);
-  void updateText(char *, void(helperFunc)(char*, char*), uint32_t);
+  void autoTextConfig(Color = colorText, textAlignType = ALIGN_RIGHT);
+  void setCustomTextConfig(uint8_t x, uint8_t y, Color color = colorText,
+    textAlignType = ALIGN_RIGHT, rgb_matrix::Font *textFont = NULL,
+    bool clearText = true);
+  void updateText(char *text, bool brighten = true);
+  void updateText(char *text, void(helperFunc)(char*, char*), bool brighten = true);
 
   // Functions - Icon
-  void setIconConfig(uint8_t, uint8_t);
-  void setIconImage(uint8_t, uint8_t, const uint16_t *);
-  void setIconImage(uint8_t, uint8_t, const uint8_t *);
-  void updateIcon(char *, const uint16_t*(helperFunc)(char*));
+  void setIconConfig(uint8_t x, uint8_t y);
+  void setIconImage(uint8_t width, uint8_t height, const uint16_t *image);
+  void setIconImage(uint8_t width, uint8_t height, const uint8_t *image);
+  void updateIcon(char *iconData, const uint16_t*(helperFunc)(char*));
 
   // Functions - Rendering
   void render(bool = false);
@@ -122,7 +130,7 @@ public:
   void resetBrightness(brightType);
   void updateBrightness();
   void checkResetBrightness();
-  void tempAdjustBrightness(uint8_t, brightType);
+  void tempAdjustBrightness(uint8_t tempBright, brightType);
 };
 
 #endif

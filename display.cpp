@@ -15,17 +15,20 @@ using rgb_matrix::Canvas;
 using rgb_matrix::Color;
 using rgb_matrix::Font;
 
-Color colorBlack    = Color(0, 0, 0);
-Color colorDarkGrey = Color(16, 16, 16);
-Color colorWhite    = Color(255, 255, 255);
-Color colorDate     = Color(125, 200, 255);
+Color colorBlack      = Color(0, 0, 0);
+Color colorDarkGrey   = Color(16, 16, 16);
+Color colorGrey       = Color(64, 64, 64);
+Color colorLightGrey  = Color(128, 128, 128);
+Color colorWhite      = Color(255, 255, 255);
+Color colorDate       = Color(125, 200, 255);
 // Color colorTime     = Color(250, 80, 0);
-Color colorTime     = Color(248, 96, 8);
+Color colorTime       = Color(248, 96, 8);
 // Color colorText     = Color(125, 200, 255);
 // Color colorText     = Color(80, 160, 224);
 // Color colorText     = Color(64, 148, 192);
 // Color colorText     = Color(128, 148, 160);
-Color colorText     = Color(112, 148, 176);
+Color colorText       = Color(112, 148, 176);
+Color colorDarkText   = Color(56, 74, 88);
 
 rgb_matrix::RGBMatrix *matrix;
 rgb_matrix::Font *defaultFont;
@@ -100,7 +103,7 @@ int drawText(uint8_t x, uint8_t y, Color color, const char *text, Font *font)
   if (font == NULL) {
     font = defaultFont;
   }
-  _debug("drawText x,y,msg: %d,%d,\"%s\"", x, y, text);
+  // _debug("drawText x,y,msg: %d,%d,\"%s\"", x, y, text);
 
   if (strchr(text, '.') != NULL && strlen(text) != 3) {
       _warn("unable to autoparse text for custom rendering, using default");

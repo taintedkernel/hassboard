@@ -20,6 +20,10 @@
 #define FONT_HEIGHT_2   9     // Vertical positioning of font
 #define FONT_WIDTH_2    6     // Calculations of right-aligned text
 
+#define FONT_FILE_SMALL     "fonts/6x9.bdf"
+#define FONT_HEIGHT_SMALL   7     // Vertical positioning of font
+#define FONT_WIDTH_SMALL    5     // Calculations of right-aligned text
+
 using rgb_matrix::Color;
 
 bool setupDisplay();

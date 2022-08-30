@@ -24,7 +24,7 @@ smartgirder.o : smartgirder.cpp include/dashboard.h include/logger.h include/dis
 dashboard.o : dashboard.cpp include/dashboard.h include/logger.h include/widget.h include/icons.h include/mqtt.h
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
 
-widget.o : widget.cpp include/display.h include/logger.h include/widget.h
+widget.o : widget.cpp include/display.h include/logger.h include/widget.h include/icons.h
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
 
 display.o : display.cpp include/display.h include/logger.h include/widget.h include/datetime.h

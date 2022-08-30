@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
+#include <time.h>
 
 #include <string>
 #include <cerrno>
@@ -121,7 +122,9 @@ int main(int argc, char **argv)
       forceRefresh = false;
     }
 
-    sleep(1);
+    if (clock() > 5.0 * CLOCKS_PER_SEC) {
+      sleep(1);
+    }
   }
 
   _log("closing matrix");

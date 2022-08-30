@@ -11,6 +11,7 @@
 #define HASS_LR_DEW         "homeassistant/sensor/living_room_dew_point/state"
 #define PIWEATHER_WIND      "piweather/wind_speed_mph"
 #define PIWEATHER_RAINFALL  "piweather/rainfall_last_hour"
+#define WEATHER_FORECAST    "weather/forecast"
 #define WEATHER_CONDITION   "weather/weather"
 #define WEATHER_SUN         "weather/sun"
 #define THERMOSTAT_STATE    "thermostat/state"

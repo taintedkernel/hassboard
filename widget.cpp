@@ -1,6 +1,7 @@
 #include "display.h"
 #include "widget.h"
 #include "logger.h"
+#include "icons.h"
 
 #include <cstring>
 #include <algorithm>
@@ -48,10 +49,11 @@ void floatStrLen(char *textData, char *payload)
 // Determine which icon to render based upon weather conditions
 const uint16_t* weatherIconHelper(char *forecast)
 {
-  return NULL;
-/*   uint16_t *icon;
+  // return NULL;
+  const uint16_t *icon;
 
-  if (strcmp(forecast, "sunny") == 0) {
+  icon = clouds;
+  /* if (strcmp(forecast, "sunny") == 0) {
     if (daytime)
       icon = sunLocal;
     else
@@ -80,9 +82,9 @@ const uint16_t* weatherIconHelper(char *forecast)
   else if (strcmp(forecast, "snowy") == 0)
     icon = clouds_snow;
   else
-    icon = cloudsLocal;
+    icon = cloudsLocal; */
 
-  return icon; */
+  return icon;
 }
 
 // Debugging helper
@@ -176,6 +178,14 @@ DashboardWidget::DashboardWidget(const char *name)
 /*
   ----==== [ Configuration Functions ] ====----
 */
+char* DashboardWidget::getText() {
+  return this->textData;
+}
+
+void DashboardWidget::setActive(bool active) {
+  this->active = active;
+}
+
 void DashboardWidget::setOrigin(uint8_t x, uint8_t y) {
   this->x = x;
   this->y = y;
@@ -215,9 +225,13 @@ void DashboardWidget::setSize(widgetSizeType wsize)
 // With alignment == none, the X acts "as expected" and
 //   sets the left-most coordinate
 //
+// We also set y = 0 here, as the standard small widget
+//   fits on one "line"; eg: the Y coorinates for the text
+//   and icon match up
+//
 // TODO: We need to configure minimum bounds here
 // But we need to know font size to do so
-void DashboardWidget::autoTextConfig(textAlignType align, Color color)
+void DashboardWidget::autoTextConfig(Color color, textAlignType align)
 {
   switch(this->width) {
     case WIDGET_WIDTH_SMALL:
@@ -231,30 +245,34 @@ void DashboardWidget::autoTextConfig(textAlignType align, Color color)
 }
 
 void DashboardWidget::setCustomTextConfig(uint8_t x, uint8_t y,
-  Color color, textAlignType align, rgb_matrix::Font *textFont)
+  Color color, textAlignType align, rgb_matrix::Font *textFont,
+  bool clearText)
 {
   this->textX = x;
   this->textY = y;
-  this->textAlign = align;
   this->textColor = color;
+  this->textAlign = align;
+  this->textInit = true;
+
   if (textFont == NULL) {
     this->textFont = defaultFont;
   } else {
     this->textFont = textFont;
   }
-  strncpy(this->textData, "", WIDGET_TEXT_LEN);
-  this->textInit = true;
+
+  if (clearText) {
+    strncpy(this->textData, "", WIDGET_TEXT_LEN);
+  }
 }
 
 // Update text and set temporary bold brightness
-// TODO: Stop using cycles to track duration and
-// leverage the clock we have
-void DashboardWidget::updateText(char *text, uint32_t cycle)
+void DashboardWidget::updateText(char *text, bool brighten)
 {
   // If new text is not different, don't update
   if (strncmp(text, this->textData, WIDGET_TEXT_LEN) == 0)
     return;
 
+  // Abbreviate zero/null floating-point values
   if (strcmp(text, "0.0") == 0) {
     text = (char *) "0";
   }
@@ -264,8 +282,9 @@ void DashboardWidget::updateText(char *text, uint32_t cycle)
     cycle + refreshDelay);
 
   this->_setText(text);
-  if (cycle > 0) {
-    this->resetCycle = cycle + refreshDelay;
+  if (brighten)
+  {
+    this->resetTime = clock() + refreshDelay * CLOCKS_PER_SEC;
     this->tempAdjustBrightness(boldBrightnessIncrease, BRIGHT_TEXT);
   }
 
@@ -273,13 +292,13 @@ void DashboardWidget::updateText(char *text, uint32_t cycle)
 }
 
 // Update text with helper, then update same as above
-void DashboardWidget::updateText(char *data, void(helperFunc)(char*, char*), uint32_t cycle)
+void DashboardWidget::updateText(char *data, void(helperFunc)(char*, char*), bool brighten)
 {
   char buffer[WIDGET_TEXT_LEN];
 
   // Dual-copy used here to prevent dupication of logic
   helperFunc(buffer, data);
-  this->updateText(buffer, cycle);
+  this->updateText(buffer, brighten);
 }
 
 /* ----==== [ Icon Functions ] ====---- */
@@ -326,14 +345,14 @@ void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const uint8_t *img)
 // Call helper to determine icon, then render
 // No brightness logic similar to updateText()
 // TODO: Move weather-specific logic into separate class
-void DashboardWidget::updateIcon(char *forecast, const uint16_t*(helperFunc)(char*))
+void DashboardWidget::updateIcon(char *data, const uint16_t*(helperFunc)(char*))
 {
-  if (forecast != NULL) {
-    strncpy(this->iconData, forecast, WIDGET_DATA_LEN);
+  if (data != NULL) {
+    strncpy(this->iconData, data, WIDGET_DATA_LEN);
   }
   _debug("setting icon to %s", this->iconData);
 
-  // this->_setIcon(helperFunc(this->data));
+  this->setIconImage(this->iconWidth, this->iconHeight, helperFunc(this->iconData));
   this->render();
 }
 
@@ -350,6 +369,10 @@ void DashboardWidget::renderText(bool debug) // char *text = NULL)
     _error("renderText(%s) called without config, aborting", this->name);
     return;
   }
+
+  if (!this->active)
+    return;
+
   // if (text != NULL) {
   //   this->_setText(text);
   // }
@@ -394,6 +417,9 @@ void DashboardWidget::renderIcon(bool debug)
     return;
   }
 
+  if (!this->active)
+    return;
+
   // if (icon != NULL)
   //   this->_setIcon(icon);
   drawIcon(this->x + this->iconX, this->y + this->iconY, this->iconWidth, this->iconHeight, this->iconImage);
@@ -404,8 +430,11 @@ void DashboardWidget::renderIcon(bool debug)
 // sections and move to those rendering functions
 void DashboardWidget::render(bool debug)
 {
+  if (!this->active)
+    return;
+
   // Clear widget
-  _debug("clearing widget %s", this->name);
+  // _debug("clearing widget %s", this->name);
 
   if (!debug)
     drawRect(this->x, this->y, this->width, this->height, colorBlack);
@@ -414,7 +443,7 @@ void DashboardWidget::render(bool debug)
 
   // Render widget assets
   this->renderIcon();
-  this->renderText(true);
+  this->renderText(debug);
 
   // Debugging bounding box for widget
   // Calculated from icon height & fixed width
@@ -467,11 +496,11 @@ void DashboardWidget::updateBrightness()
 // Checks if temporary brightness duration has elapsed and reset if necessary
 void DashboardWidget::checkResetBrightness()
 {
-  if (this->resetCycle > 0 && cycle >= this->resetCycle)
+  if (this->resetTime > 0 && clock() >= this->resetTime)
   {
     this->_logName();
     _log("- resetting brightness");
-    this->resetCycle = 0;
+    this->resetTime = 0;
     this->resetBrightness(BRIGHT_BOTH);
     this->iconTempBrightness = this->textTempBrightness = 0;
     this->render();
