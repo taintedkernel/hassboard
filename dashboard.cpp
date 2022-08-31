@@ -61,6 +61,7 @@ rgb_matrix::Font *customFont, *smallFont;
 
 extern uint32_t cycle;
 extern bool forceRefresh;
+extern uint8_t refreshActiveDelay;
 extern rgb_matrix::RGBMatrix *matrix;
 extern rgb_matrix::Color colorWhite, colorGrey, colorDarkText;
 extern rgb_matrix::Font *defaultFont;
@@ -114,10 +115,9 @@ void setupDashboard()
   // widget->setTextConfig(WIDGET_WIDTH_SMALL, 0);
 
   // Primary weather row (2nd display)
-  widget = &wOutdoorWeather;
   customFont = new rgb_matrix::Font;
   customFont->LoadFont(FONT_FILE_2);
-  _debug("loaded custom font @ 0x%p", customFont);
+  widget = &wOutdoorWeather;
   widget->setOrigin(weatherOffset, 0);
   widget->setSize(DashboardWidget::WIDGET_XLARGE);
   widget->setIconImage(32, 25, clouds);
@@ -125,17 +125,19 @@ void setupDashboard()
     colorWhite, DashboardWidget::ALIGN_CENTER, customFont);
   widget->setBounds(32, 34);
 
+  // Alternate forecast widget, to show over current weather
+  smallFont = new rgb_matrix::Font;
+  smallFont->LoadFont(FONT_FILE_SMALL);
   widget = &wOutdoorForecast;
-  widget->setActive(false);
   widget->setOrigin(weatherOffset, 0);
   widget->setSize(DashboardWidget::WIDGET_XLARGE);
   widget->setIconImage(32, 25, clouds);
-  widget->setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart,
-    colorWhite, DashboardWidget::ALIGN_CENTER, defaultFont);
-
-  smallFont = new rgb_matrix::Font;
-  smallFont->LoadFont(FONT_FILE_SMALL);
-  _debug("loaded small font @ 0x%p", smallFont);
+  widget->setCustomTextConfig(WIDGET_WIDTH_XLARGE+4, rowTempStart-2,
+    colorText, DashboardWidget::ALIGN_CENTER, smallFont,
+    FONT_WIDTH_SMALL, FONT_HEIGHT_SMALL);
+  widget->setCustomTextRender(drawTextCustom);
+  widget->setBounds(32, 34);
+  widget->setActive(false);
 
   widgetCollection[numWidgets++] = &wHouseTemp;
   widgetCollection[numWidgets++] = &wHouseDewpoint;
@@ -265,15 +267,24 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
       // This is a hack: the update here sets the temporary brightness
       // automatically.  We want the actual color to be dim and not bright,
       // so we artifically darken the color
-      //
       // Also move the text due to smaller font used
-      wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart-2,
-    colorDarkText, DashboardWidget::ALIGN_CENTER, smallFont, false);
-      wOutdoorWeather.updateText(payloadAsChars);
+      // wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart-2,
+      //   colorDarkText, DashboardWidget::ALIGN_CENTER, smallFont, false);
+      // wOutdoorWeather.updateText(payloadAsChars);
+      // wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart,
+      //   colorWhite, DashboardWidget::ALIGN_CENTER, customFont, false);
+      // wOutdoorWeather._setText(existingText);
 
-      wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart,
-    colorWhite, DashboardWidget::ALIGN_CENTER, customFont, false);
-      wOutdoorWeather._setText(existingText);
+      // Note: Currently when rendering an inactive widget nothing is done
+      // (eg: clearing not performed).  This allows us to avoid race conditions
+      // here, where outdoorWeather is set back to active before outdoorForecast
+      // is deactivated (and thus cleared, resulting in a blank widget)
+      wOutdoorForecast.setResetActiveTime(clock() + refreshActiveDelay * CLOCKS_PER_SEC);
+      wOutdoorForecast.updateText(payloadAsChars);
+      wOutdoorForecast.setActive(true);
+      wOutdoorForecast.render();
+      wOutdoorWeather.setActive(false);
+      wOutdoorWeather.setResetActiveTime(clock() + refreshActiveDelay * CLOCKS_PER_SEC);
     }
   }
 
@@ -290,15 +301,19 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   else if (strcmp(topic, THERMOSTAT_STATE) == 0)
   {
     showMessage(topic, payloadAsChars);
-    if (strcmp(payloadAsChars, "heating") == 0) {
-      wHouseTemp.setIconImage(8, 7, big_house_heat);
-    } else if (strcmp(payloadAsChars, "cooling") == 0) {
-      wHouseTemp.setIconImage(8, 7, big_house_cool);
-    } else if (strcmp(payloadAsChars, "fan_running") == 0) {
+    if (strcmp(payloadAsChars, "heating") == 0)
+      wHouseTemp.setIconImage(8, 7, big_house_heating);
+    else if (strcmp(payloadAsChars, "cooling") == 0)
+      wHouseTemp.setIconImage(8, 7, big_house_cooling);
+    else if (strcmp(payloadAsChars, "idle (heat)") == 0)
+      wHouseTemp.setIconImage(8, 7, big_house_mode_heat);
+    else if (strcmp(payloadAsChars, "idle (cool)") == 0)
+      wHouseTemp.setIconImage(8, 7, big_house_mode_cool);
+    else if (strcmp(payloadAsChars, "fan_running") == 0)
       wHouseTemp.setIconImage(8, 7, big_house_fan);
-    } else if (strcmp(payloadAsChars, "idle") == 0) {
+    else if (strcmp(payloadAsChars, "off") == 0)
       wHouseTemp.setIconImage(8, 7, big_house);
-    }
+
     displayDashboard();
   }
 

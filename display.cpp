@@ -177,6 +177,14 @@ int drawText(uint8_t x, uint8_t y, Color color, const char *text, Font *font)
   return DrawText(matrix, *font, x, y+FONT_HEIGHT, color, NULL, text, 0);
 }
 
+// Render text with a custom formatting/profile
+// Right now, this is very basic and just apply a fixed negative kerning offset
+// But this is to be expanded to custom variable-width character rendering
+int drawTextCustom(uint8_t x, uint8_t y, Color color, const char *text, Font *font, uint8_t hSpacing, uint8_t fontHeight)
+{
+  return DrawText(matrix, *font, x, y+fontHeight, color, NULL, text, -1);
+}
+
 // Draw a filled rectangle at (x,y) with width, height and color
 void drawRect(uint16_t x_start, uint16_t y_start,
   uint16_t width, uint16_t height, Color color)

@@ -19,6 +19,9 @@
 #define ICON_SZ                 800
 #define ICON_SZ_BYTES           ICON_SZ * sizeof(uint16_t)
 
+#define TEXT_RENDER_SIG         (uint8_t x, uint8_t y, Color color, const char *text, \
+    rgb_matrix::Font *font, uint8_t hSpacing, uint8_t fontHeight)
+
 using rgb_matrix::Color;
 
 void tempIntHelper(char *, char *);
@@ -63,15 +66,17 @@ private:
   uint8_t textBrightness = 0;
   uint8_t textTempBrightness = 0;
   uint8_t textAlign;
+  int (*customTextRender)TEXT_RENDER_SIG;
+
   rgb_matrix::Font *textFont;
   rgb_matrix::Color textColor;
+  uint8_t textFontWidth = 0;
+  uint8_t textFontHeight = 0;
   char textData[WIDGET_TEXT_LEN+1];
-
-  // Override to change size of clear/reset widget box
-  // uint8_t resetBoundX, resetBoundY;
 
   // Initialization / config
   clock_t resetTime;        // Track when temp brightness resets
+  clock_t resetActiveTime;  // Track when active toggles
   bool iconInit = false;
   bool textInit = false;
 
@@ -86,7 +91,7 @@ private:
   Color     color2RGB(uint8_t[3]);
 
   // Functions - Rendering
-  void renderText(bool = false);
+  int renderText(bool = false);
   void renderIcon(bool = false);
 
 public:
@@ -108,12 +113,14 @@ public:
   void setOrigin(uint8_t x, uint8_t y);
   void setSize(widgetSizeType);
   void setBounds(uint8_t width, uint8_t height);
+  void setCustomTextRender(int (render)TEXT_RENDER_SIG);
 
   // Functions - Text
   void autoTextConfig(Color = colorText, textAlignType = ALIGN_RIGHT);
   void setCustomTextConfig(uint8_t x, uint8_t y, Color color = colorText,
     textAlignType = ALIGN_RIGHT, rgb_matrix::Font *textFont = NULL,
-    bool clearText = true);
+    uint8_t fontWidth = 0, uint8_t fontHeight = 0);
+    // bool clearText = true);
   void updateText(char *text, bool brighten = true);
   void updateText(char *text, void(helperFunc)(char*, char*), bool brighten = true);
 
@@ -125,12 +132,17 @@ public:
 
   // Functions - Rendering
   void render(bool = false);
+  void clear(bool = false, bool = false);
 
   // Functions - Brightness adjustments
   void resetBrightness(brightType);
   void updateBrightness();
   void checkResetBrightness();
   void tempAdjustBrightness(uint8_t tempBright, brightType);
+
+  // Functions - "Active-ness" adjustments
+  void checkResetActive();
+  void setResetActiveTime(clock_t time);
 };
 
 #endif

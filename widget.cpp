@@ -13,7 +13,7 @@
 uint16_t cloudsLocal[ICON_SZ], cloudsSunLocal[ICON_SZ];
 uint16_t sunLocal[ICON_SZ], cloudsShowersLocal[ICON_SZ];
 
-uint8_t refreshDelay = 5;
+uint8_t refreshDelay = 5, refreshActiveDelay = 10;
 
 extern uint8_t brightness;
 extern uint8_t boldBrightnessIncrease;
@@ -215,6 +215,11 @@ void DashboardWidget::setSize(widgetSizeType wsize)
   }
 }
 
+void DashboardWidget::setCustomTextRender(int (render)TEXT_RENDER_SIG)
+{
+  this->customTextRender = render;
+}
+
 /* ----==== [ Text Functions ] ====---- */
 
 // Set (x,y) coordinates, color and alignment for widget text
@@ -244,9 +249,11 @@ void DashboardWidget::autoTextConfig(Color color, textAlignType align)
   }
 }
 
+// Set a manually-provided text configuration with locations
+// in the widget, text color and font information
 void DashboardWidget::setCustomTextConfig(uint8_t x, uint8_t y,
   Color color, textAlignType align, rgb_matrix::Font *textFont,
-  bool clearText)
+  uint8_t fontWidth, uint8_t fontHeight)
 {
   this->textX = x;
   this->textY = y;
@@ -254,15 +261,20 @@ void DashboardWidget::setCustomTextConfig(uint8_t x, uint8_t y,
   this->textAlign = align;
   this->textInit = true;
 
+  // Use default font if not provided
   if (textFont == NULL) {
     this->textFont = defaultFont;
+    this->textFontWidth = FONT_WIDTH;
+    this->textFontHeight = FONT_HEIGHT;
   } else {
     this->textFont = textFont;
+    this->textFontWidth = fontWidth;
+    this->textFontHeight = fontHeight;
   }
 
-  if (clearText) {
-    strncpy(this->textData, "", WIDGET_TEXT_LEN);
-  }
+  // if (clearText) {
+  //   strncpy(this->textData, "", WIDGET_TEXT_LEN);
+  // }
 }
 
 // Update text and set temporary bold brightness
@@ -361,21 +373,17 @@ void DashboardWidget::updateIcon(char *data, const uint16_t*(helperFunc)(char*))
 */
 
 // TODO: Render an text-specific black clearing box
-void DashboardWidget::renderText(bool debug) // char *text = NULL)
+int DashboardWidget::renderText(bool debug)
 {
   uint16_t offset, offsetCalc;
 
   if (!this->textInit) {
     _error("renderText(%s) called without config, aborting", this->name);
-    return;
+    return 0;
   }
 
   if (!this->active)
-    return;
-
-  // if (text != NULL) {
-  //   this->_setText(text);
-  // }
+    return 0;
 
   if (this->textAlign == ALIGN_RIGHT)
   {
@@ -389,7 +397,7 @@ void DashboardWidget::renderText(bool debug) // char *text = NULL)
   }
   else {
     _error("unknown text alignment %d, not rendering", this->textAlign);
-    return;
+    return 0;
   }
 
   Color tColor = Color(this->textColor);
@@ -405,8 +413,12 @@ void DashboardWidget::renderText(bool debug) // char *text = NULL)
       this->textColor.g, this->textColor.b, tColor.r, tColor.g, tColor.b);
   }
 
-  drawText(offset, this->y + this->textY, tColor, this->textData, this->textFont);
-  // drawText(offset, this->y + this->textY, this->textColor, this->textData);
+  if (this->customTextRender) {
+    return this->customTextRender(offset, this->y + this->textY, tColor,
+      this->textData, this->textFont, this->textFontWidth, this->textFontHeight);
+  } else {
+    return drawText(offset, this->y + this->textY, tColor, this->textData, this->textFont);
+  }
 }
 
 // TODO: Render an icon-specific black clearing box
@@ -420,8 +432,6 @@ void DashboardWidget::renderIcon(bool debug)
   if (!this->active)
     return;
 
-  // if (icon != NULL)
-  //   this->_setIcon(icon);
   drawIcon(this->x + this->iconX, this->y + this->iconY, this->iconWidth, this->iconHeight, this->iconImage);
 }
 
@@ -435,11 +445,7 @@ void DashboardWidget::render(bool debug)
 
   // Clear widget
   // _debug("clearing widget %s", this->name);
-
-  if (!debug)
-    drawRect(this->x, this->y, this->width, this->height, colorBlack);
-  else
-    drawRect(this->x, this->y, this->width, this->height, colorDarkGrey);
+  this->clear(debug);
 
   // Render widget assets
   this->renderIcon();
@@ -454,6 +460,19 @@ void DashboardWidget::render(bool debug)
     matrix->SetPixel(this->x, this->y+this->height-1, 0,0,255);
     matrix->SetPixel(this->x+this->width-1, this->y+this->height-1, 255,255,255);
   }
+}
+
+// Clear the rendering bounds of our widget
+void DashboardWidget::clear(bool debug, bool force)
+{
+  // If we are inactive and no force-clear set then return
+  if (!this->active && !force)
+    return;
+
+  if (!debug)
+    drawRect(this->x, this->y, this->width, this->height, colorBlack);
+  else
+    drawRect(this->x, this->y, this->width, this->height, colorDarkGrey);
 }
 
 /*
@@ -518,4 +537,24 @@ void DashboardWidget::tempAdjustBrightness(uint8_t tempBright, brightType bType 
     this->textTempBrightness = tempBright;
     this->textBrightness = brightness + tempBright;
   }
+}
+
+// Check if temporary active duration has elapsed and reset if necessary
+void DashboardWidget::checkResetActive()
+{
+  if (this->resetActiveTime > 0 && clock() >= this->resetActiveTime)
+  {
+    this->_logName();
+    _log("- resetting active to: %d", !(this->active));
+    this->resetActiveTime = 0;
+    this->setActive(!(this->active));
+    this->clear();
+    this->render();
+  }
+}
+
+// Set the time to reset the active state
+void DashboardWidget::setResetActiveTime(clock_t time)
+{
+  this->resetActiveTime = time;
 }

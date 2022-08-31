@@ -103,6 +103,7 @@ int main(int argc, char **argv)
     // Reset temporary brightness for widgets, if necessary
     for (int i=0; i<numWidgets; i++) {
       widgetCollection[i]->checkResetBrightness();
+      widgetCollection[i]->checkResetActive();
     }
 
     // Force refresh of the display
