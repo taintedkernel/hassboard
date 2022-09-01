@@ -61,7 +61,7 @@ const char* weatherIconHelper(char *forecast)
   // icon = cloud_sun_new;
   if (strcmp(forecast, "sunny") == 0)
   {
-    return("icons/sun-new.png");
+    return("icons/sun-1.0.png");
     // widgetImage.read();
 
     /* if (daytime)
@@ -74,7 +74,7 @@ const char* weatherIconHelper(char *forecast)
   //   icon = moon;
   // }
   else if (strcmp(forecast, "partlycloudy") == 0) {
-    return("icons/clouds_sun-new.png");
+    return("icons/clouds_sun-1.0.png");
     /* if (daytime)
       icon = cloudsSunLocal;
     else
@@ -82,11 +82,11 @@ const char* weatherIconHelper(char *forecast)
     // icon = cloud_sun_new;
   }
   else if (strcmp(forecast, "cloudy") == 0)
-    return("icons/clouds-new.png");
+    return("icons/clouds-1.0.png");
   // else if (strcmp(forecast, "fog") == 0)
   //   icon = mist;
   else if (strcmp(forecast, "rainy") == 0)
-    return("icons/clouds_showers-new.png");
+    return("icons/clouds_showers-1.0.png");
   /* Is this condition supported?
   // else if (strcmp(forecast, "sunshower") == 0)
   //   icon = clouds_showers_sun;
