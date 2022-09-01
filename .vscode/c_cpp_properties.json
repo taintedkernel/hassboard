@@ -5,6 +5,7 @@
             "includePath": [
                 "/root/rpi-rgb-led-matrix/include/**",
                 "/root/smartgirder/include/**",
+                "/usr/include/GraphicsMagick/**",
                 "${workspaceFolder}/**"
             ],
             "defines": [],
