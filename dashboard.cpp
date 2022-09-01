@@ -34,6 +34,7 @@ uint8_t rowSpacing = 3;
 uint8_t rowOneStart = 1;
 uint8_t rowTwoStart = rowOneStart + FONT_HEIGHT + rowSpacing;
 uint8_t rowThreeStart = rowTwoStart + FONT_HEIGHT + rowSpacing;
+uint8_t rowCalendarStart = rowThreeStart + (FONT_HEIGHT + rowSpacing) * 2;
 
 // *TODO*: Wire up photocell and use to determine brightness
 // Control brightness by adjusting RGB values. Brightness is a
@@ -53,6 +54,7 @@ DashboardWidget wOutdoorWind("outdoorWind");
 DashboardWidget wOutdoorPM25("outdoorPM25");
 DashboardWidget wOutdoorWeather("outdoorWeather");
 DashboardWidget wOutdoorForecast("outdoorForecast");
+DashboardWidget wCalendar("calendar");
 
 // TODO: fix this, eg: add a widget manager
 DashboardWidget *widget, *widgetCollection[MAX_WIDGETS];
@@ -114,14 +116,14 @@ void setupDashboard()
   widget->setIconImage(7, 8, air);
   // widget->setTextConfig(WIDGET_WIDTH_SMALL, 0);
 
-  // Primary weather row (2nd display)
+  // Main, current weather row (2nd display)
   customFont = new rgb_matrix::Font;
   customFont->LoadFont(FONT_FILE_2);
   widget = &wOutdoorWeather;
   widget->setOrigin(weatherOffset, 0);
-  widget->setSize(DashboardWidget::WIDGET_XLARGE);
-  widget->setIconImage(32, 25, clouds);
-  widget->setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart,
+  widget->setSize(DashboardWidget::WIDGET_LARGE);
+  widget->setIconImage(32, 25, cloud_sun_new);
+  widget->setCustomTextConfig(WIDGET_WIDTH_LARGE, rowTempStart,
     colorWhite, DashboardWidget::ALIGN_CENTER, customFont);
   widget->setBounds(32, 34);
 
@@ -130,14 +132,23 @@ void setupDashboard()
   smallFont->LoadFont(FONT_FILE_SMALL);
   widget = &wOutdoorForecast;
   widget->setOrigin(weatherOffset, 0);
-  widget->setSize(DashboardWidget::WIDGET_XLARGE);
-  widget->setIconImage(32, 25, clouds);
-  widget->setCustomTextConfig(WIDGET_WIDTH_XLARGE+4, rowTempStart-2,
+  widget->setSize(DashboardWidget::WIDGET_LARGE);
+  widget->setIconImage(32, 25, cloud_sun_new);
+  widget->setCustomTextConfig(WIDGET_WIDTH_LARGE+4, rowTempStart-2,
     colorText, DashboardWidget::ALIGN_CENTER, smallFont,
     FONT_WIDTH_SMALL, FONT_HEIGHT_SMALL);
   widget->setCustomTextRender(drawTextCustom);
   widget->setBounds(32, 34);
   widget->setActive(false);
+
+  widget = &wCalendar;
+  widget->setOrigin(colOneStart, rowCalendarStart);
+  widget->setSize(DashboardWidget::WIDGET_LONG);
+  widget->setIconImage(8, 8, "icons/calendar.png");
+  widget->setCustomTextConfig(WIDGET_WIDTH_LONG, 0,
+    colorWhite, DashboardWidget::ALIGN_CENTER, smallFont,
+    FONT_WIDTH_SMALL, FONT_HEIGHT_SMALL);
+  widget->setCustomTextRender(drawTextCustom);
 
   widgetCollection[numWidgets++] = &wHouseTemp;
   widgetCollection[numWidgets++] = &wHouseDewpoint;
@@ -147,6 +158,7 @@ void setupDashboard()
   widgetCollection[numWidgets++] = &wOutdoorPM25;
   widgetCollection[numWidgets++] = &wOutdoorWeather;
   widgetCollection[numWidgets++] = &wOutdoorForecast;
+  widgetCollection[numWidgets++] = &wCalendar;
 }
 
 void displayDashboard(unsigned int updatedData)
@@ -182,6 +194,7 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   - Weather alerts
   - Calendar notifications
   - Garage door open?
+  - Chores/reminders
   - Other TBD alerts?
   */
 
@@ -229,7 +242,7 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   }
 
   // TODO: Animated icons?
-  else if (strcmp(topic, WEATHER_CONDITION) == 0)
+  else if (strcmp(topic, "weather/weather") == 0)
   {
     showMessage(topic, payloadAsChars);
     wOutdoorWeather.updateIcon(payloadAsChars, weatherIconHelper);
@@ -244,10 +257,10 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
       daytime = false;
     else
       _error("unknown sun state received, skipping update");
-    wOutdoorWeather.updateIcon(NULL, weatherIconHelper);
+    // wOutdoorWeather.updateIcon(NULL, weatherIconHelper);
   }
 
-  else if (strcmp(topic, WEATHER_FORECAST) == 0)
+  else if (strcmp(topic, "weather/forecast") == 0)
   {
     showMessage(topic, payloadAsChars);
 
@@ -268,10 +281,10 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
       // automatically.  We want the actual color to be dim and not bright,
       // so we artifically darken the color
       // Also move the text due to smaller font used
-      // wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart-2,
+      // wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_LARGE, rowTempStart-2,
       //   colorDarkText, DashboardWidget::ALIGN_CENTER, smallFont, false);
       // wOutdoorWeather.updateText(payloadAsChars);
-      // wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_XLARGE, rowTempStart,
+      // wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_LARGE, rowTempStart,
       //   colorWhite, DashboardWidget::ALIGN_CENTER, customFont, false);
       // wOutdoorWeather._setText(existingText);
 
@@ -295,7 +308,7 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     if (brightness > 100)
       brightness = 100;
     matrix->SetBrightness(brightness);
-    forceRefresh = true;
+    displayDashboard();
   }
 
   else if (strcmp(topic, THERMOSTAT_STATE) == 0)
@@ -317,78 +330,10 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     displayDashboard();
   }
 
-  else if (strcmp(topic, "icon/update") == 0)
+  else if (strcmp(topic, CALENDAR_EVENT) == 0)
   {
-    char *token;
-    char delim[] = " ";
-
-    unsigned int iconNameLen = 16, urlLen = 32;
-    char iconName[iconNameLen+1], url[urlLen+1];
-    // uint8_t buffer[ICON_SZ_BYTES];
-
     showMessage(topic, payloadAsChars);
-    token = strtok(payloadAsChars, delim);
-    strncpy(iconName, token, iconNameLen);
-    token = strtok(NULL, delim);
-    strncpy(url, token, urlLen);
-    _log("retrieving new icon %s from %s", iconName, url);
-
-    /* if (httpGet(url, buffer, ICON_SZ_BYTES))
-    {
-      if (strcmp(iconName, "sun") == 0) {
-        memcpy(sunLocal, buffer, ICON_SZ_BYTES);
-      } else if (strcmp(iconName, "clouds") == 0) {
-        memcpy(cloudsLocal, buffer, ICON_SZ_BYTES);
-      } else if (strcmp(iconName, "cloudssun") == 0) {
-        memcpy(cloudsSunLocal, buffer, ICON_SZ_BYTES);
-      } else if (strcmp(iconName, "cloudsshowers") == 0) {
-        memcpy(cloudsShowersLocal, buffer, ICON_SZ_BYTES);
-      } else {
-        _error("unknown icon name, not updating");
-        return;
-      }
-
-      wOutdoorWeather.updateIcon(NULL, weatherIconHelper);
-    } */
+    wCalendar.updateText(payloadAsChars);
+    displayDashboard();
   }
-
-  else if (strcmp(topic, "icon/brightness") == 0)
-  {
-    showMessage(topic, payloadAsChars);
-    iconExtraBrightness = atoi(payloadAsChars);
-  }
-
-  /* else if (strcmp(topic, "debug/color/min_red") == 0)
-  {
-    showMessage(topic, payloadAsChars);
-    // colorRedMin = atoi(payloadAsChars);
-    forceRefresh = true;
-    wOutdoorWeather.updateIcon(NULL, weatherIconHelper);
-}
-
-  else if (strcmp(topic, "debug/color/min_green") == 0)
-  {
-    showMessage(topic, payloadAsChars);
-    // colorGreenMin = atoi(payloadAsChars);
-    forceRefresh = true;
-    wOutdoorWeather.updateIcon(NULL, weatherIconHelper);
-  }
-
-  else if (strcmp(topic, "debug/color/min_blue") == 0)
-  {
-    showMessage(topic, payloadAsChars);
-    // colorBlueMin = atoi(payloadAsChars);
-    forceRefresh = true;
-    wOutdoorWeather.updateIcon(NULL, weatherIconHelper);
-  }
-
-  else if (strcmp(topic, "debug/color/min_all") == 0)
-  {
-    showMessage(topic, payloadAsChars);
-    // colorRedMin = atoi(payloadAsChars);
-    // colorGreenMin = atoi(payloadAsChars);
-    // colorBlueMin = atoi(payloadAsChars);
-    forceRefresh = true;
-    wOutdoorWeather.updateIcon(NULL, weatherIconHelper);
-  } */
 }

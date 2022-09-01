@@ -16,6 +16,7 @@
 #define WEATHER_SUN         "weather/sun"
 #define THERMOSTAT_STATE    "thermostat/state"
 #define SIGN_BRIGHTNESS     "sign/brightness"
+#define CALENDAR_EVENT      "calendar/event"
 
 #define ICON_HOST           "10.4.3.10"
 

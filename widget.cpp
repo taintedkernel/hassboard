@@ -218,10 +218,15 @@ void DashboardWidget::setSize(widgetSizeType wsize)
       this->width = WIDGET_WIDTH_SMALL;
       this->height = WIDGET_HEIGHT_SMALL;
       break;
-    case WIDGET_XLARGE:
+    case WIDGET_LARGE:
       this->size = wsize;
-      this->width = WIDGET_WIDTH_XLARGE;
-      this->height = WIDGET_HEIGHT_XLARGE;
+      this->width = WIDGET_WIDTH_LARGE;
+      this->height = WIDGET_HEIGHT_LARGE;
+      break;
+    case WIDGET_LONG:
+      this->size = wsize;
+      this->width = WIDGET_WIDTH_LONG;
+      this->height = WIDGET_HEIGHT_LONG;
       break;
     default:
       _error("unknown widget size %s, not configuring");
@@ -253,7 +258,7 @@ void DashboardWidget::autoTextConfig(Color color, textAlignType align)
 {
   switch(this->width) {
     case WIDGET_WIDTH_SMALL:
-    case WIDGET_WIDTH_XLARGE:
+    case WIDGET_WIDTH_LARGE:
       this->setCustomTextConfig(this->width, 0, color, align);
       break;
     default:

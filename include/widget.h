@@ -14,8 +14,11 @@
 #define WIDGET_WIDTH_SMALL      28
 #define WIDGET_HEIGHT_SMALL     FONT_HEIGHT
 
-#define WIDGET_WIDTH_XLARGE     32
-#define WIDGET_HEIGHT_XLARGE    32
+#define WIDGET_WIDTH_LARGE     32
+#define WIDGET_HEIGHT_LARGE    32
+
+#define WIDGET_WIDTH_LONG       128
+#define WIDGET_HEIGHT_LONG      FONT_HEIGHT
 
 #define ICON_SZ                 800
 #define ICON_SZ_BYTES           ICON_SZ * sizeof(uint16_t)
@@ -36,7 +39,7 @@ extern Color colorText;
 class DashboardWidget
 {
 public:
-  enum widgetSizeType{WIDGET_SMALL, WIDGET_XLARGE};
+  enum widgetSizeType{WIDGET_SMALL, WIDGET_LARGE, WIDGET_LONG};
   enum brightType{BRIGHT_ICON, BRIGHT_TEXT, BRIGHT_BOTH};
   enum textAlignType{ALIGN_RIGHT, ALIGN_CENTER};
 

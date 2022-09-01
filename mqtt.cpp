@@ -69,6 +69,7 @@ void mqttOnConnect(struct mosquitto *mqttConnect, void *obj, int rc)
   mosquitto_subscribe(mqtt.client, NULL, "sign/#", 0);
   mosquitto_subscribe(mqtt.client, NULL, "icon/#", 0);
   mosquitto_subscribe(mqtt.client, NULL, "debug/#", 0);
+  mosquitto_subscribe(mqtt.client, NULL, "calendar/#", 0);
 }
 
 // Create a new MQTT client
