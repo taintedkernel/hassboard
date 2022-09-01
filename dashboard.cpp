@@ -144,11 +144,12 @@ void setupDashboard()
   widget = &wCalendar;
   widget->setOrigin(colOneStart, rowCalendarStart);
   widget->setSize(DashboardWidget::WIDGET_LONG);
-  widget->setIconImage(8, 8, "icons/calendar.png");
+  widget->setIconImage(9, 8, "icons/calendar.png");
   widget->setCustomTextConfig(WIDGET_WIDTH_LONG, 0,
-    colorWhite, DashboardWidget::ALIGN_CENTER, smallFont,
+    colorWhite, DashboardWidget::ALIGN_RIGHT, smallFont,
     FONT_WIDTH_SMALL, FONT_HEIGHT_SMALL);
   widget->setCustomTextRender(drawTextCustom);
+  // widget->setDebug(true);
 
   widgetCollection[numWidgets++] = &wHouseTemp;
   widgetCollection[numWidgets++] = &wHouseDewpoint;

@@ -8,14 +8,14 @@
 #include <time.h>
 
 #define WIDGET_NAME_LEN         32
-#define WIDGET_TEXT_LEN         16
+#define WIDGET_TEXT_LEN         32
 #define WIDGET_DATA_LEN         32
 
 #define WIDGET_WIDTH_SMALL      28
 #define WIDGET_HEIGHT_SMALL     FONT_HEIGHT
 
-#define WIDGET_WIDTH_LARGE     32
-#define WIDGET_HEIGHT_LARGE    32
+#define WIDGET_WIDTH_LARGE      32
+#define WIDGET_HEIGHT_LARGE     32
 
 #define WIDGET_WIDTH_LONG       128
 #define WIDGET_HEIGHT_LONG      FONT_HEIGHT
@@ -50,7 +50,9 @@ private:
   uint8_t width = 0;
   uint8_t height = 0;
   widgetSizeType size = WIDGET_SMALL;
+
   bool active = true;
+  bool debug = false;
 
   // Icon config/data
   int8_t iconX = 0;
@@ -95,8 +97,8 @@ private:
   Color     color2RGB(uint8_t[3]);
 
   // Functions - Rendering
-  int renderText(bool = false);
-  void renderIcon(bool = false);
+  int renderText();
+  void renderIcon();
 
 public:
   // Functions - Constants, defaults, enums, etc
@@ -113,6 +115,7 @@ public:
   // Functions - Init / config
   DashboardWidget(const char *);
   char* getText();
+  void setDebug(bool);
   void setActive(bool);
   void setOrigin(uint8_t x, uint8_t y);
   void setSize(widgetSizeType);
@@ -136,8 +139,8 @@ public:
   void updateIcon(char *iconData, const char*(helperFunc)(char*));
 
   // Functions - Rendering
-  void render(bool = false);
-  void clear(bool = false, bool = false);
+  void render();
+  void clear(bool = false);
 
   // Functions - Brightness adjustments
   void resetBrightness(brightType);

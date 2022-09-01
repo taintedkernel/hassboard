@@ -51,53 +51,24 @@ void floatStrLen(char *textData, char *payload)
   }
 }
 
-// Determine which icon to render based upon weather conditions
-// const uint16_t* weatherIconHelper(char *forecast)
-const char* weatherIconHelper(char *forecast)
+// Translate weather condition to matching icon, return filename
+const char* weatherIconHelper(char *condition)
 {
-  // png::image<png::rgb_pixel> widgetImage;
-
-  // const uint16_t *icon;
-  // icon = cloud_sun_new;
-  if (strcmp(forecast, "sunny") == 0)
-  {
+  if (strcmp(condition, "sunny") == 0) {
     return("icons/sun-1.0.png");
-    // widgetImage.read();
-
-    /* if (daytime)
-      icon = sunLocal;
-    else
-      icon = moon; */
-    // icon = sun;
   }
-  // else if (strcmp(forecast, "clear-night") == 0) {
-  //   icon = moon;
-  // }
-  else if (strcmp(forecast, "partlycloudy") == 0) {
+  else if (strcmp(condition, "partlycloudy") == 0) {
     return("icons/clouds_sun-1.0.png");
-    /* if (daytime)
-      icon = cloudsSunLocal;
-    else
-      icon = clouds_moon; */
-    // icon = cloud_sun_new;
   }
-  else if (strcmp(forecast, "cloudy") == 0)
+  else if (strcmp(condition, "cloudy") == 0) {
     return("icons/clouds-1.0.png");
-  // else if (strcmp(forecast, "fog") == 0)
-  //   icon = mist;
-  else if (strcmp(forecast, "rainy") == 0)
+  }
+  else if (strcmp(condition, "rainy") == 0) {
     return("icons/clouds_showers-1.0.png");
-  /* Is this condition supported?
-  // else if (strcmp(forecast, "sunshower") == 0)
-  //   icon = clouds_showers_sun;
-  // else if (strcmp(forecast, "stormy") == 0)
-  //   icon = cloud_lightning;
-  else if (strcmp(forecast, "snowy") == 0)
-    icon = clouds_snow;
-  else
-    icon = cloudsLocal; */
-  else
-    return(forecast);
+  }
+  else {
+    return(condition);
+  }
 }
 
 // Debugging helper
@@ -107,11 +78,9 @@ void DashboardWidget::_logName() {
 
 // Get custom widget reset bounding box size
 uint8_t DashboardWidget::_getWidth() {
-  // return ((this->resetBoundX > 0) ? this->resetBoundX : widgetDefaultWidth);
   return this->width;
 }
 uint8_t DashboardWidget::_getHeight() {
-  // return ((this->resetBoundY > 0) ? this->resetBoundY : textDefaultHeight);
     return this->height;
 }
 uint16_t DashboardWidget::_getIconSize() {
@@ -125,49 +94,20 @@ void DashboardWidget::_setText(char *text) {
   strncpy(this->textData, text, WIDGET_TEXT_LEN);
 }
 
-/* // Calculate color from rgb parameters + brightness
-Color DashboardWidget::colorBright(uint8_t r,
-    uint8_t g, uint8_t b, int br)
-{
-  // uint8_t nr = int(max(r * br/100, colorRedMin));
-  // uint8_t ng = int(max(g * br/100, colorGreenMin));
-  // uint8_t nb = int(max(b * br/100, colorBlueMin));
-  uint8_t nr = int(r * br/100);
-  uint8_t ng = int(g * br/100);
-  uint8_t nb = int(b * br/100);
-
-  // if (nr < colorRedMin)
-  //   return dcBlack;
-  // if (ng < colorGreenMin)
-  //   return dcBlack;
-  // if (nb < colorBlueMin)
-  //   return dcBlack;
-
-  // return display.color565(nr, ng, nb);
-  return Color(nr, ng, nb);
-}
-
-// Calculate color from rgb char array + brightness
-Color DashboardWidget::colorBright(uint8_t rgb[], int br) {
-  return DashboardWidget::colorBright(rgb[0], rgb[1], rgb[2], br);
-}
-
-// Calculate color from hex value + brightness
+/* // Calculate color from hex value + brightness
 Color DashboardWidget::colorBright(uint16_t value, int br) {
   unsigned r = (value & 0xF800) >> 8;       // rrrrr... ........ -> rrrrr000
   unsigned g = (value & 0x07E0) >> 3;       // .....ggg ggg..... -> gggggg00
   unsigned b = (value & 0x1F) << 3;         // ............bbbbb -> bbbbb000
 
   return DashboardWidget::colorBright(r, g, b, br);
-} */
-
-/*
+}
     r & 248 (0b 1111 1000) << 8
       +
     g & 252 (0b 1111 1100) << 3
       +
     b >> 3
-  */
+*/
 
 void DashboardWidget::color565_2RGB(uint16_t value, uint8_t *rgb) {
   uint8_t r = (value & 0xF800) >> 8;       // rrrrr... ........ -> rrrrr000
@@ -197,6 +137,10 @@ char* DashboardWidget::getText() {
 
 void DashboardWidget::setActive(bool active) {
   this->active = active;
+}
+
+void DashboardWidget::setDebug(bool debug) {
+  this->debug = debug;
 }
 
 void DashboardWidget::setOrigin(uint8_t x, uint8_t y) {
@@ -433,9 +377,10 @@ void DashboardWidget::updateIcon(char *data, const char* (helperFunc)(char*))
 */
 
 // TODO: Render an text-specific black clearing box
-int DashboardWidget::renderText(bool debug)
+int DashboardWidget::renderText()
 {
-  uint16_t offset, offsetCalc;
+  int16_t offset;
+  u_int16_t textLength;
 
   if (!this->textInit) {
     _error("renderText(%s) called without config, aborting", this->name);
@@ -445,15 +390,24 @@ int DashboardWidget::renderText(bool debug)
   if (!this->active)
     return 0;
 
+  textLength = strlen(this->textData);
+  if (textLength > WIDGET_TEXT_LEN)
+  {
+    textLength = WIDGET_TEXT_LEN;
+    this->textData[textLength-1] = '\0';
+  }
+
   if (this->textAlign == ALIGN_RIGHT) {
-    offsetCalc = strlen(this->textData);
-    offset = this->x + this->textX - offsetCalc * (FONT_WIDTH + 1);
+    offset = this->textX - (textLength * FONT_WIDTH + 1);
   } else if (this->textAlign == ALIGN_CENTER) {
-    offsetCalc = strlen(this->textData);
-    offset = this->x + (this->textX / 2) - offsetCalc * (FONT_WIDTH + 1) / 2;
+    offset = (this->textX / 2) - textLength * FONT_WIDTH / 2;
   } else {
     _error("unknown text alignment %d, not rendering", this->textAlign);
     return 0;
+  }
+  if (offset < 0) {
+    _warn("text length exceeds limits, may be truncated");
+    offset = 0;
   }
 
   Color tColor = Color(this->textColor);
@@ -461,23 +415,26 @@ int DashboardWidget::renderText(bool debug)
   tColor.g = std::min(tColor.g + this->textTempBrightness, 255);
   tColor.b = std::min(tColor.b + this->textTempBrightness, 255);
 
-  if (debug) {
+  if (this->debug)
+  {
     _debug("renderText(%s) = %s", this->name, this->textData);
     _debug("- x,textX,len,offset = %d, %d, %d, %d",
-      this->x, this->textX, offsetCalc, offset);
-    _debug("- color,newColor = %d,%d,%d %d,%d,%d", this->textColor.r,
-      this->textColor.g, this->textColor.b, tColor.r, tColor.g, tColor.b);
+      this->x, this->textX, textLength, offset);
+    // _debug("- color,newColor = %d,%d,%d %d,%d,%d", this->textColor.r,
+    // this->textColor.g, this->textColor.b, tColor.r, tColor.g, tColor.b);
   }
 
   if (this->customTextRender)
-    return this->customTextRender(offset, this->y + this->textY, tColor,
-        this->textData, this->textFont, this->textFontWidth, this->textFontHeight);
+    return this->customTextRender(this->x + offset, this->y +
+        this->textY, tColor, this->textData, this->textFont,
+        this->textFontWidth, this->textFontHeight);
   else
-    return drawText(offset, this->y + this->textY, tColor, this->textData, this->textFont);
+    return drawText(this->x + offset, this->y + this->textY, tColor,
+        this->textData, this->textFont);
 }
 
 // TODO: Render an icon-specific black clearing box
-void DashboardWidget::renderIcon(bool debug)
+void DashboardWidget::renderIcon()
 {
   if (!this->iconInit || this->iconImage == NULL) {
     _error("renderIcon(%s) called without config and/or image, aborting", this->name);
@@ -493,22 +450,22 @@ void DashboardWidget::renderIcon(bool debug)
 // Render our widget
 // TODO: Break clear widget logic into text and icon-specific
 // sections and move to those rendering functions
-void DashboardWidget::render(bool debug)
+void DashboardWidget::render()
 {
   if (!this->active)
     return;
 
   // Clear widget
   // _debug("clearing widget %s", this->name);
-  this->clear(debug);
+  this->clear();
 
   // Render widget assets
   this->renderIcon();
-  this->renderText(debug);
+  this->renderText();
 
   // Debugging bounding box for widget
   // Calculated from icon height & fixed width
-  if (debug)
+  if (this->debug)
   {
     matrix->SetPixel(this->x, this->y, 255,0,0);
     matrix->SetPixel(this->x+this->width-1, this->y, 0,255,0);
@@ -518,16 +475,16 @@ void DashboardWidget::render(bool debug)
 }
 
 // Clear the rendering bounds of our widget
-void DashboardWidget::clear(bool debug, bool force)
+void DashboardWidget::clear(bool force)
 {
   // If we are inactive and no force-clear set then return
   if (!this->active && !force)
     return;
 
-  if (!debug)
-    drawRect(this->x, this->y, this->width, this->height, colorBlack);
-  else
+  if (this->debug)
     drawRect(this->x, this->y, this->width, this->height, colorDarkGrey);
+  else
+    drawRect(this->x, this->y, this->width, this->height, colorBlack);
 }
 
 /*
