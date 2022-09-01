@@ -198,56 +198,85 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   - Other TBD alerts?
   */
 
-  // Need to fix in HASS, outdoor temp is different and currently stored in F
+  // Home Assistant: Outdoor temperature
   if (strcmp(topic, HASS_OUT_TEMP) == 0)
   {
     showMessage(topic, payloadAsChars);
     wOutdoorWeather.updateText(payloadAsChars, tempIntHelper);
   }
 
+  // Home Assistant: Outdoor dewpoint
   else if (strcmp(topic, HASS_OUT_DEW) == 0)
   {
     showMessage(topic, payloadAsChars);
     wOutdoorDewpoint.updateText(payloadAsChars, tempC2FHelper);
   }
 
+  // Home Assistant: Outdoor PM2.5
   else if (strcmp(topic, HASS_OUT_PM25) == 0)
   {
     showMessage(topic, payloadAsChars);
     wOutdoorPM25.updateText(payloadAsChars, floatStrLen);
   }
 
+  // Home Assistant: Living room temperature
   else if (strcmp(topic, HASS_LR_TEMP) == 0)
   {
     showMessage(topic, payloadAsChars);
     wHouseTemp.updateText(payloadAsChars, tempC2FHelper);
   }
 
+  // Home Assistant: Living room dewpoint
   else if (strcmp(topic, HASS_LR_DEW) == 0)
   {
     showMessage(topic, payloadAsChars);
     wHouseDewpoint.updateText(payloadAsChars, tempC2FHelper);
   }
 
+  // RPi Weather Station: Wind
   else if (strcmp(topic, PIWEATHER_WIND) == 0)
   {
     showMessage(topic, payloadAsChars);
     wOutdoorWind.updateText(payloadAsChars, floatStrLen);
   }
 
+  // RPi Weather Station: Rainfall
   else if (strcmp(topic, PIWEATHER_RAINFALL) == 0)
   {
     showMessage(topic, payloadAsChars);
     wOutdoorRainGauge.updateText(payloadAsChars, floatStrLen);
   }
 
+  // Weather: Current conditions/state
   // TODO: Animated icons?
-  else if (strcmp(topic, "weather/weather") == 0)
+  else if (strcmp(topic, WEATHER_NOW_STATE) == 0)
   {
     showMessage(topic, payloadAsChars);
     wOutdoorWeather.updateIcon(payloadAsChars, weatherIconHelper);
   }
 
+  // Weather: Temperature forecast
+  else if (strcmp(topic, WEATHER_FC_TEMP) == 0)
+  {
+    showMessage(topic, payloadAsChars);
+
+    char existingText[WIDGET_TEXT_LEN+1];
+    strncpy(existingText, wOutdoorWeather.getText(), WIDGET_TEXT_LEN);
+
+    // Note: Currently when rendering an inactive widget nothing is done
+    // (eg: clearing not performed).  This allows us to avoid race
+    // conditions here, where outdoorWeather is set back to active
+    // before outdoorForecast is deactivated (and thus cleared,
+    // resulting in a blank widget)
+    wOutdoorForecast.setResetActiveTime(clock() + refreshActiveDelay * CLOCKS_PER_SEC);
+    wOutdoorForecast.updateText(payloadAsChars);
+    wOutdoorForecast.setActive(true);
+    wOutdoorForecast.render();
+    wOutdoorWeather.setActive(false);
+    wOutdoorWeather.setResetActiveTime(clock() + refreshActiveDelay * CLOCKS_PER_SEC);
+  }
+
+  // "Weather": Sun position
   else if (strcmp(topic, WEATHER_SUN) == 0)
   {
     showMessage(topic, payloadAsChars);
@@ -257,60 +286,12 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
       daytime = false;
     else
       _error("unknown sun state received, skipping update");
+
+    // Don't update icon for now, as we don't have night icons currently
     // wOutdoorWeather.updateIcon(NULL, weatherIconHelper);
   }
 
-  else if (strcmp(topic, "weather/forecast") == 0)
-  {
-    showMessage(topic, payloadAsChars);
-
-    char existingText[WIDGET_TEXT_LEN+1];
-    strncpy(existingText, wOutdoorWeather.getText(), WIDGET_TEXT_LEN);
-    // if (strcmp(payloadAsChars, "above_horizon") == 0)
-    //   daytime = true;
-    // else if (strcmp(payloadAsChars, "below_horizon") == 0)
-    //   daytime = false;
-    // else
-    //   _error("unknown sun state received, skipping update");
-    // wOutdoorWeather.updateIcon(payloadAsChars, forecastTextHelper);
-
-    bool showForecast = true;
-    if (showForecast)
-    {
-      // This is a hack: the update here sets the temporary brightness
-      // automatically.  We want the actual color to be dim and not bright,
-      // so we artifically darken the color
-      // Also move the text due to smaller font used
-      // wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_LARGE, rowTempStart-2,
-      //   colorDarkText, DashboardWidget::ALIGN_CENTER, smallFont, false);
-      // wOutdoorWeather.updateText(payloadAsChars);
-      // wOutdoorWeather.setCustomTextConfig(WIDGET_WIDTH_LARGE, rowTempStart,
-      //   colorWhite, DashboardWidget::ALIGN_CENTER, customFont, false);
-      // wOutdoorWeather._setText(existingText);
-
-      // Note: Currently when rendering an inactive widget nothing is done
-      // (eg: clearing not performed).  This allows us to avoid race conditions
-      // here, where outdoorWeather is set back to active before outdoorForecast
-      // is deactivated (and thus cleared, resulting in a blank widget)
-      wOutdoorForecast.setResetActiveTime(clock() + refreshActiveDelay * CLOCKS_PER_SEC);
-      wOutdoorForecast.updateText(payloadAsChars);
-      wOutdoorForecast.setActive(true);
-      wOutdoorForecast.render();
-      wOutdoorWeather.setActive(false);
-      wOutdoorWeather.setResetActiveTime(clock() + refreshActiveDelay * CLOCKS_PER_SEC);
-    }
-  }
-
-  else if (strcmp(topic, SIGN_BRIGHTNESS) == 0)
-  {
-    showMessage(topic, payloadAsChars);
-    brightness = atoi((char*)payload);
-    if (brightness > 100)
-      brightness = 100;
-    matrix->SetBrightness(brightness);
-    displayDashboard();
-  }
-
+  // Home Assistant: HVAC state
   else if (strcmp(topic, THERMOSTAT_STATE) == 0)
   {
     showMessage(topic, payloadAsChars);
@@ -330,6 +311,18 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     displayDashboard();
   }
 
+  // Sign: Change brightness
+  else if (strcmp(topic, SIGN_BRIGHTNESS) == 0)
+  {
+    showMessage(topic, payloadAsChars);
+    brightness = atoi((char*)payload);
+    if (brightness > 100)
+      brightness = 100;
+    matrix->SetBrightness(brightness);
+    displayDashboard();
+  }
+
+  // Home Assistant: Calendar event
   else if (strcmp(topic, CALENDAR_EVENT) == 0)
   {
     showMessage(topic, payloadAsChars);
