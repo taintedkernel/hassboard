@@ -3,6 +3,7 @@
 
 #include "display.h"
 
+#include <png++/png.hpp>
 #include <graphics.h>
 #include <time.h>
 
@@ -27,7 +28,7 @@ using rgb_matrix::Color;
 void tempIntHelper(char *, char *);
 void tempC2FHelper(char *, char *);
 void floatStrLen(char *, char *);
-const uint16_t* weatherIconHelper(char *);
+const char* weatherIconHelper(char *);
 
 extern Color colorText;
 
@@ -126,9 +127,10 @@ public:
 
   // Functions - Icon
   void setIconConfig(uint8_t x, uint8_t y);
+  void setIconImage(uint8_t width, uint8_t height, const char* iconFile);
   void setIconImage(uint8_t width, uint8_t height, const uint16_t *image);
   void setIconImage(uint8_t width, uint8_t height, const uint8_t *image);
-  void updateIcon(char *iconData, const uint16_t*(helperFunc)(char*));
+  void updateIcon(char *iconData, const char*(helperFunc)(char*));
 
   // Functions - Rendering
   void render(bool = false);

@@ -6,8 +6,13 @@
 #include <cstring>
 #include <algorithm>
 
-#include <led-matrix.h>
+#include <sys/stat.h>
 #include <stdio.h>
+
+#include <led-matrix.h>
+#include <png++/png.hpp>
+#include <Magick++.h>
+#include <magick/image.h>
 
 
 uint16_t cloudsLocal[ICON_SZ], cloudsSunLocal[ICON_SZ];
@@ -47,34 +52,42 @@ void floatStrLen(char *textData, char *payload)
 }
 
 // Determine which icon to render based upon weather conditions
-const uint16_t* weatherIconHelper(char *forecast)
+// const uint16_t* weatherIconHelper(char *forecast)
+const char* weatherIconHelper(char *forecast)
 {
-  // return NULL;
-  const uint16_t *icon;
+  // png::image<png::rgb_pixel> widgetImage;
 
-  icon = clouds;
-  /* if (strcmp(forecast, "sunny") == 0) {
-    if (daytime)
+  // const uint16_t *icon;
+  // icon = cloud_sun_new;
+  if (strcmp(forecast, "sunny") == 0)
+  {
+    return("icons/sun-new.png");
+    // widgetImage.read();
+
+    /* if (daytime)
       icon = sunLocal;
     else
-      icon = moon;
+      icon = moon; */
+    // icon = sun;
   }
-  else if (strcmp(forecast, "clear-night") == 0) {
-    icon = moon;
-  }
+  // else if (strcmp(forecast, "clear-night") == 0) {
+  //   icon = moon;
+  // }
   else if (strcmp(forecast, "partlycloudy") == 0) {
-    if (daytime)
+    return("icons/clouds_sun-new.png");
+    /* if (daytime)
       icon = cloudsSunLocal;
     else
-      icon = clouds_moon;
+      icon = clouds_moon; */
+    // icon = cloud_sun_new;
   }
-  else if (strcmp(forecast, "Cloudy") == 0)
-    icon = cloudsLocal;
+  else if (strcmp(forecast, "cloudy") == 0)
+    return("icons/clouds-new.png");
   // else if (strcmp(forecast, "fog") == 0)
   //   icon = mist;
   else if (strcmp(forecast, "rainy") == 0)
-    icon = cloudsShowersLocal;
-  // Is this condition supported?
+    return("icons/clouds_showers-new.png");
+  /* Is this condition supported?
   // else if (strcmp(forecast, "sunshower") == 0)
   //   icon = clouds_showers_sun;
   // else if (strcmp(forecast, "stormy") == 0)
@@ -83,8 +96,8 @@ const uint16_t* weatherIconHelper(char *forecast)
     icon = clouds_snow;
   else
     icon = cloudsLocal; */
-
-  return icon;
+  else
+    return(forecast);
 }
 
 // Debugging helper
@@ -322,20 +335,22 @@ void DashboardWidget::setIconConfig(uint8_t x, uint8_t y)
   this->iconY = y;
 }
 
-// Set size and image for widget icon (old format)
+// Set widget icon and size (old format)
 // This invocation will convert an existing 16-bit 565-encoded RGB
 // image into the new format needed for the library to render natively
 void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const uint16_t *img)
 {
-  // Used for color565_2RGB pass-by-reference
-  uint8_t *rgb = new uint8_t[3];
-
   // Allocate storage for new image format
+  uint8_t *rgb = new uint8_t[3];
   uint8_t *newImg = (uint8_t *)malloc(w * h * 3 * sizeof(uint8_t));
 
+  if (newImg == NULL || rgb == NULL) {
+    _error("unable to allocate buffer for icon, aborting");
+    return;
+  }
+
   // Read old image, convert and write to new buffer
-  for (int src=0, dst=0; src < w*h;)
-  {
+  for (int src=0, dst=0; src < w*h;) {
       color565_2RGB(img[src++], rgb);
       newImg[dst++] = rgb[0];
       newImg[dst++] = rgb[1];
@@ -345,7 +360,7 @@ void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const uint16_t *img)
   this->setIconImage(w, h, newImg);
 }
 
-// Set size and image for widget icon (via new format)
+// Set widget icon and size
 void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const uint8_t *img)
 {
   this->iconWidth = w;
@@ -354,10 +369,52 @@ void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const uint8_t *img)
   this->iconInit = true;
 }
 
+// Set widget icon and size from a PNG image
+void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const char* iconFile)
+{
+  png::image<png::rgb_pixel> image;
+
+  struct stat buffer;
+  if (stat(iconFile, &buffer) == 0) {
+    image.read(iconFile);
+  } else {
+    _error("image %s not found, using default", iconFile);
+    image.read("icons/clouds_sun-new.png");
+  }
+
+  if (w > image.get_width() || h > image.get_height()) {
+    _error("setIconImage() dimension arguments larger then image size, aborting");
+    return;
+  }
+  if (w != image.get_width() || h != image.get_height()) {
+    _warn("setIconImage() dimensions smaller then image size, rendering may not match");
+  }
+
+  // Allocate storage for new image format
+  uint8_t *newImg = (uint8_t *)malloc(w * h * 3 * sizeof(uint8_t));
+  uint16_t idx = 0;
+
+  if (newImg == NULL) {
+    _error("unable to allocate buffer for icon, aborting");
+    return;
+  }
+
+  // Convert PNG pixel data to a RGB pixel array
+  for (size_t y = 0; y < h; y++) {
+    for (size_t x = 0; x < w; x++) {
+      png::rgb_pixel pixel = image.get_pixel(x, y);
+      newImg[idx++] = pixel.red;
+      newImg[idx++] = pixel.green;
+      newImg[idx++] = pixel.blue;
+    }
+  }
+
+  this->setIconImage(w, h, newImg);
+}
+
 // Call helper to determine icon, then render
-// No brightness logic similar to updateText()
-// TODO: Move weather-specific logic into separate class
-void DashboardWidget::updateIcon(char *data, const uint16_t*(helperFunc)(char*))
+// Note: No brightness logic similar to updateText()
+void DashboardWidget::updateIcon(char *data, const char* (helperFunc)(char*))
 {
   if (data != NULL) {
     strncpy(this->iconData, data, WIDGET_DATA_LEN);
@@ -424,8 +481,8 @@ int DashboardWidget::renderText(bool debug)
 // TODO: Render an icon-specific black clearing box
 void DashboardWidget::renderIcon(bool debug)
 {
-  if (!this->iconInit) {
-    _error("renderIcon(%s) called without config, aborting", this->name);
+  if (!this->iconInit || this->iconImage == NULL) {
+    _error("renderIcon(%s) called without config and/or image, aborting", this->name);
     return;
   }
 

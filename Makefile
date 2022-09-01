@@ -1,6 +1,13 @@
 CXXFLAGS=-O3 -W -Wall -Wextra -Wno-unused-parameter -g -D_FILE_OFFSET_BITS=64
-LDFLAGS=-L$(HOME)/rpi-rgb-led-matrix/lib -lpthread -lrt -lm -lmosquitto -lrgbmatrix -lpthread
+MAGICK_CFLAGS?=$(shell GraphicsMagick++-config --cppflags --cxxflags)
+LIBPNG_CFLAGS?=$(shell libpng-config --cflags)
+
+MAGICK_LDFLAGS?=$(shell GraphicsMagick++-config --ldflags --libs)
+LIBPNG_LDFLAGS?=$(shell libpng-config --ldflags --libs)
+LDFLAGS=-L$(HOME)/rpi-rgb-led-matrix/lib -lpthread -lrt -lm -lmosquitto -lrgbmatrix -lpthread $(LIBPNG_LDFLAGS) $(MAGICK_LDFLAGS)
+
 INCDIR=-I$(HOME)/rpi-rgb-led-matrix/include -I./include
+
 OBJECTS=smartgirder.o widget.o display.o dashboard.o mqtt.o logger.o secrets.o datetime.o
 HEADERS=widget.h display.h dashboard.h mqtt.h logger.h secrets.h datetime.h icons.h
 BINARIES=smartgirder
@@ -25,7 +32,7 @@ dashboard.o : dashboard.cpp include/dashboard.h include/logger.h include/widget.
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
 
 widget.o : widget.cpp include/display.h include/logger.h include/widget.h include/icons.h
-	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(INCDIR) $(LIBPNG_CFLAGS) $(MAGICK_CFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 display.o : display.cpp include/display.h include/logger.h include/widget.h include/datetime.h
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<

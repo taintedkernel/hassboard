@@ -52,7 +52,6 @@ bool setupDisplay()
   displaySettings.rows = 32;
   displaySettings.chain_length = 4;
   displaySettings.parallel = 1;
-  // displaySettings.show_refresh_rate = true;
   displaySettings.pixel_mapper_config = "U-mapper";
   displaySettings.brightness = 50;
   displaySettings.led_rgb_sequence = "RBG";
