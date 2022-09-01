@@ -303,17 +303,15 @@ void DashboardWidget::updateText(char *text, bool brighten)
     return;
 
   // Abbreviate zero/null floating-point values
-  if (strcmp(text, "0.0") == 0) {
+  if (strcmp(text, "0.0") == 0)
     text = (char *) "0";
-  }
 
   _debug("widget %s: updating to '%s' from old text: '%s', "
     "bright until cycle %d", this->name, text, this->textData,
     cycle + refreshDelay);
 
   this->_setText(text);
-  if (brighten)
-  {
+  if (brighten) {
     this->resetTime = clock() + refreshDelay * CLOCKS_PER_SEC;
     this->tempAdjustBrightness(boldBrightnessIncrease, BRIGHT_TEXT);
   }
@@ -447,17 +445,13 @@ int DashboardWidget::renderText(bool debug)
   if (!this->active)
     return 0;
 
-  if (this->textAlign == ALIGN_RIGHT)
-  {
+  if (this->textAlign == ALIGN_RIGHT) {
     offsetCalc = strlen(this->textData);
     offset = this->x + this->textX - offsetCalc * (FONT_WIDTH + 1);
-  }
-  else if (this->textAlign == ALIGN_CENTER)
-  {
+  } else if (this->textAlign == ALIGN_CENTER) {
     offsetCalc = strlen(this->textData);
     offset = this->x + (this->textX / 2) - offsetCalc * (FONT_WIDTH + 1) / 2;
-  }
-  else {
+  } else {
     _error("unknown text alignment %d, not rendering", this->textAlign);
     return 0;
   }
@@ -475,12 +469,11 @@ int DashboardWidget::renderText(bool debug)
       this->textColor.g, this->textColor.b, tColor.r, tColor.g, tColor.b);
   }
 
-  if (this->customTextRender) {
+  if (this->customTextRender)
     return this->customTextRender(offset, this->y + this->textY, tColor,
-      this->textData, this->textFont, this->textFontWidth, this->textFontHeight);
-  } else {
+        this->textData, this->textFont, this->textFontWidth, this->textFontHeight);
+  else
     return drawText(offset, this->y + this->textY, tColor, this->textData, this->textFont);
-  }
 }
 
 // TODO: Render an icon-specific black clearing box
