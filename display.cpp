@@ -59,6 +59,7 @@ bool setupDisplay()
 
   runtimeSettings.daemon = 0;
   runtimeSettings.drop_privileges = 1;
+  runtimeSettings.gpio_slowdown = 4;
 
   // Initialize matrix
   matrix = RGBMatrix::CreateFromOptions(displaySettings, runtimeSettings);
