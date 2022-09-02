@@ -66,6 +66,9 @@ const char* weatherIconHelper(char *condition)
   else if (strcmp(condition, "rainy") == 0) {
     return("icons/clouds_showers-1.0.png");
   }
+  else if (strcmp(condition, "fog") == 0) {
+    return("icons/fog-1.0.png");
+  }
   else if (strcmp(condition, "clear-night") == 0) {
     return("icons/moon-1.0.png");
   }
@@ -329,7 +332,7 @@ void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const char* iconFile)
     image.read(iconFile);
   } else {
     _error("image %s not found, using default", iconFile);
-    image.read("icons/clouds_sun-new.png");
+    image.read("icons/sun-1.0.png");
   }
 
   if (w > image.get_width() || h > image.get_height()) {
