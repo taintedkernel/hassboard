@@ -124,7 +124,8 @@ void setupDashboard()
   widget->setSize(DashboardWidget::WIDGET_LARGE);
   widget->setIconImage(32, 25, cloud_sun_new);
   widget->setCustomTextConfig(WIDGET_WIDTH_LARGE, rowTempStart,
-    colorWhite, DashboardWidget::ALIGN_CENTER, customFont);
+    colorWhite, DashboardWidget::ALIGN_CENTER, customFont,
+    FONT_WIDTH_2, FONT_HEIGHT_2);
   widget->setBounds(32, 34);
 
   // Alternate forecast widget, to show over current weather
@@ -141,15 +142,15 @@ void setupDashboard()
   widget->setBounds(32, 34);
   widget->setActive(false);
 
+  // Widget to show calendar events
   widget = &wCalendar;
   widget->setOrigin(colOneStart, rowCalendarStart);
   widget->setSize(DashboardWidget::WIDGET_LONG);
   widget->setIconImage(9, 8, "icons/calendar.png");
   widget->setCustomTextConfig(WIDGET_WIDTH_LONG, 0,
-    colorWhite, DashboardWidget::ALIGN_RIGHT, smallFont,
+    colorWhite, DashboardWidget::ALIGN_CENTER, smallFont,
     FONT_WIDTH_SMALL, FONT_HEIGHT_SMALL);
   widget->setCustomTextRender(drawTextCustom);
-  // widget->setDebug(true);
 
   widgetCollection[numWidgets++] = &wHouseTemp;
   widgetCollection[numWidgets++] = &wHouseDewpoint;

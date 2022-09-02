@@ -13,15 +13,15 @@
 
 // #define FONT_FILE     "fonts/7x13.bdf"
 #define FONT_FILE       "fonts/6x12.bdf"
-#define FONT_WIDTH      5     // Calculations of right-aligned text
+#define FONT_WIDTH      5     // Calculations of aligned text
 #define FONT_HEIGHT     8     // Vertical positioning of font
 
 #define FONT_FILE_2     "fonts/7x13.bdf"
-#define FONT_WIDTH_2    6     // Calculations of right-aligned text
+#define FONT_WIDTH_2    7     // Calculations of aligned text
 #define FONT_HEIGHT_2   9     // Vertical positioning of font
 
 #define FONT_FILE_SMALL     "fonts/6x9.bdf"
-#define FONT_WIDTH_SMALL    5     // Calculations of right-aligned text
+#define FONT_WIDTH_SMALL    5     // Calculations of aligned text
 #define FONT_HEIGHT_SMALL   7     // Vertical positioning of font
 
 using rgb_matrix::Color;

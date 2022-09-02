@@ -66,6 +66,9 @@ const char* weatherIconHelper(char *condition)
   else if (strcmp(condition, "rainy") == 0) {
     return("icons/clouds_showers-1.0.png");
   }
+  else if (strcmp(condition, "clear-night") == 0) {
+    return("icons/moon-1.0.png");
+  }
   else {
     return(condition);
   }
@@ -398,9 +401,9 @@ int DashboardWidget::renderText()
   }
 
   if (this->textAlign == ALIGN_RIGHT) {
-    offset = this->textX - (textLength * FONT_WIDTH + 1);
+    offset = this->textX - (textLength * this->textFontWidth + 1);
   } else if (this->textAlign == ALIGN_CENTER) {
-    offset = (this->textX / 2) - textLength * FONT_WIDTH / 2;
+    offset = (this->textX / 2) - (textLength * this->textFontWidth / 2);
   } else {
     _error("unknown text alignment %d, not rendering", this->textAlign);
     return 0;
