@@ -23,7 +23,10 @@
 			"ostream": "cpp",
 			"ranges": "cpp",
 			"streambuf": "cpp",
-			"tuple": "cpp"
+			"tuple": "cpp",
+			"bit": "cpp",
+			"list": "cpp",
+			"random": "cpp"
 		}
 	}
 }
