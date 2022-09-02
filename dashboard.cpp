@@ -20,6 +20,7 @@ bool daytime = true;
 int8_t dashOffset = 0;
 int8_t weatherOffset = 64;
 int8_t clockOffset = 65;
+uint8_t clockWidth = 32;
 uint8_t rowDayStart = 2;
 uint8_t rowDateStart = rowDayStart + 10;
 uint8_t rowTimeStart = rowDateStart + 10;

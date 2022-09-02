@@ -38,6 +38,7 @@ extern int8_t clockOffset;
 extern uint8_t rowDayStart;
 extern uint8_t rowDateStart;
 extern uint8_t rowTimeStart;
+extern uint8_t clockWidth;
 
 bool setupDisplay()
 {
@@ -206,7 +207,7 @@ void drawIcon(int x, int y, int width, int height, const uint8_t *image)
 // Show the day of week, date and time
 void displayClock(bool force)
 {
-  char dateText[6], timeText[6];
+  char text1[6], text2[6];
   static uint8_t lMinute = 0;
 
   time_t local = time(0);
@@ -236,40 +237,47 @@ void displayClock(bool force)
     lMinute = minute(localtm);
   }
 
-  int xOffset = clockOffset;
-  drawRect(xOffset + 32, 0, 32, 32, colorBlack);
+  // Clear the widget
+  uint8_t clockX = clockOffset + clockWidth - 1;    // 65 + 32 - 1 = 96
+  uint8_t dateFontWidth = 6;
+  drawRect(clockX, 0, clockWidth, 32, colorBlack);
 
   // Render the day of week
-  int dayPos = (32 - (strlen(s_weekday(localtm)) * 6)) / 2;
-  int xDay = xOffset + 32 + dayPos;
+  int dayPos = (clockWidth - (strlen(s_weekday(localtm)) * dateFontWidth)) / 2;
+  int xDay = clockX + dayPos;
   drawText(xDay, rowDayStart, colorDate, s_weekday(localtm));
 
   // Render the date
   uint8_t dateType = 2;
   if (dateType == 1)
   {
-    snprintf(dateText, 6, "%2d/%02d", month(localtm), day(localtm));
-    drawText(xOffset + 32, rowDateStart, colorDate, dateText);
+    snprintf(text1, 6, "%d/%d", month(localtm), day(localtm));
+    drawText(clockX, rowDateStart, colorDate, text1);
   }
   else if (dateType == 2)
   {
-    snprintf(dateText, 3, "%2d", month(localtm));
-    drawText(xOffset + 32, rowDateStart, colorDate, dateText);
-    snprintf(dateText, 3, "%02d", day(localtm));
-    drawText(xOffset + 32 + 6*3, rowDateStart, colorDate, dateText);
-    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+    snprintf(text1, 3, "%d", month(localtm));
+    snprintf(text2, 3, "%d", day(localtm));
+
+    uint8_t dateLen = strlen(text1) + strlen(text2);
+    int8_t datePos = (clockWidth / 2) - (((dateLen * dateFontWidth) + 5) / 2) - 1;
+    // _debug("%s %s %d %d", text1, text2, dateLen, datePos);
+
+    drawText(clockX + datePos, rowDateStart, colorDate, text1);
+    drawText(clockX + datePos + dateFontWidth*2, rowDateStart, colorDate, text2);
+    matrix->SetPixel(clockX + datePos + dateFontWidth + 3,
       rowDateStart+1, colorDate.r, colorDate.g, colorDate.b);
-    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+    matrix->SetPixel(clockX + datePos + dateFontWidth + 3,
       rowDateStart+2, colorDate.r, colorDate.g, colorDate.b);
-    matrix->SetPixel(xOffset + 32 + 6*2 + 2,
+    matrix->SetPixel(clockX + datePos + dateFontWidth + 2,
       rowDateStart+3, colorDate.r, colorDate.g, colorDate.b);
-    matrix->SetPixel(xOffset + 32 + 6*2 + 2,
+    matrix->SetPixel(clockX + datePos + dateFontWidth + 2,
       rowDateStart+4, colorDate.r, colorDate.g, colorDate.b);
-    matrix->SetPixel(xOffset + 32 + 6*2 + 2,
+    matrix->SetPixel(clockX + datePos + dateFontWidth + 2,
       rowDateStart+5, colorDate.r, colorDate.g, colorDate.b);
-    matrix->SetPixel(xOffset + 32 + 6*2 + 1,
+    matrix->SetPixel(clockX + datePos + dateFontWidth + 1,
       rowDateStart+6, colorDate.r, colorDate.g, colorDate.b);
-    matrix->SetPixel(xOffset + 32 + 6*2 + 1,
+    matrix->SetPixel(clockX + datePos + dateFontWidth + 1,
       rowDateStart+7, colorDate.r, colorDate.g, colorDate.b);
   }
 
@@ -277,22 +285,22 @@ void displayClock(bool force)
   uint8_t timeType = 2;
   if (timeType == 1)
   {
-    snprintf(timeText, 6, "%02d:%02d", hour(localtm), minute(localtm));
-    drawText(xOffset + 32, rowTimeStart, colorTime, timeText);
+    snprintf(text1, 6, "%02d:%02d", hour(localtm), minute(localtm));
+    drawText(clockX, rowTimeStart, colorTime, text1);
   }
   else if (timeType == 2)
   {
-    snprintf(timeText, 3, "%02d", hour(localtm));
-    drawText(xOffset + 32+2, rowTimeStart, colorTime, timeText);
-    snprintf(timeText, 3, "%02d", minute(localtm));
-    drawText(xOffset + 32+6*3, rowTimeStart, colorTime, timeText);
-    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+    snprintf(text1, 3, "%02d", hour(localtm));
+    snprintf(text2, 3, "%02d", minute(localtm));
+    drawText(clockX + 2, rowTimeStart, colorTime, text1);
+    drawText(clockX + dateFontWidth*3, rowTimeStart, colorTime, text2);
+    matrix->SetPixel(clockX + dateFontWidth*2 + 3,
       rowTimeStart+2, colorTime.r, colorTime.g, colorTime.b);
-    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+    matrix->SetPixel(clockX + dateFontWidth*2 + 3,
       rowTimeStart+3, colorTime.r, colorTime.g, colorTime.b);
-    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+    matrix->SetPixel(clockX + dateFontWidth*2 + 3,
       rowTimeStart+5, colorTime.r, colorTime.g, colorTime.b);
-    matrix->SetPixel(xOffset + 32 + 6*2 + 3,
+    matrix->SetPixel(clockX + dateFontWidth*2 + 3,
       rowTimeStart+6, colorTime.r, colorTime.g, colorTime.b);
   }
 }
