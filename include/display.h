@@ -21,7 +21,7 @@
 #define FONT_HEIGHT_2   9     // Vertical positioning of font
 
 #define FONT_FILE_SMALL     "fonts/6x9.bdf"
-#define FONT_WIDTH_SMALL    5     // Calculations of aligned text
+#define FONT_WIDTH_SMALL    6     // Calculations of aligned text
 #define FONT_HEIGHT_SMALL   7     // Vertical positioning of font
 
 using rgb_matrix::Color;

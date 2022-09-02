@@ -254,7 +254,7 @@ void DashboardWidget::updateText(char *text, bool brighten)
 
   // Abbreviate zero/null floating-point values
   if (strcmp(text, "0.0") == 0)
-    text = (char *) "0";
+    text = (char *) "--";
 
   _debug("widget %s: updating to '%s' from old text: '%s', "
     "bright until cycle %d", this->name, text, this->textData,
@@ -404,7 +404,7 @@ int DashboardWidget::renderText()
   }
 
   if (this->textAlign == ALIGN_RIGHT) {
-    offset = this->textX - (textLength * this->textFontWidth + 1);
+    offset = this->textX - (textLength * this->textFontWidth) - 2;
   } else if (this->textAlign == ALIGN_CENTER) {
     offset = (this->textX / 2) - (textLength * this->textFontWidth / 2);
   } else {
