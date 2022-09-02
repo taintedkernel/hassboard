@@ -150,8 +150,8 @@ void DashboardWidget::setDebug(bool debug) {
 }
 
 void DashboardWidget::setOrigin(uint8_t x, uint8_t y) {
-  this->x = x;
-  this->y = y;
+  this->widgetX = x;
+  this->widgetY = y;
 }
 
 // Set bounds for widget rendering box
@@ -219,12 +219,12 @@ void DashboardWidget::autoTextConfig(Color color, textAlignType align)
 
 // Set a manually-provided text configuration with locations
 // in the widget, text color and font information
-void DashboardWidget::setCustomTextConfig(uint8_t x, uint8_t y,
+void DashboardWidget::setCustomTextConfig(uint8_t textX, uint8_t textY,
   Color color, textAlignType align, rgb_matrix::Font *textFont,
   uint8_t fontWidth, uint8_t fontHeight)
 {
-  this->textX = x;
-  this->textY = y;
+  this->textX = textX;
+  this->textY = textY;
   this->textColor = color;
   this->textAlign = align;
   this->textInit = true;
@@ -425,17 +425,17 @@ int DashboardWidget::renderText()
   {
     _debug("renderText(%s) = %s", this->name, this->textData);
     _debug("- x,textX,len,offset = %d, %d, %d, %d",
-      this->x, this->textX, textLength, offset);
+      this->widgetX, this->textX, textLength, offset);
     // _debug("- color,newColor = %d,%d,%d %d,%d,%d", this->textColor.r,
     // this->textColor.g, this->textColor.b, tColor.r, tColor.g, tColor.b);
   }
 
   if (this->customTextRender)
-    return this->customTextRender(this->x + offset, this->y +
+    return this->customTextRender(this->widgetX + offset, this->widgetY +
         this->textY, tColor, this->textData, this->textFont,
         this->textFontWidth, this->textFontHeight);
   else
-    return drawText(this->x + offset, this->y + this->textY, tColor,
+    return drawText(this->widgetX + offset, this->widgetY + this->textY, tColor,
         this->textData, this->textFont);
 }
 
@@ -450,7 +450,7 @@ void DashboardWidget::renderIcon()
   if (!this->active)
     return;
 
-  drawIcon(this->x + this->iconX, this->y + this->iconY, this->iconWidth, this->iconHeight, this->iconImage);
+  drawIcon(this->widgetX + this->iconX, this->widgetY + this->iconY, this->iconWidth, this->iconHeight, this->iconImage);
 }
 
 // Render our widget
@@ -473,10 +473,10 @@ void DashboardWidget::render()
   // Calculated from icon height & fixed width
   if (this->debug)
   {
-    matrix->SetPixel(this->x, this->y, 255,0,0);
-    matrix->SetPixel(this->x+this->width-1, this->y, 0,255,0);
-    matrix->SetPixel(this->x, this->y+this->height-1, 0,0,255);
-    matrix->SetPixel(this->x+this->width-1, this->y+this->height-1, 255,255,255);
+    matrix->SetPixel(this->widgetX, this->widgetY, 255,0,0);
+    matrix->SetPixel(this->widgetX+this->width-1, this->widgetY, 0,255,0);
+    matrix->SetPixel(this->widgetX, this->widgetY+this->height-1, 0,0,255);
+    matrix->SetPixel(this->widgetX+this->width-1, this->widgetY+this->height-1, 255,255,255);
   }
 }
 
@@ -488,9 +488,9 @@ void DashboardWidget::clear(bool force)
     return;
 
   if (this->debug)
-    drawRect(this->x, this->y, this->width, this->height, colorDarkGrey);
+    drawRect(this->widgetX, this->widgetY, this->width, this->height, colorDarkGrey);
   else
-    drawRect(this->x, this->y, this->width, this->height, colorBlack);
+    drawRect(this->widgetX, this->widgetY, this->width, this->height, colorBlack);
 }
 
 /*

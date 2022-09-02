@@ -45,8 +45,8 @@ public:
 
 private:
   char name[WIDGET_NAME_LEN+1];   // Name of widget
-  uint8_t x = 0;
-  uint8_t y = 0;
+  uint8_t widgetX = 0;
+  uint8_t widgetY = 0;
   uint8_t width = 0;
   uint8_t height = 0;
   widgetSizeType size = WIDGET_SMALL;
@@ -124,7 +124,7 @@ public:
 
   // Functions - Text
   void autoTextConfig(Color = colorText, textAlignType = ALIGN_RIGHT);
-  void setCustomTextConfig(uint8_t x, uint8_t y, Color color = colorText,
+  void setCustomTextConfig(uint8_t textX, uint8_t textY, Color color = colorText,
     textAlignType = ALIGN_RIGHT, rgb_matrix::Font *textFont = NULL,
     uint8_t fontWidth = 0, uint8_t fontHeight = 0);
     // bool clearText = true);
