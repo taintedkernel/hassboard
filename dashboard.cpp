@@ -94,8 +94,9 @@ void setupDashboard()
   widget->setOrigin(colOneStart, rowTwoStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
-  // widget->updateText((char *)"0.0", 0);
   widget->setIconImage(8, 8, rain_gauge);
+  // This metric updates on slower interval, so default to blank
+  widget->updateText((char *)"--", false);
 
   widget = &wOutdoorDewpoint;
   widget->setOrigin(colTwoStart, rowTwoStart);
@@ -109,6 +110,8 @@ void setupDashboard()
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
   widget->setIconImage(8, 8, wind);
+  // This metric updates on slower interval, so default to blank
+  widget->updateText((char *)"--", false);
 
   widget = &wOutdoorPM25;
   widget->setOrigin(colTwoStart, rowThreeStart);
