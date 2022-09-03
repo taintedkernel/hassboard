@@ -258,13 +258,25 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     wOutdoorWeather.updateIcon(payloadAsChars, weatherIconHelper);
   }
 
+  // Weather: Condition/state forecast
+  //
+  // TODO: Need to decouple recording of forecast data internally
+  // and rendering to screen; eg: an update of forecast topic should
+  // not automatically trigger display and rendering of it.  We need
+  // a timer to show this at some interval, rather then whenever
+  // new MQTT data is posted to the relevant topics
+  //
+  else if (strcmp(topic, WEATHER_FC_STATE) == 0)
+  {
+    showMessage(topic, payloadAsChars);
+    wOutdoorForecast.updateIcon(payloadAsChars, weatherIconHelper);
+  }
+
   // Weather: Temperature forecast
+  // TODO: See above note for forecast, applies here as well
   else if (strcmp(topic, WEATHER_FC_TEMP) == 0)
   {
     showMessage(topic, payloadAsChars);
-
-    char existingText[WIDGET_TEXT_LEN+1];
-    strncpy(existingText, wOutdoorWeather.getText(), WIDGET_TEXT_LEN);
 
     // Note: Currently when rendering an inactive widget nothing is done
     // (eg: clearing not performed).  This allows us to avoid race
