@@ -248,13 +248,13 @@ void DashboardWidget::setCustomTextConfig(uint8_t textX, uint8_t textY,
 // Update text and set temporary bold brightness
 void DashboardWidget::updateText(char *text, bool brighten)
 {
-  // If new text is not different, don't update
-  if (strncmp(text, this->textData, WIDGET_TEXT_LEN) == 0)
-    return;
-
   // Abbreviate zero/null floating-point values
   if (strcmp(text, "0.0") == 0)
     text = (char *) "--";
+
+  // If new text is not different, don't update
+  if (strncmp(text, this->textData, WIDGET_TEXT_LEN) == 0)
+    return;
 
   _debug("widget %s: updating to '%s' from old text: '%s', "
     "bright until cycle %d", this->name, text, this->textData,
