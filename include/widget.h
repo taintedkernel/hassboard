@@ -73,6 +73,7 @@ private:
   rgb_matrix::Color textColor;
   uint8_t textFontWidth = 0;
   uint8_t textFontHeight = 0;
+  uint8_t textLength = 0;
   char textData[WIDGET_TEXT_LEN+1];
 
   // Icon config/data
@@ -112,6 +113,7 @@ public:
 private:
   void setText(char *);
 public:
+  void setTextLength(u_int8_t);
   void autoTextConfig(Color = colorText, textAlignType = ALIGN_RIGHT);
   void setCustomTextConfig(uint8_t textX, uint8_t textY, Color color = colorText,
     textAlignType = ALIGN_RIGHT, rgb_matrix::Font *textFont = NULL,

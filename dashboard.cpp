@@ -80,14 +80,16 @@ void setupDashboard()
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
   widget->setIconImage(8, 7, big_house);
-  widget->setIconConfig(0, 1);
+  widget->setIconOrigin(0, 1);
+  widget->setTextLength(3);
 
   widget = &wHouseDewpoint;
   widget->setOrigin(colTwoStart, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
   widget->setIconImage(8, 7, big_house_drop);
-  widget->setIconConfig(0, 1);
+  widget->setIconOrigin(0, 1);
+  widget->setTextLength(3);
 
   // Row 2
   widget = &wOutdoorRainGauge;
@@ -97,12 +99,14 @@ void setupDashboard()
   widget->setIconImage(8, 8, rain_gauge);
   // This metric updates on slower interval, so default to blank
   widget->updateText((char *)"--", false);
+  widget->setTextLength(3);
 
   widget = &wOutdoorDewpoint;
   widget->setOrigin(colTwoStart, rowTwoStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
   widget->setIconImage(8, 8, droplet);
+  widget->setTextLength(3);
 
   // Row 3
   widget = &wOutdoorWind;
@@ -112,6 +116,7 @@ void setupDashboard()
   widget->setIconImage(8, 8, wind);
   // This metric updates on slower interval, so default to blank
   widget->updateText((char *)"--", false);
+  widget->setTextLength(3);
 
   widget = &wOutdoorPM25;
   widget->setOrigin(colTwoStart, rowThreeStart);
@@ -119,6 +124,7 @@ void setupDashboard()
   widget->autoTextConfig();
   widget->setIconImage(7, 8, air);
   // widget->setTextConfig(WIDGET_WIDTH_SMALL, 0);
+  widget->setTextLength(3);
 
   // Main, current weather row (2nd display)
   customFont = new rgb_matrix::Font;
@@ -131,6 +137,7 @@ void setupDashboard()
     colorWhite, DashboardWidget::ALIGN_CENTER, customFont,
     FONT_WIDTH_2, FONT_HEIGHT_2);
   widget->setBounds(32, 34);
+  widget->setTextLength(3);
 
   // Alternate forecast widget, to show over current weather
   smallFont = new rgb_matrix::Font;
@@ -145,6 +152,7 @@ void setupDashboard()
   widget->setCustomTextRender(drawTextCustom);
   widget->setBounds(32, 34);
   widget->setActive(false);
+  widget->setTextLength(5);
 
   // Widget to show calendar events
   widget = &wCalendar;
@@ -155,6 +163,7 @@ void setupDashboard()
     colorWhite, DashboardWidget::ALIGN_CENTER, smallFont,
     FONT_WIDTH_SMALL, FONT_HEIGHT_SMALL);
   widget->setCustomTextRender(drawTextCustom);
+  widget->setTextLength(20);
 
   widgetCollection[numWidgets++] = &wHouseTemp;
   widgetCollection[numWidgets++] = &wHouseDewpoint;
@@ -167,12 +176,13 @@ void setupDashboard()
   widgetCollection[numWidgets++] = &wCalendar;
 }
 
-void displayDashboard(unsigned int updatedData)
+void displayDashboard(bool force)
 {
   // Render active widgets
   for (int i=0; i<numWidgets; i++) {
     widgetCollection[i]->render();
   }
+  displayClock(force);
 }
 
 // Callback after message arriving on topic
@@ -337,7 +347,7 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     if (brightness > 100)
       brightness = 100;
     matrix->SetBrightness(brightness);
-    displayDashboard();
+    displayDashboard(true);
   }
 
   // Home Assistant: Calendar event

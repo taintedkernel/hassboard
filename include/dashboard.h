@@ -6,6 +6,6 @@
 #define MAX_WIDGETS 32
 
 void setupDashboard();
-void displayDashboard(unsigned int = 0);
+void displayDashboard(bool force=false);
 
 #endif
