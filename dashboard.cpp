@@ -66,7 +66,7 @@ extern uint32_t cycle;
 extern bool forceRefresh;
 extern uint8_t refreshActiveDelay;
 extern rgb_matrix::RGBMatrix *matrix;
-extern rgb_matrix::Color colorWhite, colorGrey, colorDarkText;
+extern rgb_matrix::Color colorWhite, colorGrey, colorDarkText, colorAlert;
 extern rgb_matrix::Font *defaultFont;
 
 
@@ -125,6 +125,7 @@ void setupDashboard()
   widget->setIconImage(7, 8, air);
   // widget->setTextConfig(WIDGET_WIDTH_SMALL, 0);
   widget->setTextLength(3);
+  widget->setAlertLevel(20.0, colorAlert);
 
   // Main, current weather row (2nd display)
   customFont = new rgb_matrix::Font;

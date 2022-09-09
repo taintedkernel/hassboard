@@ -29,6 +29,7 @@ Color colorTime       = Color(248, 96, 8);
 // Color colorText     = Color(128, 148, 160);
 Color colorText       = Color(112, 148, 176);
 Color colorDarkText   = Color(56, 74, 88);
+Color colorAlert      = Color(248, 48, 8);
 
 rgb_matrix::RGBMatrix *matrix;
 rgb_matrix::Font *defaultFont;

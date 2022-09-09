@@ -266,6 +266,14 @@ void DashboardWidget::setCustomTextRender(int (render)TEXT_RENDER_SIG)
   this->customTextRender = render;
 }
 
+// Set an alert level and color (currently on text)
+// Note: This currently only supports upper-bounds levels
+void DashboardWidget::setAlertLevel(float alertLevel, rgb_matrix::Color alertColor)
+{
+  this->textAlertLevel = alertLevel;
+  this->textAlertColor = alertColor;
+}
+
 // Update text and set temporary bold brightness
 void DashboardWidget::updateText(char *text, bool brighten)
 {
@@ -448,6 +456,7 @@ int DashboardWidget::renderText()
 {
   int16_t offset;
   u_int16_t textLength;
+  Color tColor;
 
   // Verify initialization & active status
   if (!this->textInit) {
@@ -481,7 +490,14 @@ int DashboardWidget::renderText()
   }
 
   // Calculate color, apply upper bound on channels
-  Color tColor = Color(this->textColor);
+  // Note: This currently only supports upper-bounds levels
+  if (this->textAlertLevel > 0.001 &&
+        atof(this->textData) > this->textAlertLevel) {
+    tColor = Color(this->textAlertColor);
+  }
+  else {
+    tColor = Color(this->textColor);
+  }
   tColor.r = std::min(tColor.r + this->textTempBrightness, 255);
   tColor.g = std::min(tColor.g + this->textTempBrightness, 255);
   tColor.b = std::min(tColor.b + this->textTempBrightness, 255);

@@ -71,6 +71,8 @@ private:
   // Text fonts/colors/data/etc
   rgb_matrix::Font *textFont;
   rgb_matrix::Color textColor;
+  rgb_matrix::Color textAlertColor;
+  float textAlertLevel;
   uint8_t textFontWidth = 0;
   uint8_t textFontHeight = 0;
   uint8_t textLength = 0;
@@ -120,6 +122,7 @@ public:
     uint8_t fontWidth = 0, uint8_t fontHeight = 0);
     // bool clearText = true);
   void setCustomTextRender(int (render)TEXT_RENDER_SIG);
+  void setAlertLevel(float, rgb_matrix::Color);
   void updateText(char *text, bool brighten = true);
   void updateText(char *text, void(helperFunc)(char*, char*), bool brighten = true);
 
@@ -131,11 +134,11 @@ public:
   void updateIcon(char *iconData, const char*(helperFunc)(char*));
 
   // Functions - Rendering
-  void  clear(bool = false);
-  void  render();
+  void clear(bool = false);
+  void render();
 private:
-  int   renderText();
-  void  renderIcon();
+  int  renderText();
+  void renderIcon();
 
 public:
   // Functions - Brightness adjustments
