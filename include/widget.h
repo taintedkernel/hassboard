@@ -39,32 +39,26 @@ extern Color colorText;
 class DashboardWidget
 {
 public:
+  // Constants, defaults, enums, etc
   enum widgetSizeType{WIDGET_SMALL, WIDGET_LARGE, WIDGET_LONG};
   enum brightType{BRIGHT_ICON, BRIGHT_TEXT, BRIGHT_BOTH};
   enum textAlignType{ALIGN_RIGHT, ALIGN_CENTER};
+  static const uint8_t textDefaultWidth = FONT_WIDTH;
 
 private:
+  /*** ATTRIBUTES ***/
   char name[WIDGET_NAME_LEN+1];   // Name of widget
+  bool active = true;
+  bool debug = false;
+
   uint8_t widgetX = 0;
   uint8_t widgetY = 0;
   uint8_t width = 0;
   uint8_t height = 0;
   widgetSizeType size = WIDGET_SMALL;
 
-  bool active = true;
-  bool debug = false;
-
-  // Icon config/data
-  int8_t iconX = 0;
-  int8_t iconY = 0;
-  uint8_t iconWidth = 0;
-  uint8_t iconHeight = 0;
-  uint8_t iconBrightness = 0;
-  uint8_t iconTempBrightness = 0;
-  const uint8_t *iconImage = NULL;
-  char iconData[WIDGET_DATA_LEN+1];
-
   // Text config/data
+  bool textInit = false;
   uint8_t textX = 0;
   uint8_t textY = 0;
   uint8_t textWidth = 0;
@@ -74,74 +68,74 @@ private:
   uint8_t textAlign;
   int (*customTextRender)TEXT_RENDER_SIG;
 
+  // Text fonts/colors/data/etc
   rgb_matrix::Font *textFont;
   rgb_matrix::Color textColor;
   uint8_t textFontWidth = 0;
   uint8_t textFontHeight = 0;
   char textData[WIDGET_TEXT_LEN+1];
 
+  // Icon config/data
+  bool iconInit = false;
+  int8_t iconX = 0;
+  int8_t iconY = 0;
+  uint8_t iconWidth = 0;
+  uint8_t iconHeight = 0;
+  uint8_t iconBrightness = 0;
+  uint8_t iconTempBrightness = 0;
+  const uint8_t *iconImage = NULL;
+  char iconData[WIDGET_DATA_LEN+1];
+
   // Initialization / config
   clock_t resetTime;        // Track when temp brightness resets
   clock_t resetActiveTime;  // Track when active toggles
-  bool iconInit = false;
-  bool textInit = false;
 
-  // Functions - Getters/setters/helpers
+  /*** FUNCTIONS ***/
+  // Getters/setters/helpers
   void      _logName();
   uint8_t   _getWidth();
   uint8_t   _getHeight();
   uint16_t  _getIconSize();
-public:
-  void      _setText(char *);
-private:
-  Color     color2RGB(uint8_t[3]);
-
-  // Functions - Rendering
-  int renderText();
-  void renderIcon();
 
 public:
-  // Functions - Constants, defaults, enums, etc
-  // static const uint8_t widgetDefaultWidth = WIDGET_DEF_WIDTH;
-  // static const uint8_t textDefaultHeight = FONT_HEIGHT;
-  static const uint8_t textDefaultWidth = FONT_WIDTH;
-
-  // Functions - Color helper functions
-  // static Color colorBright(uint8_t, uint8_t, uint8_t, int);
-  // static Color colorBright(uint8_t[], int);
-  // static Color colorBright(uint16_t, int);
-  static void color565_2RGB(uint16_t, uint8_t *);
-
-  // Functions - Init / config
+  // Init / config
   DashboardWidget(const char *);
-  char* getText();
+
   void setDebug(bool);
   void setActive(bool);
   void setOrigin(uint8_t x, uint8_t y);
   void setSize(widgetSizeType);
   void setBounds(uint8_t width, uint8_t height);
-  void setCustomTextRender(int (render)TEXT_RENDER_SIG);
 
   // Functions - Text
+  char* getText();
+private:
+  void setText(char *);
+public:
   void autoTextConfig(Color = colorText, textAlignType = ALIGN_RIGHT);
   void setCustomTextConfig(uint8_t textX, uint8_t textY, Color color = colorText,
     textAlignType = ALIGN_RIGHT, rgb_matrix::Font *textFont = NULL,
     uint8_t fontWidth = 0, uint8_t fontHeight = 0);
     // bool clearText = true);
+  void setCustomTextRender(int (render)TEXT_RENDER_SIG);
   void updateText(char *text, bool brighten = true);
   void updateText(char *text, void(helperFunc)(char*, char*), bool brighten = true);
 
   // Functions - Icon
-  void setIconConfig(uint8_t x, uint8_t y);
+  void setIconOrigin(uint8_t x, uint8_t y);
   void setIconImage(uint8_t width, uint8_t height, const char* iconFile);
   void setIconImage(uint8_t width, uint8_t height, const uint16_t *image);
   void setIconImage(uint8_t width, uint8_t height, const uint8_t *image);
   void updateIcon(char *iconData, const char*(helperFunc)(char*));
 
   // Functions - Rendering
-  void render();
-  void clear(bool = false);
+  void  clear(bool = false);
+  void  render();
+private:
+  int   renderText();
+  void  renderIcon();
 
+public:
   // Functions - Brightness adjustments
   void resetBrightness(brightType);
   void updateBrightness();

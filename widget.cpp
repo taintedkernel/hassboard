@@ -77,36 +77,13 @@ const char* weatherIconHelper(char *condition)
   }
 }
 
-// Debugging helper
-void DashboardWidget::_logName() {
-  _debug("widget %s:", this->name);
-}
-
-// Get custom widget reset bounding box size
-uint8_t DashboardWidget::_getWidth() {
-  return this->width;
-}
-uint8_t DashboardWidget::_getHeight() {
-    return this->height;
-}
-uint16_t DashboardWidget::_getIconSize() {
-  return (this->iconWidth * this->iconHeight);
-}
-Color DashboardWidget::color2RGB(uint8_t color[3]) {
-  return Color(color[0], color[1], color[2]);
-}
-void DashboardWidget::_setText(char *text) {
-  _debug("widget %s: setting text to: %s", this->name, text);
-  strncpy(this->textData, text, WIDGET_TEXT_LEN);
-}
-
 /* // Calculate color from hex value + brightness
-Color DashboardWidget::colorBright(uint16_t value, int br) {
+Color colorBright(uint16_t value, int br) {
   unsigned r = (value & 0xF800) >> 8;       // rrrrr... ........ -> rrrrr000
   unsigned g = (value & 0x07E0) >> 3;       // .....ggg ggg..... -> gggggg00
   unsigned b = (value & 0x1F) << 3;         // ............bbbbb -> bbbbb000
 
-  return DashboardWidget::colorBright(r, g, b, br);
+  return colorBright(r, g, b, br);
 }
     r & 248 (0b 1111 1000) << 8
       +
@@ -115,7 +92,8 @@ Color DashboardWidget::colorBright(uint16_t value, int br) {
     b >> 3
 */
 
-void DashboardWidget::color565_2RGB(uint16_t value, uint8_t *rgb) {
+// Convert a 565-encoded color to individual RGB values
+void color565_2RGB(uint16_t value, uint8_t *rgb) {
   uint8_t r = (value & 0xF800) >> 8;       // rrrrr... ........ -> rrrrr000
   uint8_t g = (value & 0x07E0) >> 3;       // .....ggg ggg..... -> gggggg00
   uint8_t b = (value & 0x1F) << 3;         // ............bbbbb -> bbbbb000
@@ -125,6 +103,9 @@ void DashboardWidget::color565_2RGB(uint16_t value, uint8_t *rgb) {
   rgb[2] = b;
 }
 
+/*** DashboardWidget class ***/
+
+// Constructor
 DashboardWidget::DashboardWidget(const char *name)
 {
   this->iconBrightness = brightness;
@@ -134,32 +115,46 @@ DashboardWidget::DashboardWidget(const char *name)
   this->textFont = defaultFont;
 }
 
+// Debugging helper
+void DashboardWidget::_logName() {
+  _debug("widget %s:", this->name);
+}
+
+// Get widget width
+uint8_t DashboardWidget::_getWidth() {
+  return this->width;
+}
+
+// Get widget height
+uint8_t DashboardWidget::_getHeight() {
+    return this->height;
+}
+
+// Get widget icon size
+uint16_t DashboardWidget::_getIconSize() {
+  return (this->iconWidth * this->iconHeight);
+}
+
 /*
   ----==== [ Configuration Functions ] ====----
 */
-char* DashboardWidget::getText() {
-  return this->textData;
-}
-
-void DashboardWidget::setActive(bool active) {
-  this->active = active;
-}
-
+// Set/clear debugging flag for widget
 void DashboardWidget::setDebug(bool debug) {
   this->debug = debug;
 }
 
+// Set/clear active flag for widget
+void DashboardWidget::setActive(bool active) {
+  this->active = active;
+}
+
+// Set widget origin
 void DashboardWidget::setOrigin(uint8_t x, uint8_t y) {
   this->widgetX = x;
   this->widgetY = y;
 }
 
-// Set bounds for widget rendering box
-void DashboardWidget::setBounds(uint8_t w, uint8_t h) {
-  this->width = w;
-  this->height = h;
-}
-
+// Set size of widget
 void DashboardWidget::setSize(widgetSizeType wsize)
 {
   switch(wsize) {
@@ -183,12 +178,32 @@ void DashboardWidget::setSize(widgetSizeType wsize)
   }
 }
 
-void DashboardWidget::setCustomTextRender(int (render)TEXT_RENDER_SIG)
-{
-  this->customTextRender = render;
+// Set bounds for widget rendering box
+// TODO: This should be merged with setSize() as it overwrites the values
+void DashboardWidget::setBounds(uint8_t w, uint8_t h) {
+  this->width = w;
+  this->height = h;
 }
 
 /* ----==== [ Text Functions ] ====---- */
+
+// Get widget text
+char* DashboardWidget::getText() {
+  return this->textData;
+}
+
+// Set widget text
+void DashboardWidget::setText(char *text)
+{
+  _debug("widget %s: setting text to: %s", this->name, text);
+  strncpy(this->textData, text, WIDGET_TEXT_LEN);
+}
+
+// Set widget text length
+void DashboardWidget::setTextLength(u_int8_t length)
+{
+  this->textLength = length;
+}
 
 // Set (x,y) coordinates, color and alignment for widget text
 //
@@ -245,6 +260,12 @@ void DashboardWidget::setCustomTextConfig(uint8_t textX, uint8_t textY,
   // }
 }
 
+// Set a custom text-rendering function
+void DashboardWidget::setCustomTextRender(int (render)TEXT_RENDER_SIG)
+{
+  this->customTextRender = render;
+}
+
 // Update text and set temporary bold brightness
 void DashboardWidget::updateText(char *text, bool brighten)
 {
@@ -260,7 +281,7 @@ void DashboardWidget::updateText(char *text, bool brighten)
     "bright until cycle %d", this->name, text, this->textData,
     cycle + refreshDelay);
 
-  this->_setText(text);
+  this->setText(text);
   if (brighten) {
     this->resetTime = clock() + refreshDelay * CLOCKS_PER_SEC;
     this->tempAdjustBrightness(boldBrightnessIncrease, BRIGHT_TEXT);
@@ -282,7 +303,7 @@ void DashboardWidget::updateText(char *data, void(helperFunc)(char*, char*), boo
 /* ----==== [ Icon Functions ] ====---- */
 
 // Set (x,y) origin coordinates for widget icon
-void DashboardWidget::setIconConfig(uint8_t x, uint8_t y)
+void DashboardWidget::setIconOrigin(uint8_t x, uint8_t y)
 {
   this->iconX = x;
   this->iconY = y;
@@ -382,75 +403,17 @@ void DashboardWidget::updateIcon(char *data, const char* (helperFunc)(char*))
   ----==== [ Rendering Functions ] ====----
 */
 
-// TODO: Render an text-specific black clearing box
-int DashboardWidget::renderText()
+// Clear the rendering bounds of our widget
+void DashboardWidget::clear(bool force)
 {
-  int16_t offset;
-  u_int16_t textLength;
-
-  if (!this->textInit) {
-    _error("renderText(%s) called without config, aborting", this->name);
-    return 0;
-  }
-
-  if (!this->active)
-    return 0;
-
-  textLength = strlen(this->textData);
-  if (textLength > WIDGET_TEXT_LEN)
-  {
-    textLength = WIDGET_TEXT_LEN;
-    this->textData[textLength-1] = '\0';
-  }
-
-  if (this->textAlign == ALIGN_RIGHT) {
-    offset = this->textX - (textLength * this->textFontWidth) - 2;
-  } else if (this->textAlign == ALIGN_CENTER) {
-    offset = (this->textX / 2) - (textLength * this->textFontWidth / 2);
-  } else {
-    _error("unknown text alignment %d, not rendering", this->textAlign);
-    return 0;
-  }
-  if (offset < 0) {
-    _warn("text length exceeds limits, may be truncated");
-    offset = 0;
-  }
-
-  Color tColor = Color(this->textColor);
-  tColor.r = std::min(tColor.r + this->textTempBrightness, 255);
-  tColor.g = std::min(tColor.g + this->textTempBrightness, 255);
-  tColor.b = std::min(tColor.b + this->textTempBrightness, 255);
+  // If we are inactive and no force-clear set then return
+  if (!this->active && !force)
+    return;
 
   if (this->debug)
-  {
-    _debug("renderText(%s) = %s", this->name, this->textData);
-    _debug("- x,textX,len,offset = %d, %d, %d, %d",
-      this->widgetX, this->textX, textLength, offset);
-    // _debug("- color,newColor = %d,%d,%d %d,%d,%d", this->textColor.r,
-    // this->textColor.g, this->textColor.b, tColor.r, tColor.g, tColor.b);
-  }
-
-  if (this->customTextRender)
-    return this->customTextRender(this->widgetX + offset, this->widgetY +
-        this->textY, tColor, this->textData, this->textFont,
-        this->textFontWidth, this->textFontHeight);
+    drawRect(this->widgetX, this->widgetY, this->width, this->height, colorDarkGrey);
   else
-    return drawText(this->widgetX + offset, this->widgetY + this->textY, tColor,
-        this->textData, this->textFont);
-}
-
-// TODO: Render an icon-specific black clearing box
-void DashboardWidget::renderIcon()
-{
-  if (!this->iconInit || this->iconImage == NULL) {
-    _error("renderIcon(%s) called without config and/or image, aborting", this->name);
-    return;
-  }
-
-  if (!this->active)
-    return;
-
-  drawIcon(this->widgetX + this->iconX, this->widgetY + this->iconY, this->iconWidth, this->iconHeight, this->iconImage);
+    drawRect(this->widgetX, this->widgetY, this->width, this->height, colorBlack);
 }
 
 // Render our widget
@@ -480,21 +443,84 @@ void DashboardWidget::render()
   }
 }
 
-// Clear the rendering bounds of our widget
-void DashboardWidget::clear(bool force)
+// TODO: Render an text-specific black clearing box
+int DashboardWidget::renderText()
 {
-  // If we are inactive and no force-clear set then return
-  if (!this->active && !force)
-    return;
+  int16_t offset;
+  u_int16_t textLength;
+
+  // Verify initialization & active status
+  if (!this->textInit) {
+    _error("renderText(%s) called without config, aborting", this->name);
+    return 0;
+  }
+  else if (!this->active) {
+    return 0;
+  }
+
+  // Get text length, trim string if necessary
+  textLength = strlen(this->textData);
+  if (textLength > WIDGET_TEXT_LEN)
+  {
+    textLength = WIDGET_TEXT_LEN;
+    this->textData[textLength-1] = '\0';
+  }
+
+  // Calculate positioning of text based on alignment
+  if (this->textAlign == ALIGN_RIGHT) {
+    offset = this->textX - (textLength * this->textFontWidth) - 2;
+  } else if (this->textAlign == ALIGN_CENTER) {
+    offset = (this->textX / 2) - (textLength * this->textFontWidth / 2);
+  } else {
+    _error("unknown text alignment %d, not rendering", this->textAlign);
+    return 0;
+  }
+  if (offset < 0) {
+    _warn("text length exceeds limits, may be truncated");
+    offset = 0;
+  }
+
+  // Calculate color, apply upper bound on channels
+  Color tColor = Color(this->textColor);
+  tColor.r = std::min(tColor.r + this->textTempBrightness, 255);
+  tColor.g = std::min(tColor.g + this->textTempBrightness, 255);
+  tColor.b = std::min(tColor.b + this->textTempBrightness, 255);
 
   if (this->debug)
-    drawRect(this->widgetX, this->widgetY, this->width, this->height, colorDarkGrey);
+  {
+    _debug("renderText(%s) = %s", this->name, this->textData);
+    _debug("- x,textX,len,offset = %d, %d, %d, %d",
+      this->widgetX, this->textX, textLength, offset);
+    // _debug("- color,newColor = %d,%d,%d %d,%d,%d", this->textColor.r,
+    // this->textColor.g, this->textColor.b, tColor.r, tColor.g, tColor.b);
+  }
+
+  // Call the custom text renderer, if set
+  if (this->customTextRender)
+    return this->customTextRender(this->widgetX + offset, this->widgetY +
+        this->textY, tColor, this->textData, this->textFont,
+        this->textFontWidth, this->textFontHeight);
   else
-    drawRect(this->widgetX, this->widgetY, this->width, this->height, colorBlack);
+    return drawText(this->widgetX + offset, this->widgetY + this->textY, tColor,
+        this->textData, this->textFont);
+}
+
+// TODO: Render an icon-specific black clearing box
+void DashboardWidget::renderIcon()
+{
+  if (!this->iconInit || this->iconImage == NULL) {
+    _error("renderIcon(%s) called without config and/or image, aborting", this->name);
+    return;
+  }
+
+  if (!this->active)
+    return;
+
+  drawIcon(this->widgetX + this->iconX, this->widgetY + this->iconY, this->iconWidth, this->iconHeight, this->iconImage);
 }
 
 /*
-  ----==== [ Color/brightness Functions ] ====----
+  ----==== [ Color/Brightness Functions ] ====----
 */
 
 // Resets brightness to current global value
