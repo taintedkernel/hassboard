@@ -123,8 +123,14 @@ int main(int argc, char **argv)
       forceRefresh = false;
     }
 
+    // Pause between cycles, after startup has finished
     if (clock() > 5.0 * CLOCKS_PER_SEC) {
-      sleep(1);
+      sleep(0.0);
+    }
+
+    // Scroll text, if necessary
+    for (int i=0; i<numWidgets; i++) {
+      widgetCollection[i]->scrollText();
     }
   }
 

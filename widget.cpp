@@ -197,12 +197,19 @@ void DashboardWidget::setText(char *text)
 {
   _debug("widget %s: setting text to: %s", this->name, text);
   strncpy(this->textData, text, WIDGET_TEXT_LEN);
+  this->textScrollStart = 0;
 }
 
 // Set widget text length
-void DashboardWidget::setTextLength(u_int8_t length)
+void DashboardWidget::setVisibleSize(u_int16_t length)
 {
-  this->textLength = length;
+  if (length > WIDGET_TEXT_LEN) {
+    _error("setVisibleSize(%d) on widget %s beyond maximum, using max as value",
+        length, this->name);
+    length = WIDGET_TEXT_LEN;
+  }
+
+  this->textVisibleSize = length;
 }
 
 // Set (x,y) coordinates, color and alignment for widget text
@@ -272,6 +279,12 @@ void DashboardWidget::setAlertLevel(float alertLevel, rgb_matrix::Color alertCol
 {
   this->textAlertLevel = alertLevel;
   this->textAlertColor = alertColor;
+}
+
+// Set/clear scroll setting for widget
+void DashboardWidget::setTextScollable(bool scrollable)
+{
+  this->textScrollable = scrollable;
 }
 
 // Update text and set temporary bold brightness
@@ -454,9 +467,9 @@ void DashboardWidget::render()
 // TODO: Render an text-specific black clearing box
 int DashboardWidget::renderText()
 {
-  int16_t offset;
-  u_int16_t textLength;
   Color tColor;
+  int16_t offset;
+  u_int16_t textDataLength, textRenderLength;
 
   // Verify initialization & active status
   if (!this->textInit) {
@@ -467,32 +480,66 @@ int DashboardWidget::renderText()
     return 0;
   }
 
-  // Get text length, trim string if necessary
-  textLength = strlen(this->textData);
-  if (textLength > WIDGET_TEXT_LEN)
-  {
-    textLength = WIDGET_TEXT_LEN;
-    this->textData[textLength-1] = '\0';
+  // Calculate string length
+  // Use an offset to allow for scrolling of longer content
+  // Trim string to visible display length (if set)
+  textDataLength = strlen(this->textData);
+  if (textDataLength == 0)
+    return 0;
+  if (this->debug) {
+    _debug("text=%s, length=%d", this->textData, textDataLength);
   }
+  textRenderLength = textDataLength;
+  if (this->textVisibleSize > 0 && textDataLength > this->textVisibleSize) {
+    if (!(this->textScrollable))
+      _warn("text length exceeds limits, truncating");
+    textRenderLength = this->textVisibleSize;
+  }
+
+  if (this->debug) {
+    _debug("visibleSize=%d, renderLength=%d, scrollStart=%d",
+        textVisibleSize, textRenderLength, this->textScrollStart);
+  }
+
+  // Copy result into separate buffer for rendering
+  char *textBuffer = new char(textDataLength+textRenderLength);
+  if (this->debug) {
+    _debug("strncpy(textBuffer, this->textData=%d + (this->textScrollStart %% textDataLength)=%d,\
+      std::min(int(this->textVisibleSize=%d), textDataLength-textScrollStart=%d));",
+      this->textData, (this->textScrollStart % textDataLength), this->textVisibleSize,
+      textDataLength-textScrollStart);
+  }
+  strncpy(textBuffer, this->textData + (this->textScrollStart % textDataLength),
+      std::min(int(this->textVisibleSize), textDataLength-textScrollStart));
+  if (this->textScrollStart > textDataLength-textRenderLength) {
+    if (this->debug) {
+      _debug("memset(textBuffer+textDataLength=%d, ' ', this->textScrollStart-textVisibleSize+1=%d);",
+      textDataLength, this->textScrollStart-textVisibleSize+1);
+    }
+    memset(textBuffer+textDataLength, ' ', this->textScrollStart-textVisibleSize+1);
+  }
+  textBuffer[textDataLength] = '\0';
 
   // Calculate positioning of text based on alignment
   if (this->textAlign == ALIGN_RIGHT) {
-    offset = this->textX - (textLength * this->textFontWidth) - 2;
+    offset = this->textX - (textDataLength * this->textFontWidth) - 2;
   } else if (this->textAlign == ALIGN_CENTER) {
-    offset = (this->textX / 2) - (textLength * this->textFontWidth / 2);
+    offset = (this->textX / 2) - (textDataLength * this->textFontWidth / 2);
   } else {
     _error("unknown text alignment %d, not rendering", this->textAlign);
     return 0;
   }
   if (offset < 0) {
-    _warn("text length exceeds limits, may be truncated");
+    if (!(this->textScrollable)) {
+      _warn("text length during alignment exceeds limits, may be truncated");
+    }
     offset = 0;
   }
 
   // Calculate color, apply upper bound on channels
   // Note: This currently only supports upper-bounds levels
   if (this->textAlertLevel > 0.001 &&
-        atof(this->textData) > this->textAlertLevel) {
+        atof(textBuffer) > this->textAlertLevel) {
     tColor = Color(this->textAlertColor);
   }
   else {
@@ -504,21 +551,25 @@ int DashboardWidget::renderText()
 
   if (this->debug)
   {
-    _debug("renderText(%s) = %s", this->name, this->textData);
+    _debug("renderText(%s) = %s", this->name, textBuffer);
     _debug("- x,textX,len,offset = %d, %d, %d, %d",
-      this->widgetX, this->textX, textLength, offset);
+      this->widgetX, this->textX, textDataLength, offset);
     // _debug("- color,newColor = %d,%d,%d %d,%d,%d", this->textColor.r,
     // this->textColor.g, this->textColor.b, tColor.r, tColor.g, tColor.b);
   }
 
   // Call the custom text renderer, if set
+  int render;
   if (this->customTextRender)
-    return this->customTextRender(this->widgetX + offset, this->widgetY +
-        this->textY, tColor, this->textData, this->textFont,
+    render = this->customTextRender(this->widgetX + offset, this->widgetY +
+        this->textY, tColor, textBuffer, this->textFont,
         this->textFontWidth, this->textFontHeight);
   else
-    return drawText(this->widgetX + offset, this->widgetY + this->textY, tColor,
-        this->textData, this->textFont);
+    render = drawText(this->widgetX + offset, this->widgetY + this->textY, tColor,
+        textBuffer, this->textFont);
+
+  free(textBuffer);
+  return render;
 }
 
 // TODO: Render an icon-specific black clearing box
@@ -532,7 +583,8 @@ void DashboardWidget::renderIcon()
   if (!this->active)
     return;
 
-  drawIcon(this->widgetX + this->iconX, this->widgetY + this->iconY, this->iconWidth, this->iconHeight, this->iconImage);
+  drawIcon(this->widgetX + this->iconX, this->widgetY + this->iconY, this->iconWidth,
+      this->iconHeight, this->iconImage);
 }
 
 /*
@@ -618,3 +670,71 @@ void DashboardWidget::setResetActiveTime(clock_t time)
 {
   this->resetActiveTime = time;
 }
+
+// Scroll the text one character position
+void DashboardWidget::scrollText()
+{
+  if (this->textVisibleSize == 0 || !this->textScrollable)
+    return;
+
+  this->textScrollStart = (this->textScrollStart + 1) %
+      strlen(this->textData);
+  this->render();
+}
+
+
+/*
+
+3 * 2 + 1 = 7
+
+length = 3
+
+ 0123456789
+          ---
+
+7: 789
+8: 89_
+9: 9__
+
+6: 6789
+7: 789_
+8: 89__
+9: 9___
+
+ 12345
+    ---
+
+0: 12 2
+1: 23 2
+2: 34 2
+3: 45 2
+4: 5_ 1
+5: 12 2
+
+DL-VS 5-3=2
+
+       cpylen
+0: 123  3 5 : DL-SS 5-0=5
+1: 234  3 4 : 5-1=4
+2: 345  3 3 : 5-2=3
+3: 45_  2 2 : 5-3=2
+4: 5__  1 1 : 5-4=1
+5: 123  3 0 : 5-5=0
+
+       setlen
+0: 123 -2  SS-VS+1 0-3
+1: 234 -1  1-3+1 = -1
+2: 345  0  2-3+1 =  0
+3: 45_  1  3-3+1 =  1
+4: 5__  2  4-3+1 =  2
+5: 123
+
+1%3
+2%3
+3%3
+
+
+
+
+
+*/

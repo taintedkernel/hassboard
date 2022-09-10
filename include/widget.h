@@ -8,7 +8,7 @@
 #include <time.h>
 
 #define WIDGET_NAME_LEN         32
-#define WIDGET_TEXT_LEN         32
+#define WIDGET_TEXT_LEN         256
 #define WIDGET_DATA_LEN         32
 
 #define WIDGET_WIDTH_SMALL      28
@@ -75,7 +75,9 @@ private:
   float textAlertLevel;
   uint8_t textFontWidth = 0;
   uint8_t textFontHeight = 0;
-  uint8_t textLength = 0;
+  uint8_t textVisibleSize = 0;       // Visible text length on widget
+  bool textScrollable = false;
+  uint16_t textScrollStart = 0;
   char textData[WIDGET_TEXT_LEN+1];
 
   // Icon config/data
@@ -115,7 +117,7 @@ public:
 private:
   void setText(char *);
 public:
-  void setTextLength(u_int8_t);
+  void setVisibleSize(u_int16_t);
   void autoTextConfig(Color = colorText, textAlignType = ALIGN_RIGHT);
   void setCustomTextConfig(uint8_t textX, uint8_t textY, Color color = colorText,
     textAlignType = ALIGN_RIGHT, rgb_matrix::Font *textFont = NULL,
@@ -123,6 +125,7 @@ public:
     // bool clearText = true);
   void setCustomTextRender(int (render)TEXT_RENDER_SIG);
   void setAlertLevel(float, rgb_matrix::Color);
+  void setTextScollable(bool);
   void updateText(char *text, bool brighten = true);
   void updateText(char *text, void(helperFunc)(char*, char*), bool brighten = true);
 
@@ -150,6 +153,9 @@ public:
   // Functions - "Active-ness" adjustments
   void checkResetActive();
   void setResetActiveTime(clock_t time);
+
+  // Functions - Text scrolling adjustments
+  void scrollText();
 };
 
 #endif
