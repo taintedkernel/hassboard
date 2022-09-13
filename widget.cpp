@@ -72,6 +72,9 @@ const char* weatherIconHelper(char *condition)
   else if (strcmp(condition, "clear-night") == 0) {
     return("icons/moon-1.0.png");
   }
+  else if (strcmp(condition, "exceptional") == 0) {
+    return("icons/clouds_exceptional-1.0.png");
+  }
   else {
     return(condition);
   }
