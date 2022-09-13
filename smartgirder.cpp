@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
     // MQTT loop to pick up messages
     // _debug("calling mqtt_loop");
-    rc = mosquitto_loop(mqtt.client, -1, 1);
+    rc = mosquitto_loop(mqtt.client, 200, 1);
     if (rc)
     {
       mqtt.connected = false;
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 
     // Pause between cycles, after startup has finished
     if (clock() > 5.0 * CLOCKS_PER_SEC) {
-      sleep(0.0);
+      sleep(0.1);
     }
 
     // Scroll text, if necessary
