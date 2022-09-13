@@ -486,39 +486,57 @@ int DashboardWidget::renderText()
   textDataLength = strlen(this->textData);
   if (textDataLength == 0)
     return 0;
-  if (this->debug) {
+/*   if (this->debug) {
     _debug("text=%s, length=%d", this->textData, textDataLength);
-  }
+  } */
   textRenderLength = textDataLength;
-  if (this->textVisibleSize > 0 && textDataLength > this->textVisibleSize) {
+  if (this->textVisibleSize > 0 &&
+        textDataLength > this->textVisibleSize)
+  {
+    textRenderLength = this->textVisibleSize;
     if (!(this->textScrollable))
       _warn("text length exceeds limits, truncating");
-    textRenderLength = this->textVisibleSize;
   }
 
-  if (this->debug) {
+/*   if (this->debug) {
     _debug("visibleSize=%d, renderLength=%d, scrollStart=%d",
         textVisibleSize, textRenderLength, this->textScrollStart);
-  }
+  } */
 
   // Copy result into separate buffer for rendering
   char *textBuffer = new char(textDataLength+textRenderLength);
-  if (this->debug) {
-    _debug("strncpy(textBuffer, this->textData=%d + (this->textScrollStart %% textDataLength)=%d,\
-      std::min(int(this->textVisibleSize=%d), textDataLength-textScrollStart=%d));",
-      this->textData, (this->textScrollStart % textDataLength), this->textVisibleSize,
-      textDataLength-textScrollStart);
-  }
-  strncpy(textBuffer, this->textData + (this->textScrollStart % textDataLength),
-      std::min(int(this->textVisibleSize), textDataLength-textScrollStart));
-  if (this->textScrollStart > textDataLength-textRenderLength) {
-    if (this->debug) {
-      _debug("memset(textBuffer+textDataLength=%d, ' ', this->textScrollStart-textVisibleSize+1=%d);",
-      textDataLength, this->textScrollStart-textVisibleSize+1);
+/*   if (this->debug) {
+    _debug("strncpy(textBuffer, this->textData=%d + (this->textScrollStart %% textDataLength)=%d",
+        this->textData, (this->textScrollStart % textDataLength));
+    _debug("  std::min(int(this->textVisibleSize=%d), textDataLength-textScrollStart=%d));",
+        this->textVisibleSize, textDataLength-textScrollStart);
+  } */
+  char *textSrc = this->textData +
+                      (this->textScrollStart % textDataLength);
+  int16_t textLen = std::min(int(this->textVisibleSize),
+                        textDataLength-textScrollStart);
+  strncpy(textBuffer, textSrc, textLen);
+  // if (this->debug) {
+  //   _debug("textBuffer='%s', len=%d", textBuffer, strlen(textBuffer));
+  // }
+  int16_t clearCount = this->textScrollStart-textDataLength+textVisibleSize;
+  /* if (this->textScrollStart > textDataLength-textRenderLength)
+  {
+    if (this->debug)
+    {
+      _debug("memset(textBuffer+textVisibleSize-clearCount=%d, ' ', this->textScrollStart-textDataLength+textVisibleSize=%d);",
+      textVisibleSize-clearCount, clearCount);
     }
-    memset(textBuffer+textDataLength, ' ', this->textScrollStart-textVisibleSize+1);
+
+    memset(textBuffer+textVisibleSize-clearCount, ' ', clearCount);
+  } */
+  textBuffer[textVisibleSize-std::max(0, int(clearCount))] = '\0';
+/*   if (this->debug) {
+    _debug("textBuffer='%s', len=%d", textBuffer, strlen(textBuffer));
   }
-  textBuffer[textDataLength] = '\0';
+  if (this->textScrollStart>=4) {
+    _debug("foo!");
+  } */
 
   // Calculate positioning of text based on alignment
   if (this->textAlign == ALIGN_RIGHT) {
@@ -721,18 +739,39 @@ DL-VS 5-3=2
 4: 5__  1 1 : 5-4=1
 5: 123  3 0 : 5-5=0
 
+DL=5
+VS=3
+
        setlen
-0: 123 -2  SS-VS+1 0-3
+0: 123 -2  SS-VS+1  0-3+1 = -2
 1: 234 -1  1-3+1 = -1
 2: 345  0  2-3+1 =  0
 3: 45_  1  3-3+1 =  1
 4: 5__  2  4-3+1 =  2
 5: 123
 
-1%3
-2%3
-3%3
+DL=5,VS=3
 
+0: 123 -2  0-5+3 = -2
+1: 234 -1  1-5+3 = -1
+2: 345  0  2-5+3 =  0
+3: 45_  1  3-5+3 =  1
+4: 5__  2  
+5: 123
+
+
+VS -
+10 -
+
+DL-VS = 31-10 = 21
+SS-DL+VS?
+              
+20: _123456789  -1  20-31+10
+          1234
+25: 567890-_-_   4  25-31+10  10-4=6
+26: 67890_-_-_   5  26-31+10  10-5=5
+27: 7890U_-_-_   6  27-31+10  10-6=4
+28: 890UU_-_-_
 
 
 

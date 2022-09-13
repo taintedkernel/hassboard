@@ -166,7 +166,7 @@ void setupDashboard()
   widget->setCustomTextRender(drawTextCustom);
   widget->setVisibleSize(10);
   widget->setTextScollable(true);
-  widget->setDebug(true);
+  // widget->setDebug(true);
 
   widgetCollection[numWidgets++] = &wHouseTemp;
   widgetCollection[numWidgets++] = &wHouseDewpoint;
