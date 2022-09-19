@@ -60,38 +60,38 @@ protected:
   widgetSizeType size = WIDGET_SMALL;
 
   // Text config/data
-  bool textInit = false;
-  uint8_t textX = 0;
-  uint8_t textY = 0;
-  uint8_t textWidth = 0;
-  uint8_t textHeight = 0;
-  uint8_t textBrightness = 0;
-  uint8_t textTempBrightness = 0;
+  bool tInit = false;
+  uint8_t tX = 0;
+  uint8_t tY = 0;
+  uint8_t tWidth = 0;
+  uint8_t tHeight = 0;
+  uint8_t tBrightness = 0;
+  uint8_t tTempBrightness = 0;
   int (*customTextRender)TEXT_RENDER_SIG;
-  char textData[WIDGET_TEXT_LEN+1];
+  char tData[WIDGET_TEXT_LEN+1];
 
   // Text fonts/colors/data/etc
-  rgb_matrix::Font *textFont;
-  rgb_matrix::Color textColor;
+  rgb_matrix::Font *tFont;
+  rgb_matrix::Color tColor;
 
-  uint8_t textAlign;
-  uint8_t textFontWidth = 0;
-  uint8_t textFontHeight = 0;
-  uint8_t textVisibleSize = 0;       // Visible text length on widget
+  uint8_t tAlign;
+  uint8_t tFontWidth = 0;
+  uint8_t tFontHeight = 0;
+  uint8_t tVisibleSize = 0;       // Visible text length on widget
 
-  float textAlertLevel;
-  rgb_matrix::Color textAlertColor;
+  float tAlertLevel;
+  rgb_matrix::Color tAlertColor;
 
   // Icon config/data
-  bool iconInit = false;
-  int8_t iconX = 0;
-  int8_t iconY = 0;
-  uint8_t iconWidth = 0;
-  uint8_t iconHeight = 0;
-  uint8_t iconBrightness = 0;
-  uint8_t iconTempBrightness = 0;
-  const uint8_t *iconImage = NULL;
-  char iconData[WIDGET_DATA_LEN+1];
+  bool iInit = false;
+  int8_t iX = 0;
+  int8_t iY = 0;
+  uint8_t iWidth = 0;
+  uint8_t iHeight = 0;
+  uint8_t iBrightness = 0;
+  uint8_t iTempBrightness = 0;
+  const uint8_t *iImage = NULL;
+  char iData[WIDGET_DATA_LEN+1];
 
   // Initialization / config
   clock_t resetTime;        // Track when temp brightness resets

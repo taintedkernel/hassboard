@@ -34,7 +34,7 @@ void DynamicDashboardWidget::doTextUpdate()
   while ((token = strsep(&str, "\n"))) {
     if (i++ == currentTextLine) {
       _debug("dWidget: %s: updating text to %s", name, token);
-      strncpy(textData, token, WIDGET_TEXT_LEN);
+      strncpy(tData, token, WIDGET_TEXT_LEN);
       break;
     }
   }

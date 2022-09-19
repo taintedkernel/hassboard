@@ -106,52 +106,52 @@ void color565_2RGB(uint16_t value, uint8_t *rgb) {
 /*** DashboardWidget class ***/
 
 // Constructor
-DashboardWidget::DashboardWidget(const char *name)
+DashboardWidget::DashboardWidget(const char *wName)
 {
-  this->iconBrightness = brightness;
-  this->textBrightness = brightness;
-  strncpy(this->iconData, "", WIDGET_DATA_LEN);
-  strncpy(this->name, name, WIDGET_NAME_LEN);
-  this->textFont = defaultFont;
+  iBrightness = brightness;
+  tBrightness = brightness;
+  strncpy(iData, "", WIDGET_DATA_LEN);
+  strncpy(name, wName, WIDGET_NAME_LEN);
+  tFont = defaultFont;
 }
 
 // Debugging helper
 void DashboardWidget::_logName() {
-  _debug("widget %s:", this->name);
+  _debug("widget %s:", name);
 }
 
 // Get widget width
 uint8_t DashboardWidget::_getWidth() {
-  return this->width;
+  return width;
 }
 
 // Get widget height
 uint8_t DashboardWidget::_getHeight() {
-    return this->height;
+    return height;
 }
 
 // Get widget icon size
 uint16_t DashboardWidget::_getIconSize() {
-  return (this->iconWidth * this->iconHeight);
+  return (iWidth * iHeight);
 }
 
 /*
   ----==== [ Configuration Functions ] ====----
 */
 // Set/clear debugging flag for widget
-void DashboardWidget::setDebug(bool debug) {
-  this->debug = debug;
+void DashboardWidget::setDebug(bool value) {
+  debug = value;
 }
 
 // Set/clear active flag for widget
-void DashboardWidget::setActive(bool active) {
-  this->active = active;
+void DashboardWidget::setActive(bool value) {
+  active = value;
 }
 
 // Set widget origin
 void DashboardWidget::setOrigin(uint8_t x, uint8_t y) {
-  this->widgetX = x;
-  this->widgetY = y;
+  widgetX = x;
+  widgetY = y;
 }
 
 // Set size of widget
@@ -159,19 +159,19 @@ void DashboardWidget::setSize(widgetSizeType wsize)
 {
   switch(wsize) {
     case WIDGET_SMALL:
-      this->size = wsize;
-      this->width = WIDGET_WIDTH_SMALL;
-      this->height = WIDGET_HEIGHT_SMALL;
+      size = wsize;
+      width = WIDGET_WIDTH_SMALL;
+      height = WIDGET_HEIGHT_SMALL;
       break;
     case WIDGET_LARGE:
-      this->size = wsize;
-      this->width = WIDGET_WIDTH_LARGE;
-      this->height = WIDGET_HEIGHT_LARGE;
+      size = wsize;
+      width = WIDGET_WIDTH_LARGE;
+      height = WIDGET_HEIGHT_LARGE;
       break;
     case WIDGET_LONG:
-      this->size = wsize;
-      this->width = WIDGET_WIDTH_LONG;
-      this->height = WIDGET_HEIGHT_LONG;
+      size = wsize;
+      width = WIDGET_WIDTH_LONG;
+      height = WIDGET_HEIGHT_LONG;
       break;
     default:
       _error("unknown widget size %s, not configuring");
@@ -181,22 +181,22 @@ void DashboardWidget::setSize(widgetSizeType wsize)
 // Set bounds for widget rendering box
 // TODO: This should be merged with setSize() as it overwrites the values
 void DashboardWidget::setBounds(uint8_t w, uint8_t h) {
-  this->width = w;
-  this->height = h;
+  width = w;
+  height = h;
 }
 
 /* ----==== [ Text Functions ] ====---- */
 
 // Get widget text
 char* DashboardWidget::getText() {
-  return this->textData;
+  return tData;
 }
 
 // Set widget text
 void DashboardWidget::setText(char *text)
 {
-  _debug("widget %s: setting text to: %s", this->name, text);
-  strncpy(this->textData, text, WIDGET_TEXT_LEN);
+  _debug("widget %s: setting text to: %s", name, text);
+  strncpy(tData, text, WIDGET_TEXT_LEN);
 }
 
 // Set widget text length
@@ -204,11 +204,11 @@ void DashboardWidget::setVisibleSize(u_int16_t length)
 {
   if (length > WIDGET_TEXT_LEN) {
     _error("setVisibleSize(%d) on widget %s beyond maximum, using max as value",
-        length, this->name);
+        length, name);
     length = WIDGET_TEXT_LEN;
   }
 
-  this->textVisibleSize = length;
+  tVisibleSize = length;
 }
 
 // Set (x,y) coordinates, color and alignment for widget text
@@ -227,10 +227,10 @@ void DashboardWidget::setVisibleSize(u_int16_t length)
 // But we need to know font size to do so
 void DashboardWidget::autoTextConfig(Color color, textAlignType align)
 {
-  switch(this->width) {
+  switch(width) {
     case WIDGET_WIDTH_SMALL:
     case WIDGET_WIDTH_LARGE:
-      this->setCustomTextConfig(this->width, 0, color, align);
+      setCustomTextConfig(width, 0, color, align);
       break;
     default:
       _error("unknown widget size %s, not configuring");
@@ -244,40 +244,40 @@ void DashboardWidget::setCustomTextConfig(uint8_t textX, uint8_t textY,
   Color color, textAlignType align, rgb_matrix::Font *textFont,
   uint8_t fontWidth, uint8_t fontHeight)
 {
-  this->textX = textX;
-  this->textY = textY;
-  this->textColor = color;
-  this->textAlign = align;
-  this->textInit = true;
+  tX = textX;
+  tY = textY;
+  tColor = color;
+  tAlign = align;
+  tInit = true;
 
   // Use default font if not provided
   if (textFont == NULL) {
-    this->textFont = defaultFont;
-    this->textFontWidth = FONT_WIDTH;
-    this->textFontHeight = FONT_HEIGHT;
+    tFont = defaultFont;
+    tFontWidth = FONT_WIDTH;
+    tFontHeight = FONT_HEIGHT;
   } else {
-    this->textFont = textFont;
-    this->textFontWidth = fontWidth;
-    this->textFontHeight = fontHeight;
+    tFont = textFont;
+    tFontWidth = fontWidth;
+    tFontHeight = fontHeight;
   }
 
   // if (clearText) {
-  //   strncpy(this->textData, "", WIDGET_TEXT_LEN);
+  //   strncpy(textData, "", WIDGET_TEXT_LEN);
   // }
 }
 
 // Set a custom text-rendering function
 void DashboardWidget::setCustomTextRender(int (render)TEXT_RENDER_SIG)
 {
-  this->customTextRender = render;
+  customTextRender = render;
 }
 
 // Set an alert level and color (currently on text)
 // Note: This currently only supports upper-bounds levels
 void DashboardWidget::setAlertLevel(float alertLevel, rgb_matrix::Color alertColor)
 {
-  this->textAlertLevel = alertLevel;
-  this->textAlertColor = alertColor;
+  tAlertLevel = alertLevel;
+  tAlertColor = alertColor;
 }
 
 // Update text and set temporary bold brightness
@@ -288,20 +288,20 @@ void DashboardWidget::updateText(char *text, bool brighten)
     text = (char *) "--";
 
   // If new text is not different, don't update
-  if (strncmp(text, this->textData, WIDGET_TEXT_LEN) == 0)
+  if (strncmp(text, tData, WIDGET_TEXT_LEN) == 0)
     return;
 
   _debug("widget %s: updating to '%s' from old text: '%s', "
-    "bright until cycle %d", this->name, text, this->textData,
+    "bright until cycle %d", name, text, tData,
     cycle + refreshDelay);
 
-  this->setText(text);
+  setText(text);
   if (brighten) {
-    this->resetTime = clock() + refreshDelay * CLOCKS_PER_SEC;
-    this->tempAdjustBrightness(boldBrightnessIncrease, BRIGHT_TEXT);
+    resetTime = clock() + refreshDelay * CLOCKS_PER_SEC;
+    tempAdjustBrightness(boldBrightnessIncrease, BRIGHT_TEXT);
   }
 
-  this->render();
+  render();
 }
 
 // Update text with helper, then update same as above
@@ -311,7 +311,7 @@ void DashboardWidget::updateText(char *data, void(helperFunc)(char*, char*), boo
 
   // Dual-copy used here to prevent dupication of logic
   helperFunc(buffer, data);
-  this->updateText(buffer, brighten);
+  updateText(buffer, brighten);
 }
 
 /* ----==== [ Icon Functions ] ====---- */
@@ -319,8 +319,8 @@ void DashboardWidget::updateText(char *data, void(helperFunc)(char*, char*), boo
 // Set (x,y) origin coordinates for widget icon
 void DashboardWidget::setIconOrigin(uint8_t x, uint8_t y)
 {
-  this->iconX = x;
-  this->iconY = y;
+  iX = x;
+  iY = y;
 }
 
 // Set widget icon and size (old format)
@@ -345,16 +345,16 @@ void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const uint16_t *img)
       newImg[dst++] = rgb[2];
   }
 
-  this->setIconImage(w, h, newImg);
+  setIconImage(w, h, newImg);
 }
 
 // Set widget icon and size
 void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const uint8_t *img)
 {
-  this->iconWidth = w;
-  this->iconHeight = h;
-  this->iconImage = img;
-  this->iconInit = true;
+  iWidth = w;
+  iHeight = h;
+  iImage = img;
+  iInit = true;
 }
 
 // Set widget icon and size from a PNG image
@@ -397,7 +397,7 @@ void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const char* iconFile)
     }
   }
 
-  this->setIconImage(w, h, newImg);
+  setIconImage(w, h, newImg);
 }
 
 // Call helper to determine icon, then render
@@ -405,12 +405,12 @@ void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const char* iconFile)
 void DashboardWidget::updateIcon(char *data, const char* (helperFunc)(char*))
 {
   if (data != NULL) {
-    strncpy(this->iconData, data, WIDGET_DATA_LEN);
+    strncpy(iData, data, WIDGET_DATA_LEN);
   }
-  _debug("setting icon to %s", this->iconData);
+  _debug("setting icon to %s", iData);
 
-  this->setIconImage(this->iconWidth, this->iconHeight, helperFunc(this->iconData));
-  this->render();
+  setIconImage(iWidth, iHeight, helperFunc(iData));
+  render();
 }
 
 /*
@@ -421,13 +421,13 @@ void DashboardWidget::updateIcon(char *data, const char* (helperFunc)(char*))
 void DashboardWidget::clear(bool force)
 {
   // If we are inactive and no force-clear set then return
-  if (!this->active && !force)
+  if (!active && !force)
     return;
 
-  if (this->debug)
-    drawRect(this->widgetX, this->widgetY, this->width, this->height, colorDarkGrey);
+  if (debug)
+    drawRect(widgetX, widgetY, width, height, colorDarkGrey);
   else
-    drawRect(this->widgetX, this->widgetY, this->width, this->height, colorBlack);
+    drawRect(widgetX, widgetY, width, height, colorBlack);
 }
 
 // Render our widget
@@ -435,97 +435,96 @@ void DashboardWidget::clear(bool force)
 // sections and move to those rendering functions
 void DashboardWidget::render()
 {
-  if (!this->active)
+  if (!active)
     return;
 
   // Clear widget
-  // _debug("clearing widget %s", this->name);
-  this->clear();
+  // _debug("clearing widget %s", name);
+  clear();
 
   // Render widget assets
-  this->renderIcon();
-  this->renderText();
+  renderIcon();
+  renderText();
 
   // Debugging bounding box for widget
   // Calculated from icon height & fixed width
-  if (this->debug)
+  if (debug)
   {
-    matrix->SetPixel(this->widgetX, this->widgetY, 255,0,0);
-    matrix->SetPixel(this->widgetX+this->width-1, this->widgetY, 0,255,0);
-    matrix->SetPixel(this->widgetX, this->widgetY+this->height-1, 0,0,255);
-    matrix->SetPixel(this->widgetX+this->width-1, this->widgetY+this->height-1, 255,255,255);
+    matrix->SetPixel(widgetX, widgetY, 255,0,0);
+    matrix->SetPixel(widgetX+width-1, widgetY, 0,255,0);
+    matrix->SetPixel(widgetX, widgetY+height-1, 0,0,255);
+    matrix->SetPixel(widgetX+width-1, widgetY+height-1, 255,255,255);
   }
 }
 
 // TODO: Render an text-specific black clearing box
 int DashboardWidget::renderText()
 {
-  Color tColor;
+  Color color;
   int16_t offset;
   bool localDebug = true;
 
   // Verify initialization & active status
-  if (!this->textInit) {
-    _error("renderText(%s) called without config, aborting", this->name);
+  if (!tInit) {
+    _error("renderText(%s) called without config, aborting", name);
     return 0;
   }
-  else if (!this->active) {
+  else if (!active) {
     return 0;
   }
 
   /* Old text scroll code lived here */
-  uint8_t textLen = strlen(this->textData);
+  uint8_t textLen = strlen(tData);
 
   // Calculate positioning of text based on alignment
-  if (this->textAlign == ALIGN_RIGHT) {
-    offset = this->textX - (textLen * this->textFontWidth) - 2;
-  } else if (this->textAlign == ALIGN_CENTER) {
-    offset = (this->textX / 2) - (textLen * this->textFontWidth / 2);
-  } else if (this->textAlign == ALIGN_LEFT) {
-    offset = iconWidth + WIDGET_ICON_TEXT_GAP;
+  if (tAlign == ALIGN_RIGHT) {
+    offset = tX - (textLen * tFontWidth) - 2;
+  } else if (tAlign == ALIGN_CENTER) {
+    offset = (tX / 2) - (textLen * tFontWidth / 2);
+  } else if (tAlign == ALIGN_LEFT) {
+    offset = iWidth + WIDGET_ICON_TEXT_GAP;
   } else {
-    _error("unknown text alignment %d, not rendering", this->textAlign);
+    _error("unknown text alignment %d, not rendering", tAlign);
     return 0;
   }
   if (offset < 0) {
-      _warn("text length during alignment exceeds limits, may be truncated");
+    _warn("text length during alignment exceeds limits, may be truncated");
     offset = 0;
   }
 
   // Calculate color, apply upper bound on channels
   // Note: This currently only supports upper-bounds levels
-  if (this->textAlertLevel > 0.00000001 &&
-        atof(textData) > this->textAlertLevel) {
-    tColor = Color(this->textAlertColor);
+  if (tAlertLevel > 0.00000001 &&
+        atof(tData) > tAlertLevel) {
+    color = Color(tAlertColor);
   }
   else {
-    tColor = Color(this->textColor);
+    color = Color(tColor);
   }
-  tColor.r = std::min(tColor.r + this->textTempBrightness, 255);
-  tColor.g = std::min(tColor.g + this->textTempBrightness, 255);
-  tColor.b = std::min(tColor.b + this->textTempBrightness, 255);
+  color.r = std::min(color.r + tTempBrightness, 255);
+  color.g = std::min(color.g + tTempBrightness, 255);
+  color.b = std::min(color.b + tTempBrightness, 255);
 
-  if (this->debug && localDebug)
+  if (debug && localDebug)
   {
-      _debug("renderText(%s) = [%s]", this->name, this->textData);
+    _debug("renderText(%s) = [%s]", name, tData);
     _debug("- x,textX,len,offset = %d, %d, %d, %d",
-      this->widgetX, this->textX, textLen, offset);
+      widgetX, tX, textLen, offset);
 
-    matrix->SetPixel(this->widgetX+offset, this->widgetY, 255,0,0);
-    matrix->SetPixel(this->widgetX+offset, this->widgetY+textFontHeight-1, 0,0,255);
-    matrix->SetPixel(this->widgetX+offset + this->textFontWidth*this->textVisibleSize, this->widgetY, 0,255,0);
-    matrix->SetPixel(this->widgetX+offset + this->textFontWidth*this->textVisibleSize, this->widgetY+this->textFontHeight-1, 255,255,255);
+    matrix->SetPixel(widgetX+offset, widgetY, 255,0,0);
+    matrix->SetPixel(widgetX+offset, widgetY+tFontHeight-1, 0,0,255);
+    matrix->SetPixel(widgetX+offset + tFontWidth*tVisibleSize, widgetY, 0,255,0);
+    matrix->SetPixel(widgetX+offset + tFontWidth*tVisibleSize, widgetY+tFontHeight-1, 255,255,255);
   }
 
   // Call the custom text renderer, if set
   int render;
-  if (this->customTextRender)
-    render = this->customTextRender(this->widgetX + offset, this->widgetY +
-        this->textY, tColor, textData, this->textFont,
-        this->textFontWidth, this->textFontHeight);
+  if (customTextRender)
+    render = customTextRender(widgetX + offset, widgetY +
+        tY, color, tData, tFont, tFontWidth, tFontHeight);
   else
-    render = drawText(this->widgetX + offset, this->widgetY + this->textY, tColor,
-        textData, this->textFont);
+    render = drawText(widgetX + offset, widgetY + tY, color,
+        tData, tFont);
 
   return render;
 }
@@ -533,16 +532,16 @@ int DashboardWidget::renderText()
 // TODO: Render an icon-specific black clearing box
 void DashboardWidget::renderIcon()
 {
-  if (!this->iconInit || this->iconImage == NULL) {
-    _error("renderIcon(%s) called without config and/or image, aborting", this->name);
+  if (!iInit || iImage == NULL) {
+    _error("renderIcon(%s) called without config and/or image, aborting", name);
     return;
   }
 
-  if (!this->active)
+  if (!active)
     return;
 
-  drawIcon(this->widgetX + this->iconX, this->widgetY + this->iconY, this->iconWidth,
-      this->iconHeight, this->iconImage);
+  drawIcon(widgetX + iX, widgetY + iY, iWidth,
+      iHeight, iImage);
 }
 
 /*
@@ -553,9 +552,9 @@ void DashboardWidget::renderIcon()
 void DashboardWidget::resetBrightness(brightType bType = BRIGHT_TEXT)
 {
   if (bType != BRIGHT_TEXT)
-    this->iconBrightness = brightness;
+    iBrightness = brightness;
   if (bType != BRIGHT_ICON)
-    this->textBrightness = brightness;
+    tBrightness = brightness;
 }
 
 /*
@@ -572,27 +571,27 @@ void DashboardWidget::resetBrightness(brightType bType = BRIGHT_TEXT)
 */
 void DashboardWidget::updateBrightness()
 {
-  if (this->iconBrightness != brightness + this->iconTempBrightness) {
-    this->iconBrightness = brightness + this->iconTempBrightness;
-    this->renderIcon();
+  if (iBrightness != brightness + iTempBrightness) {
+    iBrightness = brightness + iTempBrightness;
+    renderIcon();
   }
-  if (this->textBrightness != brightness + this->textTempBrightness) {
-    this->textBrightness = brightness + this->textTempBrightness;
-    this->renderText();
+  if (tBrightness != brightness + tTempBrightness) {
+    tBrightness = brightness + tTempBrightness;
+    renderText();
   }
 }
 
 // Checks if temporary brightness duration has elapsed and reset if necessary
 void DashboardWidget::checkResetBrightness()
 {
-  if (this->resetTime > 0 && clock() >= this->resetTime)
+  if (resetTime > 0 && clock() >= resetTime)
   {
-    this->_logName();
+    _logName();
     _log("- resetting brightness");
-    this->resetTime = 0;
-    this->resetBrightness(BRIGHT_BOTH);
-    this->iconTempBrightness = this->textTempBrightness = 0;
-    this->render();
+    resetTime = 0;
+    resetBrightness(BRIGHT_BOTH);
+    iTempBrightness = tTempBrightness = 0;
+    render();
   }
 }
 
@@ -600,33 +599,33 @@ void DashboardWidget::checkResetBrightness()
 void DashboardWidget::tempAdjustBrightness(uint8_t tempBright, brightType bType = BRIGHT_TEXT)
 {
   if (bType != BRIGHT_TEXT) {
-    this->iconTempBrightness = tempBright;
-    this->iconBrightness = brightness + tempBright;
+    iTempBrightness = tempBright;
+    iBrightness = brightness + tempBright;
   }
   if (bType != BRIGHT_ICON) {
-    this->textTempBrightness = tempBright;
-    this->textBrightness = brightness + tempBright;
+    tTempBrightness = tempBright;
+    tBrightness = brightness + tempBright;
   }
 }
 
 // Check if temporary active duration has elapsed and reset if necessary
 void DashboardWidget::checkResetActive()
 {
-  if (this->resetActiveTime > 0 && clock() >= this->resetActiveTime)
+  if (resetActiveTime > 0 && clock() >= resetActiveTime)
   {
-    this->_logName();
-    _log("- resetting active to: %d", !(this->active));
-    this->resetActiveTime = 0;
-    this->setActive(!(this->active));
-    this->clear();
-    this->render();
+    _logName();
+    _log("- resetting active to: %d", !(active));
+    resetActiveTime = 0;
+    setActive(!(active));
+    clear();
+    render();
   }
 }
 
 // Set the time to reset the active state
 void DashboardWidget::setResetActiveTime(clock_t time)
 {
-  this->resetActiveTime = time;
+  resetActiveTime = time;
 }
 
 void DashboardWidget::checkUpdate() {}
