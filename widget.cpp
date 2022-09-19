@@ -200,7 +200,6 @@ void DashboardWidget::setText(char *text)
 {
   _debug("widget %s: setting text to: %s", this->name, text);
   strncpy(this->textData, text, WIDGET_TEXT_LEN);
-  this->textScrollStart = 0;
 }
 
 // Set widget text length
@@ -282,12 +281,6 @@ void DashboardWidget::setAlertLevel(float alertLevel, rgb_matrix::Color alertCol
 {
   this->textAlertLevel = alertLevel;
   this->textAlertColor = alertColor;
-}
-
-// Set/clear scroll setting for widget
-void DashboardWidget::setTextScollable(bool scrollable)
-{
-  this->textScrollable = scrollable;
 }
 
 // Update text and set temporary bold brightness
@@ -472,7 +465,7 @@ int DashboardWidget::renderText()
 {
   Color tColor;
   int16_t offset;
-  u_int16_t textDataLength, textRenderLength;
+  bool localDebug = true;
 
   // Verify initialization & active status
   if (!this->textInit) {
@@ -483,84 +476,27 @@ int DashboardWidget::renderText()
     return 0;
   }
 
-  // Calculate string length
-  // Use an offset to allow for scrolling of longer content
-  // Trim string to visible display length (if set)
-  textDataLength = strlen(this->textData);
-  if (textDataLength == 0)
-    return 0;
-/*   if (this->debug) {
-    _debug("text=%s, length=%d", this->textData, textDataLength);
-  } */
-  textRenderLength = textDataLength;
-  if (this->textVisibleSize > 0 &&
-        textDataLength > this->textVisibleSize)
-  {
-    textRenderLength = this->textVisibleSize;
-    if (!(this->textScrollable))
-      _warn("text length exceeds limits, truncating");
-  }
-
-/*   if (this->debug) {
-    _debug("visibleSize=%d, renderLength=%d, scrollStart=%d",
-        textVisibleSize, textRenderLength, this->textScrollStart);
-  } */
-
-  // Copy result into separate buffer for rendering
-  char *textBuffer = new char(textDataLength+textRenderLength);
-/*   if (this->debug) {
-    _debug("strncpy(textBuffer, this->textData=%d + (this->textScrollStart %% textDataLength)=%d",
-        this->textData, (this->textScrollStart % textDataLength));
-    _debug("  std::min(int(this->textVisibleSize=%d), textDataLength-textScrollStart=%d));",
-        this->textVisibleSize, textDataLength-textScrollStart);
-  } */
-  char *textSrc = this->textData +
-                      (this->textScrollStart % textDataLength);
-  int16_t textLen = std::min(int(this->textVisibleSize),
-                        textDataLength-textScrollStart);
-  strncpy(textBuffer, textSrc, textLen);
-  // if (this->debug) {
-  //   _debug("textBuffer='%s', len=%d", textBuffer, strlen(textBuffer));
-  // }
-  int16_t clearCount = this->textScrollStart-textDataLength+textVisibleSize;
-  /* if (this->textScrollStart > textDataLength-textRenderLength)
-  {
-    if (this->debug)
-    {
-      _debug("memset(textBuffer+textVisibleSize-clearCount=%d, ' ', this->textScrollStart-textDataLength+textVisibleSize=%d);",
-      textVisibleSize-clearCount, clearCount);
-    }
-
-    memset(textBuffer+textVisibleSize-clearCount, ' ', clearCount);
-  } */
-  textBuffer[textVisibleSize-std::max(0, int(clearCount))] = '\0';
-/*   if (this->debug) {
-    _debug("textBuffer='%s', len=%d", textBuffer, strlen(textBuffer));
-  }
-  if (this->textScrollStart>=4) {
-    _debug("foo!");
-  } */
-
+  /* Old text scroll code lived here */
   // Calculate positioning of text based on alignment
   if (this->textAlign == ALIGN_RIGHT) {
-    offset = this->textX - (textDataLength * this->textFontWidth) - 2;
+    offset = this->textX - (textLen * this->textFontWidth) - 2;
   } else if (this->textAlign == ALIGN_CENTER) {
-    offset = (this->textX / 2) - (textDataLength * this->textFontWidth / 2);
+    offset = (this->textX / 2) - (textLen * this->textFontWidth / 2);
+  } else if (this->textAlign == ALIGN_LEFT) {
+    offset = iconWidth + WIDGET_ICON_TEXT_GAP;
   } else {
     _error("unknown text alignment %d, not rendering", this->textAlign);
     return 0;
   }
   if (offset < 0) {
-    if (!(this->textScrollable)) {
       _warn("text length during alignment exceeds limits, may be truncated");
-    }
     offset = 0;
   }
 
   // Calculate color, apply upper bound on channels
   // Note: This currently only supports upper-bounds levels
   if (this->textAlertLevel > 0.001 &&
-        atof(textBuffer) > this->textAlertLevel) {
+        atof(textData) > this->textAlertLevel) {
     tColor = Color(this->textAlertColor);
   }
   else {
@@ -572,24 +508,26 @@ int DashboardWidget::renderText()
 
   if (this->debug)
   {
-    _debug("renderText(%s) = %s", this->name, textBuffer);
+      _debug("renderText(%s) = [%s]", this->name, this->textData);
     _debug("- x,textX,len,offset = %d, %d, %d, %d",
-      this->widgetX, this->textX, textDataLength, offset);
-    // _debug("- color,newColor = %d,%d,%d %d,%d,%d", this->textColor.r,
-    // this->textColor.g, this->textColor.b, tColor.r, tColor.g, tColor.b);
+      this->widgetX, this->textX, textLen, offset);
+
+    matrix->SetPixel(this->widgetX+offset, this->widgetY, 255,0,0);
+    matrix->SetPixel(this->widgetX+offset, this->widgetY+textFontHeight-1, 0,0,255);
+    matrix->SetPixel(this->widgetX+offset + this->textFontWidth*this->textVisibleSize, this->widgetY, 0,255,0);
+    matrix->SetPixel(this->widgetX+offset + this->textFontWidth*this->textVisibleSize, this->widgetY+this->textFontHeight-1, 255,255,255);
   }
 
   // Call the custom text renderer, if set
   int render;
   if (this->customTextRender)
     render = this->customTextRender(this->widgetX + offset, this->widgetY +
-        this->textY, tColor, textBuffer, this->textFont,
+        this->textY, tColor, textData, this->textFont,
         this->textFontWidth, this->textFontHeight);
   else
     render = drawText(this->widgetX + offset, this->widgetY + this->textY, tColor,
-        textBuffer, this->textFont);
+        textData, this->textFont);
 
-  free(textBuffer);
   return render;
 }
 
@@ -692,91 +630,3 @@ void DashboardWidget::setResetActiveTime(clock_t time)
   this->resetActiveTime = time;
 }
 
-// Scroll the text one character position
-void DashboardWidget::scrollText()
-{
-  if (this->textVisibleSize == 0 || !this->textScrollable)
-    return;
-
-  this->textScrollStart = (this->textScrollStart + 1) %
-      strlen(this->textData);
-  this->render();
-}
-
-
-/*
-
-3 * 2 + 1 = 7
-
-length = 3
-
- 0123456789
-          ---
-
-7: 789
-8: 89_
-9: 9__
-
-6: 6789
-7: 789_
-8: 89__
-9: 9___
-
- 12345
-    ---
-
-0: 12 2
-1: 23 2
-2: 34 2
-3: 45 2
-4: 5_ 1
-5: 12 2
-
-DL-VS 5-3=2
-
-       cpylen
-0: 123  3 5 : DL-SS 5-0=5
-1: 234  3 4 : 5-1=4
-2: 345  3 3 : 5-2=3
-3: 45_  2 2 : 5-3=2
-4: 5__  1 1 : 5-4=1
-5: 123  3 0 : 5-5=0
-
-DL=5
-VS=3
-
-       setlen
-0: 123 -2  SS-VS+1  0-3+1 = -2
-1: 234 -1  1-3+1 = -1
-2: 345  0  2-3+1 =  0
-3: 45_  1  3-3+1 =  1
-4: 5__  2  4-3+1 =  2
-5: 123
-
-DL=5,VS=3
-
-0: 123 -2  0-5+3 = -2
-1: 234 -1  1-5+3 = -1
-2: 345  0  2-5+3 =  0
-3: 45_  1  3-5+3 =  1
-4: 5__  2  
-5: 123
-
-
-VS -
-10 -
-
-DL-VS = 31-10 = 21
-SS-DL+VS?
-              
-20: _123456789  -1  20-31+10
-          1234
-25: 567890-_-_   4  25-31+10  10-4=6
-26: 67890_-_-_   5  26-31+10  10-5=5
-27: 7890U_-_-_   6  27-31+10  10-6=4
-28: 890UU_-_-_
-
-
-
-
-*/

@@ -16,8 +16,10 @@
 #define WEATHER_NOW_STATE   "weather/current/state"
 #define WEATHER_SUN         "weather/sun"
 #define THERMOSTAT_STATE    "thermostat/state"
-#define SIGN_BRIGHTNESS     "sign/brightness"
 #define CALENDAR_EVENT      "calendar/event"
+#define SIGN_BRIGHTNESS     "sign/brightness"
+#define DEBUG_SCROLL_DELAY  "debug/scroll/delay"
+#define DEBUG_SCROLL_STATE  "debug/scroll/state"
 
 #define ICON_HOST           "10.4.3.10"
 

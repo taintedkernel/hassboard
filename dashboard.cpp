@@ -165,7 +165,7 @@ void setupDashboard()
     FONT_WIDTH_SMALL, FONT_HEIGHT_SMALL);
   widget->setCustomTextRender(drawTextCustom);
   widget->setVisibleSize(10);
-  widget->setTextScollable(true);
+  // widget->setTextScollable(true);
   // widget->setDebug(true);
 
   widgetCollection[numWidgets++] = &wHouseTemp;
@@ -342,6 +342,14 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     displayDashboard();
   }
 
+  // Home Assistant: Calendar event
+  else if (strcmp(topic, CALENDAR_EVENT) == 0)
+  {
+    showMessage(topic, payloadAsChars);
+    wCalendar.updateText(payloadAsChars);
+    displayDashboard();
+  }
+
   // Sign: Change brightness
   else if (strcmp(topic, SIGN_BRIGHTNESS) == 0)
   {
@@ -351,13 +359,5 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
       brightness = 100;
     matrix->SetBrightness(brightness);
     displayDashboard(true);
-  }
-
-  // Home Assistant: Calendar event
-  else if (strcmp(topic, CALENDAR_EVENT) == 0)
-  {
-    showMessage(topic, payloadAsChars);
-    wCalendar.updateText(payloadAsChars);
-    displayDashboard();
   }
 }

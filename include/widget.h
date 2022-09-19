@@ -65,20 +65,20 @@ private:
   uint8_t textHeight = 0;
   uint8_t textBrightness = 0;
   uint8_t textTempBrightness = 0;
-  uint8_t textAlign;
   int (*customTextRender)TEXT_RENDER_SIG;
+  char textData[WIDGET_TEXT_LEN+1];
 
   // Text fonts/colors/data/etc
   rgb_matrix::Font *textFont;
   rgb_matrix::Color textColor;
-  rgb_matrix::Color textAlertColor;
-  float textAlertLevel;
+
+  uint8_t textAlign;
   uint8_t textFontWidth = 0;
   uint8_t textFontHeight = 0;
   uint8_t textVisibleSize = 0;       // Visible text length on widget
-  bool textScrollable = false;
-  uint16_t textScrollStart = 0;
-  char textData[WIDGET_TEXT_LEN+1];
+
+  float textAlertLevel;
+  rgb_matrix::Color textAlertColor;
 
   // Icon config/data
   bool iconInit = false;
@@ -125,7 +125,6 @@ public:
     // bool clearText = true);
   void setCustomTextRender(int (render)TEXT_RENDER_SIG);
   void setAlertLevel(float, rgb_matrix::Color);
-  void setTextScollable(bool);
   void updateText(char *text, bool brighten = true);
   void updateText(char *text, void(helperFunc)(char*, char*), bool brighten = true);
 
@@ -154,8 +153,6 @@ public:
   void checkResetActive();
   void setResetActiveTime(clock_t time);
 
-  // Functions - Text scrolling adjustments
-  void scrollText();
 };
 
 #endif
