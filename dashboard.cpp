@@ -4,7 +4,6 @@
 #include "icons.h"
 #include "mqtt.h"
 
-#include <led-matrix.h>
 #include <mosquitto.h>
 #include <unistd.h>
 
@@ -65,7 +64,6 @@ rgb_matrix::Font *customFont, *smallFont;
 extern uint32_t cycle;
 extern bool forceRefresh;
 extern uint8_t refreshActiveDelay;
-extern rgb_matrix::RGBMatrix *matrix;
 extern rgb_matrix::Color colorWhite, colorGrey, colorDarkText, colorAlert;
 extern rgb_matrix::Font *defaultFont;
 
@@ -357,7 +355,7 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     brightness = atoi((char*)payload);
     if (brightness > 100)
       brightness = 100;
-    matrix->SetBrightness(brightness);
+    setBrightness(brightness);
     displayDashboard(true);
   }
 }

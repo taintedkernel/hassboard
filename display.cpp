@@ -88,6 +88,11 @@ void shutdownDisplay()
   delete matrix;
 }
 
+void setBrightness(uint8_t brightness)
+{
+  matrix->SetBrightness(brightness);
+}
+
 /* Color hexColorBright2RGB(uint16_t hexValue, int br)
 {
   unsigned r = (hexValue & 0xF800) >> 8;       // rrrrr... ........ -> rrrrr000

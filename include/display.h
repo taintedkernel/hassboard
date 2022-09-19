@@ -28,6 +28,7 @@ using rgb_matrix::Color;
 
 bool setupDisplay();
 void shutdownDisplay();
+void setBrightness(uint8_t brightness);
 int drawText(uint8_t, uint8_t, Color, const char *, rgb_matrix::Font* = NULL);
 int drawTextCustom(uint8_t x, uint8_t y, Color color, const char *text,
   rgb_matrix::Font *font = NULL, uint8_t hSpacing = 0, uint8_t fontHeight = 0);

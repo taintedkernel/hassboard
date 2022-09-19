@@ -10,9 +10,6 @@
 #include <stdio.h>
 
 #include <led-matrix.h>
-#include <png++/png.hpp>
-#include <Magick++.h>
-#include <magick/image.h>
 
 
 uint16_t cloudsLocal[ICON_SZ], cloudsSunLocal[ICON_SZ];
@@ -477,6 +474,8 @@ int DashboardWidget::renderText()
   }
 
   /* Old text scroll code lived here */
+  uint8_t textLen = strlen(this->textData);
+
   // Calculate positioning of text based on alignment
   if (this->textAlign == ALIGN_RIGHT) {
     offset = this->textX - (textLen * this->textFontWidth) - 2;
