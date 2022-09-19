@@ -494,7 +494,7 @@ int DashboardWidget::renderText()
 
   // Calculate color, apply upper bound on channels
   // Note: This currently only supports upper-bounds levels
-  if (this->textAlertLevel > 0.001 &&
+  if (this->textAlertLevel > 0.00000001 &&
         atof(textData) > this->textAlertLevel) {
     tColor = Color(this->textAlertColor);
   }
