@@ -26,7 +26,8 @@
 			"tuple": "cpp",
 			"bit": "cpp",
 			"list": "cpp",
-			"random": "cpp"
+			"random": "cpp",
+			"new": "cpp"
 		}
 	}
 }

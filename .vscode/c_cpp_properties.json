@@ -19,7 +19,8 @@
                     "/root/smartgirder/include",
                     "${workspaceFolder}"
                 ]
-            }
+            },
+            "configurationProvider": "ms-vscode.makefile-tools"
         }
     ],
     "version": 4
