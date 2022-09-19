@@ -20,6 +20,8 @@
 #define WIDGET_WIDTH_LONG       128
 #define WIDGET_HEIGHT_LONG      FONT_HEIGHT
 
+#define WIDGET_ICON_TEXT_GAP    4
+
 #define ICON_SZ                 800
 #define ICON_SZ_BYTES           ICON_SZ * sizeof(uint16_t)
 
@@ -42,10 +44,10 @@ public:
   // Constants, defaults, enums, etc
   enum widgetSizeType{WIDGET_SMALL, WIDGET_LARGE, WIDGET_LONG};
   enum brightType{BRIGHT_ICON, BRIGHT_TEXT, BRIGHT_BOTH};
-  enum textAlignType{ALIGN_RIGHT, ALIGN_CENTER};
+  enum textAlignType{ALIGN_RIGHT, ALIGN_CENTER, ALIGN_LEFT};
   static const uint8_t textDefaultWidth = FONT_WIDTH;
 
-private:
+protected:
   /*** ATTRIBUTES ***/
   char name[WIDGET_NAME_LEN+1];   // Name of widget
   bool active = true;
@@ -114,8 +116,10 @@ public:
 
   // Functions - Text
   char* getText();
-private:
-  void setText(char *);
+
+protected:
+  virtual void setText(char *);
+
 public:
   void setVisibleSize(u_int16_t);
   void autoTextConfig(Color = colorText, textAlignType = ALIGN_RIGHT);
@@ -138,8 +142,8 @@ public:
   // Functions - Rendering
   void clear(bool = false);
   void render();
-private:
-  int  renderText();
+protected:
+  virtual int renderText();
   void renderIcon();
 
 public:
@@ -153,6 +157,8 @@ public:
   void checkResetActive();
   void setResetActiveTime(clock_t time);
 
+  // Functions - Generic periodic updates
+  virtual void checkUpdate();
 };
 
 #endif

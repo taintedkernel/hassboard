@@ -130,6 +130,7 @@ int main(int argc, char **argv)
 
     // Scroll text, if necessary
     for (int i=0; i<numWidgets; i++) {
+      widgetCollection[i]->checkUpdate();
     }
   }
 

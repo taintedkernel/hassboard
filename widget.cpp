@@ -505,7 +505,7 @@ int DashboardWidget::renderText()
   tColor.g = std::min(tColor.g + this->textTempBrightness, 255);
   tColor.b = std::min(tColor.b + this->textTempBrightness, 255);
 
-  if (this->debug)
+  if (this->debug && localDebug)
   {
       _debug("renderText(%s) = [%s]", this->name, this->textData);
     _debug("- x,textX,len,offset = %d, %d, %d, %d",
@@ -629,3 +629,4 @@ void DashboardWidget::setResetActiveTime(clock_t time)
   this->resetActiveTime = time;
 }
 
+void DashboardWidget::checkUpdate() {}

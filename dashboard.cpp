@@ -1,6 +1,7 @@
 #include "dashboard.h"
 #include "logger.h"
 #include "widget.h"
+#include "dynamicwidget.h"
 #include "icons.h"
 #include "mqtt.h"
 
@@ -54,7 +55,7 @@ DashboardWidget wOutdoorWind("outdoorWind");
 DashboardWidget wOutdoorPM25("outdoorPM25");
 DashboardWidget wOutdoorWeather("outdoorWeather");
 DashboardWidget wOutdoorForecast("outdoorForecast");
-DashboardWidget wCalendar("calendar");
+DynamicDashboardWidget wCalendar("calendar");
 
 // TODO: fix this, eg: add a widget manager
 DashboardWidget *widget, *widgetCollection[MAX_WIDGETS];
@@ -73,6 +74,7 @@ void setupDashboard()
   _log("configuring dashboard");
 
   // Row 1
+  // Living room temperature
   widget = &wHouseTemp;
   widget->setOrigin(colOneStart-1, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
@@ -80,7 +82,9 @@ void setupDashboard()
   widget->setIconImage(8, 7, big_house);
   widget->setIconOrigin(0, 1);
   widget->setVisibleSize(3);
+  // widget->setDebug(true);
 
+  // Living room dewpoint
   widget = &wHouseDewpoint;
   widget->setOrigin(colTwoStart, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
@@ -90,6 +94,7 @@ void setupDashboard()
   widget->setVisibleSize(3);
 
   // Row 2
+  // Rain gauge
   widget = &wOutdoorRainGauge;
   widget->setOrigin(colOneStart, rowTwoStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
@@ -99,6 +104,7 @@ void setupDashboard()
   widget->updateText((char *)"--", false);
   widget->setVisibleSize(3);
 
+  // Dewpoint
   widget = &wOutdoorDewpoint;
   widget->setOrigin(colTwoStart, rowTwoStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
@@ -107,6 +113,7 @@ void setupDashboard()
   widget->setVisibleSize(3);
 
   // Row 3
+  // Wind speed
   widget = &wOutdoorWind;
   widget->setOrigin(colOneStart, rowThreeStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
@@ -116,6 +123,7 @@ void setupDashboard()
   widget->updateText((char *)"--", false);
   widget->setVisibleSize(3);
 
+  // PM2.5
   widget = &wOutdoorPM25;
   widget->setOrigin(colTwoStart, rowThreeStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
@@ -153,18 +161,18 @@ void setupDashboard()
   widget->setActive(false);
   widget->setVisibleSize(5);
 
-  // Widget to show calendar events
+  // Calendar events
   widget = &wCalendar;
   widget->setOrigin(colOneStart, rowCalendarStart);
   widget->setSize(DashboardWidget::WIDGET_LONG);
   widget->setIconImage(9, 8, "icons/calendar.png");
   widget->setCustomTextConfig(WIDGET_WIDTH_LONG, 0,
-    colorWhite, DashboardWidget::ALIGN_CENTER, smallFont,
+    colorWhite, DashboardWidget::ALIGN_LEFT, smallFont,
     FONT_WIDTH_SMALL, FONT_HEIGHT_SMALL);
   widget->setCustomTextRender(drawTextCustom);
-  widget->setVisibleSize(10);
+  widget->setVisibleSize(20);
   // widget->setTextScollable(true);
-  // widget->setDebug(true);
+  widget->setDebug(true);
 
   widgetCollection[numWidgets++] = &wHouseTemp;
   widgetCollection[numWidgets++] = &wHouseDewpoint;

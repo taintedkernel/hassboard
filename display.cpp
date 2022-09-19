@@ -177,7 +177,7 @@ int drawText(uint8_t x, uint8_t y, Color color, const char *text, Font *font)
 
   // Library references bottom-left corner as origin (instead of top)
   //
-  // Add a fixed-offset to compensate, the benefit here is easily
+  // Add a fixed y-offset to compensate, the benefit here is easily
   // tweaking the vertical position/placement
   //
   // Using font.height() resulted in too large of gap

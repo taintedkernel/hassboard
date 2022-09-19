@@ -8,8 +8,8 @@ LDFLAGS=-L$(HOME)/rpi-rgb-led-matrix/lib -lpthread -lrt -lm -lmosquitto -lrgbmat
 
 INCDIR=-I$(HOME)/rpi-rgb-led-matrix/include -I./include
 
-OBJECTS=smartgirder.o widget.o display.o dashboard.o mqtt.o logger.o secrets.o datetime.o
-HEADERS=widget.h display.h dashboard.h mqtt.h logger.h secrets.h datetime.h icons.h
+OBJECTS=smartgirder.o widget.o display.o dashboard.o mqtt.o logger.o secrets.o datetime.o dynamicwidget.o
+HEADERS=widget.h display.h dashboard.h mqtt.h logger.h secrets.h datetime.h icons.h dynamicwidget.h
 BINARIES=smartgirder
 
 all : $(BINARIES)
@@ -32,7 +32,10 @@ dashboard.o : dashboard.cpp include/dashboard.h include/logger.h include/widget.
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
 
 widget.o : widget.cpp include/display.h include/logger.h include/widget.h include/icons.h
-	$(CXX) $(INCDIR) $(LIBPNG_CFLAGS) $(MAGICK_CFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+
+dynamicwidget.o: dynamicwidget.cpp include/dynamicwidget.h
+	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
 
 display.o : display.cpp include/display.h include/logger.h include/widget.h include/datetime.h
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
