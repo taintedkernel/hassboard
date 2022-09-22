@@ -107,12 +107,13 @@ int createMqttClient()
 // This will retry forever until connected or interrupted
 int mqttConnect()
 {
-  int rc, mq_retries = 1;
+  int rc, mqRetries = 1;
+  int connectWait = MQTT_CONNECT_WAIT;
 
   // Loop while we're not connected to MQTT and system is running
   while (!mqtt.connected && girderRunning)
   {
-    _debug("MQTT connect attempt %d", mq_retries);
+    _debug("MQTT connect attempt %d", mqRetries);
     rc = mosquitto_connect(mqtt.client, mqtt.server, mqtt.port, mqtt.keepalive);
     if (rc == MOSQ_ERR_SUCCESS)
     {
@@ -124,11 +125,13 @@ int mqttConnect()
       return true;
     }
 
-    _error("MQTT connection failed, attempt %d: rc=%d (%s)", mq_retries++, rc, mosquitto_strerror(rc));
-    sleep(MQTT_CONNECT_WAIT);
+    _error("MQTT connection failed, attempt %d: rc=%d (%s)", mqRetries++, rc, mosquitto_strerror(rc));
+    sleep(connectWait);
 
     // TODO: In event of repeated failures, try to create new client and
     // reset libraries/connections/etc from scratch
+    if (connectWait < MQTT_CONNECT_WAIT_MAX)
+      connectWait++;
   }
 
   return true;

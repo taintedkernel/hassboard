@@ -23,9 +23,10 @@
 
 #define ICON_HOST           "10.4.3.10"
 
-#define MQTT_CLIENT_DEFAULT "girder"
-#define MQTT_CLIENT_ID_LEN  64
-#define MQTT_CONNECT_WAIT   5
+#define MQTT_CLIENT_DEFAULT     "girder"
+#define MQTT_CLIENT_ID_LEN      64
+#define MQTT_CONNECT_WAIT       1
+#define MQTT_CONNECT_WAIT_MAX   60
 
 
 extern volatile bool girderRunning;
