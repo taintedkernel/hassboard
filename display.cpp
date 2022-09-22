@@ -27,7 +27,9 @@ Color colorTime       = Color(248, 96, 8);
 // Color colorText     = Color(80, 160, 224);
 // Color colorText     = Color(64, 148, 192);
 // Color colorText     = Color(128, 148, 160);
-Color colorText       = Color(112, 148, 176);
+Color colorDayText    = Color(112, 148, 176);
+Color colorNightText  = Color(176, 148, 112);
+Color colorText       = colorDayText;
 Color colorDarkText   = Color(56, 74, 88);
 Color colorAlert      = Color(248, 48, 8);
 

@@ -65,6 +65,7 @@ rgb_matrix::Font *customFont, *smallFont;
 extern uint32_t cycle;
 extern bool forceRefresh;
 extern uint8_t refreshActiveDelay;
+extern rgb_matrix::Color colorText, colorDayText, colorNightText;
 extern rgb_matrix::Color colorWhite, colorGrey, colorDarkText, colorAlert;
 extern rgb_matrix::Font *defaultFont;
 
@@ -318,9 +319,27 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   {
     showMessage(topic, payloadAsChars);
     if (strcmp(payloadAsChars, "above_horizon") == 0)
+    {
       daytime = true;
+      colorText = colorDayText;
+      for (int i=0; i<numWidgets; i++) {
+        widgetCollection[i]->setTextColor(colorDayText);
+      }
+
+      setBrightness(50);
+      displayDashboard(true);
+    }
     else if (strcmp(payloadAsChars, "below_horizon") == 0)
+    {
       daytime = false;
+      colorText = colorNightText;
+      for (int i=0; i<numWidgets; i++) {
+        widgetCollection[i]->setTextColor(colorNightText);
+      }
+
+      setBrightness(25);
+      displayDashboard(true);
+    }
     else
       _error("unknown sun state received, skipping update");
 

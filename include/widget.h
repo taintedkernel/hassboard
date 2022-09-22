@@ -129,6 +129,7 @@ public:
     // bool clearText = true);
   void setCustomTextRender(int (render)TEXT_RENDER_SIG);
   void setAlertLevel(float, rgb_matrix::Color);
+  void setTextColor(rgb_matrix::Color);
   void updateText(char *text, bool brighten = true);
   void updateText(char *text, void(helperFunc)(char*, char*), bool brighten = true);
 

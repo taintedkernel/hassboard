@@ -280,6 +280,11 @@ void DashboardWidget::setAlertLevel(float alertLevel, rgb_matrix::Color alertCol
   tAlertColor = alertColor;
 }
 
+void DashboardWidget::setTextColor(rgb_matrix::Color newTextColor)
+{
+  tColor = newTextColor;
+}
+
 // Update text and set temporary bold brightness
 void DashboardWidget::updateText(char *text, bool brighten)
 {
