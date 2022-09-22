@@ -16,32 +16,6 @@ void showMessage(char *topic, char *payload)
   _log("message arrived on %s: %s", topic, payload);
 }
 
-/* bool httpGet(char *url, uint8_t *buffer, uint16_t bufferLen)
-{
-  HttpClient httpClient = HttpClient(wifiClient, ICON_HOST, 8989);
-
-  httpClient.get(url);
-  int statusCode = httpClient.responseStatusCode();
-  std::string response = httpClient.responseBody();
-  uint16_t responseLen = response.length();
-  bool success = false;
-
-  if (statusCode != 200) {
-    _error("failure on HTTP GET, code: %dresponse: %s\n", statusCode, response);
-  }
-  else if (response.length() > bufferLen) {
-    _error("buffer allocation error: %d bytes reserved, but response is %d bytes\n", bufferLen, responseLen);
-  }
-  else {
-    printf("read %d bytes\n", responseLen);
-    memcpy(buffer, response.c_str(), responseLen);
-    success = true;
-  }
-
-  httpClient.stop();
-  return success;
-} */
-
 // Callback after MQTT connection
 void mqttOnConnect(struct mosquitto *mqttConnect, void *obj, int rc)
 {

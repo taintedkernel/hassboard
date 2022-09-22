@@ -168,12 +168,11 @@ void setupDashboard()
   widget->setSize(DashboardWidget::WIDGET_LONG);
   widget->setIconImage(9, 8, "icons/calendar.png");
   widget->setCustomTextConfig(WIDGET_WIDTH_LONG, 0,
-    colorWhite, DashboardWidget::ALIGN_LEFT, smallFont,
+    colorText, DashboardWidget::ALIGN_LEFT, smallFont,
     FONT_WIDTH_SMALL, FONT_HEIGHT_SMALL);
   widget->setCustomTextRender(drawTextCustom);
   widget->setVisibleSize(20);
-  // widget->setTextScollable(true);
-  widget->setDebug(true);
+  // widget->setDebug(true);
 
   widgetCollection[numWidgets++] = &wHouseTemp;
   widgetCollection[numWidgets++] = &wHouseDewpoint;

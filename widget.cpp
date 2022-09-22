@@ -429,10 +429,10 @@ void DashboardWidget::clear(bool force)
   if (!active && !force)
     return;
 
-  if (debug)
-    drawRect(widgetX, widgetY, width, height, colorDarkGrey);
-  else
-    drawRect(widgetX, widgetY, width, height, colorBlack);
+  // if (debug)
+  //   drawRect(widgetX, widgetY, width, height, colorDarkGrey);
+  // else
+  drawRect(widgetX, widgetY, width, height+1, colorBlack);
 }
 
 // Render our widget
@@ -516,10 +516,13 @@ int DashboardWidget::renderText()
     _debug("- x,textX,len,offset = %d, %d, %d, %d",
       widgetX, tX, textLen, offset);
 
-    matrix->SetPixel(widgetX+offset, widgetY, 255,0,0);
-    matrix->SetPixel(widgetX+offset, widgetY+tFontHeight-1, 0,0,255);
-    matrix->SetPixel(widgetX+offset + tFontWidth*tVisibleSize, widgetY, 0,255,0);
-    matrix->SetPixel(widgetX+offset + tFontWidth*tVisibleSize, widgetY+tFontHeight-1, 255,255,255);
+    matrix->SetPixel(widgetX + offset, widgetY, 255,0,0);
+    matrix->SetPixel(widgetX + offset, widgetY + tFontHeight - 1,
+      0,0,255);
+    matrix->SetPixel(widgetX + offset + tFontWidth * tVisibleSize,
+      widgetY, 0,255,0);
+    matrix->SetPixel(widgetX + offset + tFontWidth * tVisibleSize,
+      widgetY + tFontHeight-1, 255,255,255);
   }
 
   // Call the custom text renderer, if set

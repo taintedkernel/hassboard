@@ -33,7 +33,7 @@ void DynamicDashboardWidget::doTextUpdate()
   strFree = str = strdup(fullTextData);
   while ((token = strsep(&str, "\n"))) {
     if (i++ == currentTextLine) {
-      _debug("dWidget: %s: updating text to %s", name, token);
+      // _debug("dWidget: %s: updating text to %s", name, token);
       strncpy(tData, token, WIDGET_TEXT_LEN);
       break;
     }
