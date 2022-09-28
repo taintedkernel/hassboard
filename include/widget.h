@@ -157,6 +157,7 @@ public:
   // Functions - "Active-ness" adjustments
   void checkResetActive();
   void setResetActiveTime(clock_t time);
+  void setResetActiveTime(uint16_t delay);
 
   // Functions - Generic periodic updates
   virtual void checkUpdate();

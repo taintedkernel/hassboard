@@ -636,4 +636,11 @@ void DashboardWidget::setResetActiveTime(clock_t time)
   resetActiveTime = time;
 }
 
+// Set the time to reset the active state to now
+void DashboardWidget::setResetActiveTime(uint16_t delay)
+{
+  resetActiveTime = clock() + delay * CLOCKS_PER_SEC;
+}
+
+
 void DashboardWidget::checkUpdate() {}

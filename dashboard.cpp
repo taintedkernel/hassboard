@@ -305,12 +305,12 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     // conditions here, where outdoorWeather is set back to active
     // before outdoorForecast is deactivated (and thus cleared,
     // resulting in a blank widget)
-    wOutdoorForecast.setResetActiveTime(clock() + refreshActiveDelay * CLOCKS_PER_SEC);
+    wOutdoorForecast.setResetActiveTime((uint16_t)refreshActiveDelay);
     wOutdoorForecast.updateText(payloadAsChars);
     wOutdoorForecast.setActive(true);
     wOutdoorForecast.render();
     wOutdoorWeather.setActive(false);
-    wOutdoorWeather.setResetActiveTime(clock() + refreshActiveDelay * CLOCKS_PER_SEC);
+    wOutdoorWeather.setResetActiveTime((uint16_t)refreshActiveDelay);
   }
 
   // "Weather": Sun position
