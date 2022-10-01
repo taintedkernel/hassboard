@@ -14,6 +14,7 @@
 #include "mqtt.h"
 // #include "datetime.h"
 #include "widget.h"
+#include "widgetmanager.h"
 
 
 // Various vars for main functions
@@ -25,7 +26,7 @@ uint32_t refreshCycle = 0;
 
 extern st_mqttClient mqtt;
 extern uint8_t numWidgets;
-extern DashboardWidget* widgetCollection[];
+extern WidgetManager widgets;
 
 
 void handleSignal(int signal)
@@ -101,22 +102,14 @@ int main(int argc, char **argv)
     displayClock();
 
     // Reset temporary brightness for widgets, if necessary
-    for (int i=0; i<numWidgets; i++) {
-      widgetCollection[i]->checkResetBrightness();
-      widgetCollection[i]->checkResetActive();
-    }
+    // Recalculate brightness for widgets, assuming there was an
+    // update to the global value if a force refresh was done
+    widgets.checkResetUpdateBrightness(forceRefresh);
 
     // Force refresh of the display
     if (forceRefresh)
     {
       _log("forcing dashboard refresh");
-      // _debug("widget count: %d", numWidgets);
-
-      // Recalculate brightness for widgets, assuming there was an
-      // update to the global value if a force refresh was done
-      for (int i=0; i<numWidgets; i++) {
-        widgetCollection[i]->updateBrightness();
-      }
 
       displayClock(true);
       displayDashboard();
@@ -126,11 +119,6 @@ int main(int argc, char **argv)
     // Pause between cycles, after startup has finished
     if (clock() > 5.0 * CLOCKS_PER_SEC) {
       sleep(0.1);
-    }
-
-    // Scroll text, if necessary
-    for (int i=0; i<numWidgets; i++) {
-      widgetCollection[i]->checkUpdate();
     }
   }
 

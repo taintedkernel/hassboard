@@ -1,6 +1,7 @@
 #include "dashboard.h"
 #include "logger.h"
 #include "widget.h"
+#include "widgetmanager.h"
 #include "dynamicwidget.h"
 #include "icons.h"
 #include "mqtt.h"
@@ -58,7 +59,8 @@ DashboardWidget wOutdoorForecast("outdoorForecast");
 DynamicDashboardWidget wCalendar("calendar");
 
 // TODO: fix this, eg: add a widget manager
-DashboardWidget *widget, *widgetCollection[MAX_WIDGETS];
+DashboardWidget *widget;
+WidgetManager widgets;
 
 rgb_matrix::Font *customFont, *smallFont;
 
@@ -84,6 +86,7 @@ void setupDashboard()
   widget->setIconOrigin(0, 1);
   widget->setVisibleSize(3);
   // widget->setDebug(true);
+  widgets.addWidget(widget);
 
   // Living room dewpoint
   widget = &wHouseDewpoint;
@@ -93,6 +96,7 @@ void setupDashboard()
   widget->setIconImage(8, 7, big_house_drop);
   widget->setIconOrigin(0, 1);
   widget->setVisibleSize(3);
+  widgets.addWidget(widget);
 
   // Row 2
   // Rain gauge
@@ -104,6 +108,7 @@ void setupDashboard()
   // This metric updates on slower interval, so default to blank
   widget->updateText((char *)"--", false);
   widget->setVisibleSize(3);
+  widgets.addWidget(widget);
 
   // Dewpoint
   widget = &wOutdoorDewpoint;
@@ -112,6 +117,7 @@ void setupDashboard()
   widget->autoTextConfig();
   widget->setIconImage(8, 8, droplet);
   widget->setVisibleSize(3);
+  widgets.addWidget(widget);
 
   // Row 3
   // Wind speed
@@ -123,6 +129,7 @@ void setupDashboard()
   // This metric updates on slower interval, so default to blank
   widget->updateText((char *)"--", false);
   widget->setVisibleSize(3);
+  widgets.addWidget(widget);
 
   // PM2.5
   widget = &wOutdoorPM25;
@@ -133,6 +140,7 @@ void setupDashboard()
   // widget->setTextConfig(WIDGET_WIDTH_SMALL, 0);
   widget->setVisibleSize(3);
   widget->setAlertLevel(20.0, colorAlert);
+  widgets.addWidget(widget);
 
   // Main, current weather row (2nd display)
   customFont = new rgb_matrix::Font;
@@ -146,6 +154,7 @@ void setupDashboard()
     FONT_WIDTH_2, FONT_HEIGHT_2);
   widget->setBounds(32, 34);
   widget->setVisibleSize(3);
+  widgets.addWidget(widget);
 
   // Alternate forecast widget, to show over current weather
   smallFont = new rgb_matrix::Font;
@@ -161,6 +170,7 @@ void setupDashboard()
   widget->setBounds(32, 34);
   widget->setActive(false);
   widget->setVisibleSize(5);
+  widgets.addWidget(widget);
 
   // Calendar events
   widget = &wCalendar;
@@ -173,24 +183,13 @@ void setupDashboard()
   widget->setCustomTextRender(drawTextCustom);
   widget->setVisibleSize(20);
   // widget->setDebug(true);
-
-  widgetCollection[numWidgets++] = &wHouseTemp;
-  widgetCollection[numWidgets++] = &wHouseDewpoint;
-  widgetCollection[numWidgets++] = &wOutdoorRainGauge;
-  widgetCollection[numWidgets++] = &wOutdoorDewpoint;
-  widgetCollection[numWidgets++] = &wOutdoorWind;
-  widgetCollection[numWidgets++] = &wOutdoorPM25;
-  widgetCollection[numWidgets++] = &wOutdoorWeather;
-  widgetCollection[numWidgets++] = &wOutdoorForecast;
-  widgetCollection[numWidgets++] = &wCalendar;
+  widgets.addWidget(widget);
 }
 
+// Render active widgets
 void displayDashboard(bool force)
 {
-  // Render active widgets
-  for (int i=0; i<numWidgets; i++) {
-    widgetCollection[i]->render();
-  }
+  widgets.displayDashboard();
   displayClock(force);
 }
 
@@ -321,8 +320,8 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     {
       daytime = true;
       colorText = colorDayText;
-      for (int i=0; i<numWidgets; i++) {
-        widgetCollection[i]->setTextColor(colorDayText);
+      for (int i=0; i<widgets.size(); i++) {
+        widgets[i]->setTextColor(colorDayText);
       }
 
       setBrightness(50);
@@ -332,8 +331,8 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     {
       daytime = false;
       colorText = colorNightText;
-      for (int i=0; i<numWidgets; i++) {
-        widgetCollection[i]->setTextColor(colorNightText);
+      for (int i=0; i<widgets.size(); i++) {
+        widgets[i]->setTextColor(colorNightText);
       }
 
       setBrightness(25);
