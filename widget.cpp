@@ -26,26 +26,37 @@ extern rgb_matrix::Font *defaultFont;
 
 
 // Convert received temperature to integer
-void tempIntHelper(char *textData, char *payload) {
-  snprintf(textData, WIDGET_TEXT_LEN, "%d", atoi(payload));
+char* tempIntHelper(char *payload)
+{
+  char *buffer = new char[WIDGET_TEXT_LEN];
+  snprintf(buffer, WIDGET_TEXT_LEN, "%d", atoi(payload));
+  return buffer;
 }
 
 // Convert received temperature to F, then integer
-void tempC2FHelper(char *textData, char *payload)
+char* tempC2FHelper(char *payload)
 {
-  snprintf(textData, WIDGET_TEXT_LEN, "%d",
+  char *buffer = new char[WIDGET_TEXT_LEN];
+
+  snprintf(buffer, WIDGET_TEXT_LEN, "%d",
     int(atof(payload) * 9 / 5 + 32));
+
+  return buffer;
 }
 
 // Limit string length of displayed value
 // (if 10 or greater, just show integer value)
-void floatStrLen(char *textData, char *payload)
+char* floatStrLen(char *payload)
 {
+  char *buffer = new char[WIDGET_TEXT_LEN];
+
   if (atof(payload) >= 10.0) {
-    snprintf(textData, WIDGET_TEXT_LEN, "%d", int(atof(payload)));
+    snprintf(buffer, WIDGET_TEXT_LEN, "%d", int(atof(payload)));
   } else {
-    snprintf(textData, WIDGET_TEXT_LEN, "%1.1f", atof(payload));
+    snprintf(buffer, WIDGET_TEXT_LEN, "%1.1f", atof(payload));
   }
+
+  return buffer;
 }
 
 // Translate weather condition to matching icon, return filename
@@ -310,13 +321,14 @@ void DashboardWidget::updateText(char *text, bool brighten)
 }
 
 // Update text with helper, then update same as above
-void DashboardWidget::updateText(char *data, void(helperFunc)(char*, char*), bool brighten)
+void DashboardWidget::updateText(char *data, char*(helperFunc)(char*), bool brighten)
 {
-  char buffer[WIDGET_TEXT_LEN];
+  // char buffer[WIDGET_TEXT_LEN];
 
   // Dual-copy used here to prevent dupication of logic
-  helperFunc(buffer, data);
-  updateText(buffer, brighten);
+  char *updatedText = helperFunc(data);
+  updateText(updatedText, brighten);
+  free(updatedText);
 }
 
 /* ----==== [ Icon Functions ] ====---- */
@@ -631,16 +643,13 @@ void DashboardWidget::checkResetActive()
 }
 
 // Set the time to reset the active state
-void DashboardWidget::setResetActiveTime(clock_t time)
-{
+void DashboardWidget::setResetActiveTime(clock_t time) {
   resetActiveTime = time;
 }
 
 // Set the time to reset the active state to now
-void DashboardWidget::setResetActiveTime(uint16_t delay)
-{
+void DashboardWidget::setResetActiveTime(uint16_t delay) {
   resetActiveTime = clock() + delay * CLOCKS_PER_SEC;
 }
-
 
 void DashboardWidget::checkUpdate() {}

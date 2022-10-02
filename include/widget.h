@@ -30,9 +30,9 @@
 
 using rgb_matrix::Color;
 
-void tempIntHelper(char *, char *);
-void tempC2FHelper(char *, char *);
-void floatStrLen(char *, char *);
+char* tempIntHelper(char *);
+char* tempC2FHelper(char *);
+char* floatStrLen(char *);
 const char* weatherIconHelper(char *);
 
 extern Color colorText;
@@ -131,7 +131,7 @@ public:
   void setAlertLevel(float, rgb_matrix::Color);
   void setTextColor(rgb_matrix::Color);
   void updateText(char *text, bool brighten = true);
-  void updateText(char *text, void(helperFunc)(char*, char*), bool brighten = true);
+  void updateText(char *text, char*(helperFunc)(char*), bool brighten = true);
 
   // Functions - Icon
   void setIconOrigin(uint8_t x, uint8_t y);
