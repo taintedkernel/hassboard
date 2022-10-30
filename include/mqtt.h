@@ -10,6 +10,7 @@
 #define HASS_LR_TEMP        "homeassistant/sensor/living_room_temperature/state"
 #define HASS_LR_DEW         "homeassistant/sensor/living_room_dew_point/state"
 #define PIWEATHER_WIND      "piweather/wind_speed_mph"
+#define PIWEATHER_MAX_WIND  "piweather/max_wind_speed_mph"
 #define PIWEATHER_RAINFALL  "piweather/rainfall_last_hour"
 #define WEATHER_FC_TEMP     "weather/forecast/temperature"
 #define WEATHER_FC_STATE    "weather/forecast/state"

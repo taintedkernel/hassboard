@@ -36,7 +36,7 @@ void mqttOnConnect(struct mosquitto *mqttConnect, void *obj, int rc)
   mosquitto_subscribe(mqtt.client, NULL, HASS_OUT_PM25, 0);
   mosquitto_subscribe(mqtt.client, NULL, HASS_LR_TEMP, 0);
   mosquitto_subscribe(mqtt.client, NULL, HASS_LR_DEW, 0);
-  mosquitto_subscribe(mqtt.client, NULL, PIWEATHER_WIND, 0);
+  mosquitto_subscribe(mqtt.client, NULL, PIWEATHER_MAX_WIND, 0);
   mosquitto_subscribe(mqtt.client, NULL, PIWEATHER_RAINFALL, 0);
   mosquitto_subscribe(mqtt.client, NULL, "thermostat/#", 0);
   mosquitto_subscribe(mqtt.client, NULL, "weather/#", 0);

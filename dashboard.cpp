@@ -256,7 +256,7 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   }
 
   // RPi Weather Station: Wind
-  else if (strcmp(topic, PIWEATHER_WIND) == 0)
+  else if (strcmp(topic, PIWEATHER_MAX_WIND) == 0)
   {
     showMessage(topic, payloadAsChars);
     wOutdoorWind.updateText(payloadAsChars, floatStrLen);
