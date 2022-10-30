@@ -120,6 +120,9 @@ int main(int argc, char **argv)
     if (clock() > 5.0 * CLOCKS_PER_SEC) {
       sleep(0.1);
     }
+
+    // Update any dynamic widgets
+    widgets.checkUpdate();
   }
 
   _log("closing matrix");
