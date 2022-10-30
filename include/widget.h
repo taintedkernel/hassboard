@@ -11,7 +11,8 @@
 #define WIDGET_TEXT_LEN         256
 #define WIDGET_DATA_LEN         32
 
-#define WIDGET_WIDTH_SMALL      28
+// #define WIDGET_WIDTH_SMALL      28
+#define WIDGET_WIDTH_SMALL      26
 #define WIDGET_HEIGHT_SMALL     FONT_HEIGHT
 
 #define WIDGET_WIDTH_LARGE      32

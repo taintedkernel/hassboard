@@ -19,7 +19,7 @@ bool heating = false;
 bool daytime = true;
 
 int8_t dashOffset = 0;
-int8_t weatherOffset = 64;
+int8_t weatherOffset = 62;
 int8_t clockOffset = 65;
 uint8_t clockWidth = 32;
 uint8_t rowDayStart = 2;
@@ -28,9 +28,7 @@ uint8_t rowTimeStart = rowDateStart + 10;
 uint8_t rowTempStart = 26;
 
 uint8_t colOneStart = dashOffset + 1;
-uint8_t colOneEnd = dashOffset + 30;
-uint8_t colTwoStart = dashOffset + 34;
-uint8_t colTwoEnd = dashOffset + 63;
+uint8_t colTwoStart = dashOffset + 32;
 
 uint8_t rowSpacing = 3;
 uint8_t rowOneStart = 1;
@@ -79,10 +77,10 @@ void setupDashboard()
   // Row 1
   // Living room temperature
   widget = &wHouseTemp;
-  widget->setOrigin(colOneStart-1, rowOneStart);
+  widget->setOrigin(colOneStart, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
-  widget->setIconImage(8, 7, big_house);
+  widget->setIconImage(7, 7, big_house);
   widget->setIconOrigin(0, 1);
   widget->setVisibleSize(3);
   // widget->setDebug(true);
@@ -93,8 +91,8 @@ void setupDashboard()
   widget->setOrigin(colTwoStart, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
-  widget->setIconImage(8, 7, big_house_drop);
-  widget->setIconOrigin(0, 1);
+  widget->setIconImage(7, 7, big_house_drop);
+  widget->setIconOrigin(1, 1);
   widget->setVisibleSize(3);
   widgets.addWidget(widget);
 
@@ -350,17 +348,17 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   {
     showMessage(topic, payloadAsChars);
     if (strcmp(payloadAsChars, "heating") == 0)
-      wHouseTemp.setIconImage(8, 7, big_house_heating);
+      wHouseTemp.setIconImage(7, 7, big_house_heating);
     else if (strcmp(payloadAsChars, "cooling") == 0)
-      wHouseTemp.setIconImage(8, 7, big_house_cooling);
+      wHouseTemp.setIconImage(7, 7, big_house_cooling);
     else if (strcmp(payloadAsChars, "idle (heat)") == 0)
-      wHouseTemp.setIconImage(8, 7, big_house_mode_heat);
+      wHouseTemp.setIconImage(7, 7, big_house_mode_heat);
     else if (strcmp(payloadAsChars, "idle (cool)") == 0)
-      wHouseTemp.setIconImage(8, 7, big_house_mode_cool);
+      wHouseTemp.setIconImage(7, 7, big_house_mode_cool);
     else if (strcmp(payloadAsChars, "fan_running") == 0)
-      wHouseTemp.setIconImage(8, 7, big_house_fan);
+      wHouseTemp.setIconImage(7, 7, big_house_fan);
     else if (strcmp(payloadAsChars, "off") == 0)
-      wHouseTemp.setIconImage(8, 7, big_house);
+      wHouseTemp.setIconImage(7, 7, big_house);
 
     displayDashboard();
   }
