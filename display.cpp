@@ -60,6 +60,13 @@ bool setupDisplay()
   displaySettings.brightness = 50;
   displaySettings.led_rgb_sequence = "RBG";
 
+  // Settings for 2nd smartgirder, single 128x64 panel
+  // displaySettings.hardware_mapping = "adafruit-hat-pwm";
+  // displaySettings.cols = 128;
+  // displaySettings.rows = 64;
+  // displaySettings.row_address_type = 3;
+  // displaySettings.brightness = 50;
+
   runtimeSettings.daemon = 0;
   runtimeSettings.drop_privileges = 1;
   runtimeSettings.gpio_slowdown = 4;
