@@ -29,6 +29,16 @@
 #define TEXT_RENDER_SIG         (uint8_t x, uint8_t y, Color color, const char *text, \
     GirderFont *font, bool vWidth)
 
+#define ICON_WEATHER_SUNNY            "icons/sun-1.0.png"
+#define ICON_WEATHER_PCLOUDY          "icons/clouds_sun-1.0.png"
+#define ICON_WEATHER_CLOUDY           "icons/clouds-1.0.png"
+#define ICON_WEATHER_RAINY            "icons/clouds_showers-1.1.png"
+#define ICON_WEATHER_SNOWY            "icons/clouds_snow-1.0.png"
+#define ICON_WEATHER_FOG              "icons/fog-1.0.png"
+#define ICON_WEATHER_CLEAR_NIGHT      "icons/moon-1.0.png"
+#define ICON_WEATHER_EXCEPTIONAL      "icons/clouds_exceptional-1.0.png"
+
+
 using rgb_matrix::Color;
 
 char* tempIntHelper(char *);

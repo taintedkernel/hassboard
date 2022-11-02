@@ -63,25 +63,28 @@ char* floatStrLen(char *payload)
 const char* weatherIconHelper(char *condition)
 {
   if (strcmp(condition, "sunny") == 0) {
-    return("icons/sun-1.0.png");
+    return(ICON_WEATHER_SUNNY);
   }
   else if (strcmp(condition, "partlycloudy") == 0) {
-    return("icons/clouds_sun-1.0.png");
+    return(ICON_WEATHER_PCLOUDY);
   }
   else if (strcmp(condition, "cloudy") == 0) {
-    return("icons/clouds-1.0.png");
+    return(ICON_WEATHER_CLOUDY);
   }
   else if (strcmp(condition, "rainy") == 0) {
-    return("icons/clouds_showers-1.0.png");
+    return(ICON_WEATHER_RAINY);
+  }
+  else if (strcmp(condition, "snowy") == 0) {
+    return(ICON_WEATHER_SNOWY);
   }
   else if (strcmp(condition, "fog") == 0) {
-    return("icons/fog-1.0.png");
+    return(ICON_WEATHER_FOG);
   }
   else if (strcmp(condition, "clear-night") == 0) {
-    return("icons/moon-1.0.png");
+    return(ICON_WEATHER_CLEAR_NIGHT);
   }
   else if (strcmp(condition, "exceptional") == 0) {
-    return("icons/clouds_exceptional-1.0.png");
+    return(ICON_WEATHER_EXCEPTIONAL);
   }
   else {
     return(condition);
