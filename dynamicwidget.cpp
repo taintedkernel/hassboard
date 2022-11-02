@@ -47,7 +47,7 @@ void DynamicDashboardWidget::doTextUpdate()
 // Set widget text
 void DynamicDashboardWidget::setText(char *text)
 {
-  _debug("dWidget %s: setting text to: %s", name, text);
+  // _debug("dWidget %s: setting text to: %s", name, text);
   strncpy(fullTextData, text, WIDGET_TEXT_LEN);
   doTextUpdate();
 }

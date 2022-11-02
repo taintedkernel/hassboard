@@ -23,10 +23,15 @@
 #define FONT_SMALL_WIDTH        6
 #define FONT_SMALL_HEIGHT       7
 
-#define FONT_CLOCK_FILE         "fonts/6x9.bdf"
-#define FONT_CLOCK_NAME         "clock"
+// #define FONT_CLOCK_FILE         "fonts/6x9.bdf"
+// #define FONT_CLOCK_NAME         "clock"
+// #define FONT_CLOCK_WIDTH        5
+// #define FONT_CLOCK_HEIGHT       7
+
+#define FONT_CLOCK_FILE         "fonts/6x12.bdf"
+#define FONT_CLOCK_NAME         "default"
 #define FONT_CLOCK_WIDTH        5
-#define FONT_CLOCK_HEIGHT       7
+#define FONT_CLOCK_HEIGHT       8
 
 using rgb_matrix::Color;
 
