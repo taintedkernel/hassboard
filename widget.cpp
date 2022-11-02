@@ -22,7 +22,7 @@ extern uint8_t boldBrightnessIncrease;
 extern uint32_t cycle;
 extern rgb_matrix::RGBMatrix *matrix;
 extern rgb_matrix::Color colorDarkGrey, colorBlack;
-extern rgb_matrix::Font *defaultFont;
+extern GirderFont *defaultFont;
 
 
 // Convert received temperature to integer
@@ -210,11 +210,17 @@ void DashboardWidget::setText(char *text)
   strncpy(tData, text, WIDGET_TEXT_LEN);
 }
 
+// Set custom font
+void DashboardWidget::setFont(GirderFont *font)
+{
+  tFont = font;
+}
+
 // Set widget text length
-void DashboardWidget::setVisibleSize(u_int16_t length)
+void DashboardWidget::setVisibleTextLength(u_int16_t length)
 {
   if (length > WIDGET_TEXT_LEN) {
-    _error("setVisibleSize(%d) on widget %s beyond maximum, using max as value",
+    _error("setVisibleTextLength(%d) on widget %s beyond maximum, using max as value",
         length, name);
     length = WIDGET_TEXT_LEN;
   }
@@ -252,8 +258,7 @@ void DashboardWidget::autoTextConfig(Color color, textAlignType align)
 // Set a manually-provided text configuration with locations
 // in the widget, text color and font information
 void DashboardWidget::setCustomTextConfig(uint8_t textX, uint8_t textY,
-  Color color, textAlignType align, rgb_matrix::Font *textFont,
-  uint8_t fontWidth, uint8_t fontHeight)
+  Color color, textAlignType align, GirderFont *textFont)
 {
   tX = textX;
   tY = textY;
@@ -264,12 +269,8 @@ void DashboardWidget::setCustomTextConfig(uint8_t textX, uint8_t textY,
   // Use default font if not provided
   if (textFont == NULL) {
     tFont = defaultFont;
-    tFontWidth = FONT_WIDTH;
-    tFontHeight = FONT_HEIGHT;
   } else {
     tFont = textFont;
-    tFontWidth = fontWidth;
-    tFontHeight = fontHeight;
   }
 
   // if (clearText) {
@@ -282,6 +283,13 @@ void DashboardWidget::setCustomTextRender(int (render)TEXT_RENDER_SIG)
 {
   customTextRender = render;
 }
+
+// Render widget with custom variable-width font spacing
+void DashboardWidget::setVariableWidth(bool vWidth)
+{
+  tVarWidth = vWidth;
+}
+
 
 // Set an alert level and color (currently on text)
 // Note: This currently only supports upper-bounds levels
@@ -492,18 +500,31 @@ int DashboardWidget::renderText()
 
   /* Old text scroll code lived here */
   uint8_t textLen = strlen(tData);
+  uint16_t renderLen;
+
+  if (tVarWidth) {
+    renderLen = textRenderLength(tData, tFont);
+  } else {
+    // Font width set to width of rendered glyph
+    // without any padding, account for this
+    renderLen = textLen * (tFont->width + 1) - 1;
+  }
 
   // Calculate positioning of text based on alignment
   if (tAlign == ALIGN_RIGHT) {
-    offset = tX - (textLen * tFontWidth) - 2;
-  } else if (tAlign == ALIGN_CENTER) {
-    offset = (tX / 2) - (textLen * tFontWidth / 2);
-  } else if (tAlign == ALIGN_LEFT) {
+    offset = tX - renderLen - 2;
+  }
+  else if (tAlign == ALIGN_CENTER) {
+    offset = (tX / 2) - (renderLen / 2);
+  }
+  else if (tAlign == ALIGN_LEFT) {
     offset = iWidth + WIDGET_ICON_TEXT_GAP;
-  } else {
+  }
+  else {
     _error("unknown text alignment %d, not rendering", tAlign);
     return 0;
   }
+
   if (offset < 0) {
     _warn("text length during alignment exceeds limits, may be truncated");
     offset = 0;
@@ -511,8 +532,7 @@ int DashboardWidget::renderText()
 
   // Calculate color, apply upper bound on channels
   // Note: This currently only supports upper-bounds levels
-  if (tAlertLevel > 0.00000001 &&
-        atof(tData) > tAlertLevel) {
+  if (tAlertLevel > 0.00000001 && atof(tData) > tAlertLevel) {
     color = Color(tAlertColor);
   }
   else {
@@ -525,26 +545,27 @@ int DashboardWidget::renderText()
   if (debug && localDebug)
   {
     _debug("renderText(%s) = [%s]", name, tData);
-    _debug("- x,textX,len,offset = %d, %d, %d, %d",
-      widgetX, tX, textLen, offset);
+    _debug("- x,textX,len,renderLen,offset = %d, %d, %d, %d, %d",
+      widgetX, tX, textLen, renderLen, offset);
 
-    matrix->SetPixel(widgetX + offset, widgetY, 255,0,0);
-    matrix->SetPixel(widgetX + offset, widgetY + tFontHeight - 1,
-      0,0,255);
-    matrix->SetPixel(widgetX + offset + tFontWidth * tVisibleSize,
-      widgetY, 0,255,0);
-    matrix->SetPixel(widgetX + offset + tFontWidth * tVisibleSize,
-      widgetY + tFontHeight-1, 255,255,255);
+    // yellow top-left
+    matrix->SetPixel(widgetX + offset, widgetY, 64, 64, 0);
+    matrix->SetPixel(widgetX + offset, widgetY + tFont->height-1,
+      0, 64, 64); // cyan bottom-left
+    matrix->SetPixel(widgetX + offset + renderLen - 1, widgetY,
+      64, 0, 64); // violet top-right
+    matrix->SetPixel(widgetX + offset + renderLen - 1,
+      widgetY + tFont->height-1, 64, 32, 64); // pink bottom-right
   }
 
   // Call the custom text renderer, if set
   int render;
   if (customTextRender)
     render = customTextRender(widgetX + offset, widgetY +
-        tY, color, tData, tFont, tFontWidth, tFontHeight);
+        tY, color, tData, tFont, tVarWidth);
   else
     render = drawText(widgetX + offset, widgetY + tY, color,
-        tData, tFont);
+        tData, tFont, tVarWidth);
 
   return render;
 }

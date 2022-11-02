@@ -18,23 +18,32 @@ char outdoorTemp[DASH_MAX_LEN+1] = "";
 bool heating = false;
 bool daytime = true;
 
-int8_t dashOffset = 0;
-int8_t weatherOffset = 62;
-int8_t clockOffset = 65;
+// int8_t dashOffset = 0;
+// int8_t weatherOffset = 62;
+// int8_t clockOffset = 96;
+// int8_t clockOffset = 65;
+
+uint8_t dashOffset = 72;
+uint8_t clockOffset = 38;
+uint8_t weatherOffsetX = 3;
+uint8_t calendarOffset = 1;
+
 uint8_t clockWidth = 32;
+
+uint8_t colOneStart = dashOffset;
+uint8_t colTwoStart = dashOffset + 30;
+
+uint8_t weatherOffsetY = 2;
 uint8_t rowDayStart = 2;
 uint8_t rowDateStart = rowDayStart + 10;
 uint8_t rowTimeStart = rowDateStart + 10;
 uint8_t rowTempStart = 26;
 
-uint8_t colOneStart = dashOffset + 1;
-uint8_t colTwoStart = dashOffset + 32;
-
 uint8_t rowSpacing = 3;
 uint8_t rowOneStart = 1;
-uint8_t rowTwoStart = rowOneStart + FONT_HEIGHT + rowSpacing;
-uint8_t rowThreeStart = rowTwoStart + FONT_HEIGHT + rowSpacing;
-uint8_t rowCalendarStart = rowThreeStart + (FONT_HEIGHT + rowSpacing) * 2;
+uint8_t rowTwoStart = rowOneStart + FONT_DEFAULT_HEIGHT + rowSpacing;
+uint8_t rowThreeStart = rowTwoStart + FONT_DEFAULT_HEIGHT + rowSpacing;
+uint8_t rowCalendarStart = rowThreeStart + (FONT_DEFAULT_HEIGHT + rowSpacing) + 6;
 
 // *TODO*: Wire up photocell and use to determine brightness
 // Control brightness by adjusting RGB values. Brightness is a
@@ -60,7 +69,7 @@ DynamicDashboardWidget wCalendar("calendar");
 DashboardWidget *widget;
 WidgetManager widgets;
 
-rgb_matrix::Font *customFont, *smallFont;
+GirderFont *largeFont, *smallFont;
 
 extern uint32_t cycle;
 extern bool forceRefresh;
@@ -82,7 +91,7 @@ void setupDashboard()
   widget->autoTextConfig();
   widget->setIconImage(7, 7, big_house);
   widget->setIconOrigin(0, 1);
-  widget->setVisibleSize(3);
+  widget->setVisibleTextLength(3);
   // widget->setDebug(true);
   widgets.addWidget(widget);
 
@@ -93,7 +102,7 @@ void setupDashboard()
   widget->autoTextConfig();
   widget->setIconImage(7, 7, big_house_drop);
   widget->setIconOrigin(1, 1);
-  widget->setVisibleSize(3);
+  widget->setVisibleTextLength(3);
   widgets.addWidget(widget);
 
   // Row 2
@@ -105,7 +114,7 @@ void setupDashboard()
   widget->setIconImage(8, 8, rain_gauge);
   // This metric updates on slower interval, so default to blank
   widget->updateText((char *)"--", false);
-  widget->setVisibleSize(3);
+  widget->setVisibleTextLength(3);
   widgets.addWidget(widget);
 
   // Dewpoint
@@ -114,7 +123,7 @@ void setupDashboard()
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
   widget->setIconImage(8, 8, droplet);
-  widget->setVisibleSize(3);
+  widget->setVisibleTextLength(3);
   widgets.addWidget(widget);
 
   // Row 3
@@ -123,10 +132,12 @@ void setupDashboard()
   widget->setOrigin(colOneStart, rowThreeStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
+  widget->setVariableWidth(true);
   widget->setIconImage(8, 8, wind);
   // This metric updates on slower interval, so default to blank
   widget->updateText((char *)"--", false);
-  widget->setVisibleSize(3);
+  widget->setVisibleTextLength(3);
+  // widget->setDebug(true);
   widgets.addWidget(widget);
 
   // PM2.5
@@ -134,52 +145,47 @@ void setupDashboard()
   widget->setOrigin(colTwoStart, rowThreeStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
+  widget->setVariableWidth(true);
   widget->setIconImage(7, 8, air);
-  // widget->setTextConfig(WIDGET_WIDTH_SMALL, 0);
-  widget->setVisibleSize(3);
+  widget->setVisibleTextLength(3);
   widget->setAlertLevel(20.0, colorAlert);
   widgets.addWidget(widget);
 
   // Main, current weather row (2nd display)
-  customFont = new rgb_matrix::Font;
-  customFont->LoadFont(FONT_FILE_2);
+  largeFont = new GirderFont(GirderFont::FONT_LARGE);
   widget = &wOutdoorWeather;
-  widget->setOrigin(weatherOffset, 0);
+  widget->setOrigin(weatherOffsetX, weatherOffsetY);
   widget->setSize(DashboardWidget::WIDGET_LARGE);
   widget->setIconImage(32, 25, cloud_sun_new);
   widget->setCustomTextConfig(WIDGET_WIDTH_LARGE, rowTempStart,
-    colorWhite, DashboardWidget::ALIGN_CENTER, customFont,
-    FONT_WIDTH_2, FONT_HEIGHT_2);
+    colorWhite, DashboardWidget::ALIGN_CENTER, largeFont);
   widget->setBounds(32, 34);
-  widget->setVisibleSize(3);
+  widget->setVisibleTextLength(3);
   widgets.addWidget(widget);
 
   // Alternate forecast widget, to show over current weather
-  smallFont = new rgb_matrix::Font;
-  smallFont->LoadFont(FONT_FILE_SMALL);
+  smallFont = new GirderFont(GirderFont::FONT_SMALL);
   widget = &wOutdoorForecast;
-  widget->setOrigin(weatherOffset, 0);
+  widget->setOrigin(weatherOffsetX, weatherOffsetY);
   widget->setSize(DashboardWidget::WIDGET_LARGE);
   widget->setIconImage(32, 25, cloud_sun_new);
   widget->setCustomTextConfig(WIDGET_WIDTH_LARGE+4, rowTempStart-2,
-    colorText, DashboardWidget::ALIGN_CENTER, smallFont,
-    FONT_WIDTH_SMALL, FONT_HEIGHT_SMALL);
+    colorText, DashboardWidget::ALIGN_CENTER, smallFont);
   widget->setCustomTextRender(drawTextCustom);
   widget->setBounds(32, 34);
   widget->setActive(false);
-  widget->setVisibleSize(5);
+  widget->setVisibleTextLength(5);
   widgets.addWidget(widget);
 
   // Calendar events
   widget = &wCalendar;
-  widget->setOrigin(colOneStart, rowCalendarStart);
+  widget->setOrigin(calendarOffset, rowCalendarStart);
   widget->setSize(DashboardWidget::WIDGET_LONG);
   widget->setIconImage(9, 8, "icons/calendar.png");
   widget->setCustomTextConfig(WIDGET_WIDTH_LONG, 0,
-    colorText, DashboardWidget::ALIGN_LEFT, smallFont,
-    FONT_WIDTH_SMALL, FONT_HEIGHT_SMALL);
+    colorText, DashboardWidget::ALIGN_LEFT, smallFont);
   widget->setCustomTextRender(drawTextCustom);
-  widget->setVisibleSize(20);
+  widget->setVisibleTextLength(20);
   // widget->setDebug(true);
   widgets.addWidget(widget);
 }

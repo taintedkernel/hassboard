@@ -12,14 +12,14 @@
 #define WIDGET_DATA_LEN         32
 
 // #define WIDGET_WIDTH_SMALL      28
-#define WIDGET_WIDTH_SMALL      26
-#define WIDGET_HEIGHT_SMALL     FONT_HEIGHT
+#define WIDGET_WIDTH_SMALL      25
+#define WIDGET_HEIGHT_SMALL     FONT_DEFAULT_HEIGHT
 
 #define WIDGET_WIDTH_LARGE      32
 #define WIDGET_HEIGHT_LARGE     32
 
 #define WIDGET_WIDTH_LONG       128
-#define WIDGET_HEIGHT_LONG      FONT_HEIGHT
+#define WIDGET_HEIGHT_LONG      FONT_DEFAULT_HEIGHT
 
 #define WIDGET_ICON_TEXT_GAP    4
 
@@ -27,7 +27,7 @@
 #define ICON_SZ_BYTES           ICON_SZ * sizeof(uint16_t)
 
 #define TEXT_RENDER_SIG         (uint8_t x, uint8_t y, Color color, const char *text, \
-    rgb_matrix::Font *font, uint8_t hSpacing, uint8_t fontHeight)
+    GirderFont *font, bool vWidth)
 
 using rgb_matrix::Color;
 
@@ -46,7 +46,7 @@ public:
   enum widgetSizeType{WIDGET_SMALL, WIDGET_LARGE, WIDGET_LONG};
   enum brightType{BRIGHT_ICON, BRIGHT_TEXT, BRIGHT_BOTH};
   enum textAlignType{ALIGN_RIGHT, ALIGN_CENTER, ALIGN_LEFT};
-  static const uint8_t textDefaultWidth = FONT_WIDTH;
+  static const uint8_t textDefaultWidth = FONT_DEFAULT_WIDTH;
 
 protected:
   /*** ATTRIBUTES ***/
@@ -72,13 +72,13 @@ protected:
   char tData[WIDGET_TEXT_LEN+1];
 
   // Text fonts/colors/data/etc
-  rgb_matrix::Font *tFont;
+  GirderFont *tFont;
+  // rgb_matrix::Font *tFont;
   rgb_matrix::Color tColor;
 
   uint8_t tAlign;
-  uint8_t tFontWidth = 0;
-  uint8_t tFontHeight = 0;
   uint8_t tVisibleSize = 0;       // Visible text length on widget
+  bool tVarWidth = false;
 
   float tAlertLevel;
   rgb_matrix::Color tAlertColor;
@@ -117,18 +117,19 @@ public:
 
   // Functions - Text
   char* getText();
+  void setFont(GirderFont *font);
 
 protected:
   virtual void setText(char *);
 
 public:
-  void setVisibleSize(u_int16_t);
+  void setVisibleTextLength(u_int16_t);
   void autoTextConfig(Color = colorText, textAlignType = ALIGN_RIGHT);
   void setCustomTextConfig(uint8_t textX, uint8_t textY, Color color = colorText,
-    textAlignType = ALIGN_RIGHT, rgb_matrix::Font *textFont = NULL,
-    uint8_t fontWidth = 0, uint8_t fontHeight = 0);
+    textAlignType = ALIGN_RIGHT, GirderFont *font = NULL);
     // bool clearText = true);
   void setCustomTextRender(int (render)TEXT_RENDER_SIG);
+  void setVariableWidth(bool);
   void setAlertLevel(float, rgb_matrix::Color);
   void setTextColor(rgb_matrix::Color);
   void updateText(char *text, bool brighten = true);

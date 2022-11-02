@@ -34,8 +34,9 @@ Color colorDarkText   = Color(56, 74, 88);
 Color colorAlert      = Color(248, 48, 8);
 
 rgb_matrix::RGBMatrix *matrix;
-rgb_matrix::Font *defaultFont;
 rgb_matrix::PixelMapper *mapper;
+GirderFont *defaultFont;
+GirderFont *clockFont;
 
 extern int8_t clockOffset;
 extern uint8_t rowDayStart;
@@ -83,10 +84,10 @@ bool setupDisplay()
   matrix->Fill(0, 0, 0);
   matrix->SetBrightness(50);
 
-  // Load font
-  _debug("loading font");
-  defaultFont = new rgb_matrix::Font;
-  defaultFont->LoadFont(FONT_FILE);
+  // Load fonts
+  _log("loading fonts");
+  defaultFont = new GirderFont(GirderFont::FONT_DEFAULT);
+  clockFont = new GirderFont(GirderFont::FONT_CLOCK);
 
   return true;
 }
@@ -112,55 +113,206 @@ void setBrightness(uint8_t brightness)
   // return Color(r, g, b);
 } */
 
-// Render text in color at (x,y)
-// int drawText(uint8_t x, uint8_t y, Font font, Color color, const char *text)
-int drawText(uint8_t x, uint8_t y, Color color, const char *text, Font *font)
+// Non full-width glyphs are not left-justified, so
+// this calculates the offset to allow for shifting
+// the rendering location to compensate
+int8_t vGlyphOffset(const char glyph, GirderFont *font)
 {
+  if (strcmp(font->name, "clock") == 0)
+  {
+    if (glyph == '0')
+      return 1;
+    else if (glyph == '1')
+      return 1;
+    else if (glyph == '4')
+      return 0;
+    else if (glyph >= '2' && glyph <= '9')
+      return 1;
+    else {
+      return 0;
+    }
+  }
+  else if (strcmp(font->name, "default") == 0)
+  {
+    if (glyph == '0') {
+      return 1;
+    } else if (glyph == '1') {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
+}
+
+// Calculate the width of a glyph, with the spacing between them
+uint8_t vGlyphWidth(const char glyph, GirderFont *font)
+{
+  // The approach here is to set the width to the full font
+  // width by default, and adjust (shrink) the width with an
+  // offset for any glyphs that are not full-width
+  // int8_t offset = 0;
+  int8_t offset = 1;
+
+  // Custom glyphs
+  if (glyph == '.')
+    return offset + 1;
+  if (glyph == ':')
+    return offset + 1;
+
+  // Adjust the "narrower" glyphs
+  if (strcmp(font->name, "clock") == 0)
+  {
+    if (glyph == '0')
+      offset -= 1;
+    else if (glyph == '1')
+      offset -= 2;
+    else if (glyph == '4')
+      offset -= 0;
+    else if (glyph >= '2' && glyph <= '9')
+      offset -= 1;
+    else {
+      // noop
+    }
+  }
+  else if (strcmp(font->name, "default") == 0)
+  {
+    if (glyph == '0')
+      offset -= 1;
+    else if (glyph == '1')
+      offset -= 2;
+    else {
+      // noop
+    }
+  }
+
+  return font->width + offset;
+}
+
+// Render a variable-width glyph to the matrix
+void renderGlyph(const char glyph, uint8_t x, uint8_t y,
+    GirderFont *font, Color color)
+{
+  char buffer[2];
+  buffer[0] = glyph;
+  buffer[1] = '\0';
+
+  // _debug("rendering glyph: '%s'", buffer);
+
+  // Use single pixel for '.' glyph
+  if (glyph == '.') {
+    matrix->SetPixel(x, y-2, color.r, color.g, color.b);
+  }
+  else if (glyph == ':') {
+    matrix->SetPixel(x, y-2, color.r, color.g, color.b);
+    matrix->SetPixel(x, y-3, color.r, color.g, color.b);
+    matrix->SetPixel(x, y-5, color.r, color.g, color.b);
+    matrix->SetPixel(x, y-6, color.r, color.g, color.b);
+  }
+  // Call upstream library to render, and adjust position
+  else
+  {
+    DrawText(matrix, *font->font, x - vGlyphOffset(glyph, font),
+        y-1, color, NULL, buffer, 0);
+  }
+}
+
+// Calculate what the actual rendered length of a string will be
+uint16_t textRenderLength(const char *text, GirderFont *font)
+{
+  uint16_t length = 0;
+
+  for (size_t i=0; i<strlen(text); i++) {
+    length += vGlyphWidth(text[i], font);
+  }
+
+  // Remove trailing space
+  return length - 1;
+}
+
+// Render text in color at (x,y)
+int drawText(uint8_t x, uint8_t y, Color color, const char *text,
+        GirderFont *font, bool vWidth)
+{
+  rgb_matrix::Font *mFont;
+
   if (font == NULL) {
     font = defaultFont;
   }
+  mFont = font->GetFont();
+
   // _debug("drawText x,y,msg: %d,%d,\"%s\"", x, y, text);
 
   if (strchr(text, '.') != NULL && strlen(text) != 3) {
-      _warn("unable to autoparse text for custom rendering, using default");
+    _warn("unable to autoparse text for custom rendering, using default");
   }
-  // TODO: Make this generic and able to handle strings beyond only "d.d" format
-  else if (strchr(text, '.') != NULL && strlen(text) == 3)
-  {
-    uint8_t len = strlen(text);
 
-    // _debug("strlen=%d", len);
-    // _debug("%c", *(text+len-1));
+  // if (strchr(text, '.') != NULL && strlen(text) == 3 && vWidth)
+  if (vWidth)
+  {
+    uint16_t xStart = x;
+    uint8_t textLen = strlen(text);
+    uint16_t renderLen = textRenderLength(text, font);
+
+    _debug("vstring='%s' len=%d renderLen=%d", text, textLen,
+        renderLen);
+
+    char glyph;
+    for (uint8_t idx=0; idx<textLen; idx++)
+    {
+      glyph = *(text+idx);
+      // _debug("glyph: '%c'", glyph);
+      renderGlyph(glyph, xStart, y+font->height, font, color);
+      xStart += vGlyphWidth(glyph, font);
+      // _debug("new xStart: %d", xStart);
+    }
+
+    return 0;
+  }
+
+  // "x.y" strings with variable width not enabled
+  else if (strchr(text, '.') != NULL && strlen(text) == 3 && !vWidth)
+  {
+    uint8_t textLen = strlen(text);
+    uint16_t renderLen = textRenderLength(text, font);
+
+    _debug("string='%s' len=%d renderLen=%d", text, textLen,
+        renderLen);
 
     // Create buffer to store single character
     char digit[2];
-    // digit[0] = *(text+len-1); // Grab the last character/digit
     digit[0] = *(text+2);     // Grab the last character/digit
     digit[1] = '\0';          // Terminate string
 
     // Render last character
-    DrawText(matrix, *font, x + 6*2, y+FONT_HEIGHT, color, NULL, digit, 0);
+    DrawText(matrix, *mFont, x+(font->width+1)*2,
+        y+font->height, color, NULL, digit, 0);
 
     // Make a copy of our existing string
-    char *newText = new char[len];
-    strncpy(newText, text, len);
+    char *newText = new char[textLen];
+    strncpy(newText, text, textLen);
 
     u_int8_t customRender = 3;
     if (customRender == 1)
     {
       // Small period
-      matrix->SetPixel(x + 10, y+FONT_HEIGHT-1, color.r, color.g, color.b);
-      newText[len-2] = '\0';
+      matrix->SetPixel(x + 10, y+font->height-1, color.r, color.g, color.b);
+      newText[textLen-2] = '\0';
       x += 4;
+
+      return DrawText(matrix, *mFont, x, y+font->height, color,
+          NULL, newText, 0);
     }
     else if (customRender == 2)
     {
       // Larger/default period
       // Replace last digit with null to remove from string
-      newText[len-1] = '\0';
+      newText[textLen-1] = '\0';
 
       // Advance x to set spacing
       x += 1;
+
+      return DrawText(matrix, *mFont, x, y+font->height, color,
+          NULL, newText, 0);
     }
     else if (customRender == 3)
     {
@@ -172,33 +324,45 @@ int drawText(uint8_t x, uint8_t y, Color color, const char *text, Font *font)
 
       // // Render decimal point
       // digit[0] = '.';   // *(text+len-2);
-      // DrawText(matrix, *font, x + 6*1 + 2, y+FONT_HEIGHT, color, NULL, digit, 0);
-      matrix->SetPixel(x + 10, y+FONT_HEIGHT-1, color.r, color.g, color.b);
+      // DrawText(matrix, *font, x + 6*1 + 2,
+      //    y+FONT_DEFAULT_HEIGHT, color, NULL, digit, 0);
+      matrix->SetPixel(x + 10, y+font->height-1, color.r,
+          color.g, color.b);
 
       digit[0] = *(text);
 
-      // Render first digit
-      return DrawText(matrix, *font, x + 4, y+FONT_HEIGHT, color, NULL, digit, 0);
-    }
+      if (digit[0] == '1') {
+        x++;
+      }
 
-    return DrawText(matrix, *font, x, y+FONT_HEIGHT, color, NULL, newText, 0);
+      // Render first digit
+      return DrawText(matrix, *mFont, x+4, y+font->height,
+          color, NULL, digit, 0);
+    }
+  }
+  else
+  {
+    // Library references bottom-left corner as origin (instead of top)
+    //
+    // Add a fixed y-offset to compensate, the benefit here is easily
+    // tweaking the vertical position/placement
+    //
+    // Using font.height() resulted in too large of gap
+    return DrawText(matrix, *font->GetFont(), x, y+font->height,
+        color, NULL, text, 0);
   }
 
-  // Library references bottom-left corner as origin (instead of top)
-  //
-  // Add a fixed y-offset to compensate, the benefit here is easily
-  // tweaking the vertical position/placement
-  //
-  // Using font.height() resulted in too large of gap
-  return DrawText(matrix, *font, x, y+FONT_HEIGHT, color, NULL, text, 0);
+  // Should not reach here, set only to clear warnings
+  return 0;
 }
 
 // Render text with a custom formatting/profile
 // Right now, this is very basic and just apply a fixed negative kerning offset
 // But this is to be expanded to custom variable-width character rendering
-int drawTextCustom(uint8_t x, uint8_t y, Color color, const char *text, Font *font, uint8_t hSpacing, uint8_t fontHeight)
+int drawTextCustom(uint8_t x, uint8_t y, Color color, const char *text, GirderFont *font, bool vWidth)
 {
-  return DrawText(matrix, *font, x, y+fontHeight, color, NULL, text, -1);
+  return DrawText(matrix, *font->GetFont(), x, y+font->height,
+      color, NULL, text, -1);
 }
 
 // Draw a filled rectangle at (x,y) with width, height and color
@@ -216,7 +380,8 @@ void drawRect(uint16_t x_start, uint16_t y_start,
 // Draw an image of width, height at (x,y)
 void drawIcon(int x, int y, int width, int height, const uint8_t *image)
 {
-  SetImage(matrix, x, y, image, width * height * 3, width, height, false);
+  SetImage(matrix, x, y, image, width * height * 3, width,
+      height, false);
 }
 
 // Show the day of week, date and time
@@ -253,21 +418,21 @@ void displayClock(bool force)
   }
 
   // Clear the widget
-  uint8_t clockX = clockOffset + clockWidth - 1;    // 65 + 32 - 1 = 96
-  uint8_t dateFontWidth = 6;
+  uint8_t clockX = clockOffset;    // 65 + 32 - 1 = 96
+  uint8_t dateFontWidth = FONT_CLOCK_WIDTH;
   drawRect(clockX, 0, clockWidth, 32, colorBlack);
 
   // Render the day of week
   int dayPos = (clockWidth - (strlen(s_weekday(localtm)) * dateFontWidth)) / 2;
   int xDay = clockX + dayPos;
-  drawText(xDay, rowDayStart, colorDate, s_weekday(localtm));
+  drawText(xDay, rowDayStart, colorDate, s_weekday(localtm), clockFont);
 
   // Render the date
   uint8_t dateType = 2;
   if (dateType == 1)
   {
     snprintf(monthText, 6, "%d/%d", month(localtm), day(localtm));
-    drawText(clockX, rowDateStart, colorDate, monthText);
+    drawText(clockX, rowDateStart, colorDate, monthText, clockFont);
   }
   else if (dateType == 2)
   {
@@ -280,47 +445,52 @@ void displayClock(bool force)
     // _debug("%s %s  %d %d  %d %d", monthText, dayText, strlen(monthText), strlen(dayText), dateLen, datePos);
     // 10 2  2 1  3 4
 
-    drawText(clockX + datePos, rowDateStart, colorDate, monthText);
+    drawText(clockX + datePos, rowDateStart, colorDate, monthText, clockFont);
     drawText(clockX + datePos + dateFontWidth * (monthLen + 1),
-      rowDateStart, colorDate, dayText);
-    matrix->SetPixel(xPixel + 3, rowDateStart + 1,
+      rowDateStart, colorDate, dayText, clockFont);
+
+    matrix->SetPixel(xPixel + 4, rowDateStart + 1,
       colorDate.r, colorDate.g, colorDate.b);
-    matrix->SetPixel(xPixel + 3, rowDateStart + 2,
+    matrix->SetPixel(xPixel + 4, rowDateStart + 2,
       colorDate.r, colorDate.g, colorDate.b);
-    matrix->SetPixel(xPixel + 2, rowDateStart + 3,
+    matrix->SetPixel(xPixel + 3, rowDateStart + 3,
       colorDate.r, colorDate.g, colorDate.b);
-    matrix->SetPixel(xPixel + 2, rowDateStart + 4,
+    matrix->SetPixel(xPixel + 3, rowDateStart + 4,
       colorDate.r, colorDate.g, colorDate.b);
     matrix->SetPixel(xPixel + 2, rowDateStart + 5,
       colorDate.r, colorDate.g, colorDate.b);
-    matrix->SetPixel(xPixel + 1, rowDateStart + 6,
-      colorDate.r, colorDate.g, colorDate.b);
-    matrix->SetPixel(xPixel + 1, rowDateStart + 7,
+    matrix->SetPixel(xPixel + 2, rowDateStart + 6,
       colorDate.r, colorDate.g, colorDate.b);
   }
 
   // Render the time
-  uint8_t timeType = 2;
+  uint8_t timeType = 3;
   if (timeType == 1)
   {
     snprintf(monthText, 6, "%2d:%02d", hour(localtm), minute(localtm));
-    drawText(clockX, rowTimeStart, colorTime, monthText);
+    drawText(clockX, rowTimeStart, colorTime, monthText, clockFont);
   }
   else if (timeType == 2)
   {
     snprintf(monthText, 3, "%2d", hour(localtm));
     snprintf(dayText, 3, "%02d", minute(localtm));
-    drawText(clockX + 2, rowTimeStart, colorTime, monthText);
+    drawText(clockX + 2, rowTimeStart, colorTime, monthText,
+        clockFont);
     drawText(clockX + dateFontWidth*3, rowTimeStart,
-      colorTime, dayText);
-    matrix->SetPixel(clockX + dateFontWidth*2 + 3,
+      colorTime, dayText, clockFont);
+    matrix->SetPixel(clockX + dateFontWidth*2 + 4,
       rowTimeStart+2, colorTime.r, colorTime.g, colorTime.b);
-    matrix->SetPixel(clockX + dateFontWidth*2 + 3,
+    matrix->SetPixel(clockX + dateFontWidth*2 + 4,
       rowTimeStart+3, colorTime.r, colorTime.g, colorTime.b);
-    matrix->SetPixel(clockX + dateFontWidth*2 + 3,
+    matrix->SetPixel(clockX + dateFontWidth*2 + 4,
       rowTimeStart+5, colorTime.r, colorTime.g, colorTime.b);
-    matrix->SetPixel(clockX + dateFontWidth*2 + 3,
+    matrix->SetPixel(clockX + dateFontWidth*2 + 4,
       rowTimeStart+6, colorTime.r, colorTime.g, colorTime.b);
+  }
+  else if (timeType == 3)
+  {
+    snprintf(monthText, 6, "%2d:%02d", hour(localtm), minute(localtm));
+    drawText(clockX + 6, rowTimeStart, colorTime, monthText, clockFont, true);
   }
 }
 

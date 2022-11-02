@@ -89,9 +89,10 @@ public:
 bool setupDisplay();
 void shutdownDisplay();
 void setBrightness(uint8_t brightness);
-int drawText(uint8_t, uint8_t, Color, const char *, rgb_matrix::Font* = NULL);
-int drawTextCustom(uint8_t x, uint8_t y, Color color, const char *text,
-  rgb_matrix::Font *font = NULL, uint8_t hSpacing = 0, uint8_t fontHeight = 0);
+uint16_t textRenderLength(const char *text, GirderFont *font);
+int drawText(uint8_t, uint8_t, Color, const char *, GirderFont* = NULL, bool = false);
+int drawTextCustom(uint8_t, uint8_t, Color, const char *,
+  GirderFont* = NULL, bool = false);
 void drawRect(uint16_t, uint16_t, uint16_t, uint16_t, Color);
 void drawIcon(int, int, int, int, const uint8_t *);
 void displayClock(bool = false);
