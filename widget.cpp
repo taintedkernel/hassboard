@@ -279,7 +279,7 @@ void DashboardWidget::setCustomTextConfig(uint8_t textX, uint8_t textY,
 }
 
 // Set a custom text-rendering function
-void DashboardWidget::setCustomTextRender(int (render)TEXT_RENDER_SIG)
+void DashboardWidget::setCustomTextRender(void (render)TEXT_RENDER_SIG)
 {
   customTextRender = render;
 }
@@ -559,15 +559,14 @@ int DashboardWidget::renderText()
   }
 
   // Call the custom text renderer, if set
-  int render;
   if (customTextRender)
-    render = customTextRender(widgetX + offset, widgetY +
+    customTextRender(widgetX + offset, widgetY +
         tY, color, tData, tFont, tVarWidth);
   else
-    render = drawText(widgetX + offset, widgetY + tY, color,
+    drawText(widgetX + offset, widgetY + tY, color,
         tData, tFont, tVarWidth);
 
-  return render;
+  return 0;
 }
 
 // TODO: Render an icon-specific black clearing box

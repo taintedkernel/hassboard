@@ -68,7 +68,7 @@ protected:
   uint8_t tHeight = 0;
   uint8_t tBrightness = 0;
   uint8_t tTempBrightness = 0;
-  int (*customTextRender)TEXT_RENDER_SIG;
+  void (*customTextRender)TEXT_RENDER_SIG;
   char tData[WIDGET_TEXT_LEN+1];
 
   // Text fonts/colors/data/etc
@@ -128,7 +128,7 @@ public:
   void setCustomTextConfig(uint8_t textX, uint8_t textY, Color color = colorText,
     textAlignType = ALIGN_RIGHT, GirderFont *font = NULL);
     // bool clearText = true);
-  void setCustomTextRender(int (render)TEXT_RENDER_SIG);
+  void setCustomTextRender(void (render)TEXT_RENDER_SIG);
   void setVariableWidth(bool);
   void setAlertLevel(float, rgb_matrix::Color);
   void setTextColor(rgb_matrix::Color);
