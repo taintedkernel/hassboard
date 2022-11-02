@@ -25,7 +25,7 @@ bool daytime = true;
 
 uint8_t dashOffset = 72;
 uint8_t clockOffset = 38;
-uint8_t weatherOffsetX = 3;
+uint8_t weatherOffsetX = 5;
 uint8_t calendarOffset = 1;
 
 uint8_t clockWidth = 32;
@@ -43,7 +43,7 @@ uint8_t rowSpacing = 3;
 uint8_t rowOneStart = 1;
 uint8_t rowTwoStart = rowOneStart + FONT_DEFAULT_HEIGHT + rowSpacing;
 uint8_t rowThreeStart = rowTwoStart + FONT_DEFAULT_HEIGHT + rowSpacing;
-uint8_t rowCalendarStart = rowThreeStart + (FONT_DEFAULT_HEIGHT + rowSpacing) + 6;
+uint8_t rowCalendarStart = rowThreeStart + (FONT_DEFAULT_HEIGHT + rowSpacing) + 8;
 
 // *TODO*: Wire up photocell and use to determine brightness
 // Control brightness by adjusting RGB values. Brightness is a
@@ -111,6 +111,7 @@ void setupDashboard()
   widget->setOrigin(colOneStart, rowTwoStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
+  widget->setVariableWidth(true);
   widget->setIconImage(8, 8, rain_gauge);
   // This metric updates on slower interval, so default to blank
   widget->updateText((char *)"--", false);

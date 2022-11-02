@@ -10,7 +10,6 @@
 #include <cstring>
 
 using rgb_matrix::RGBMatrix;
-using rgb_matrix::DrawText;
 using rgb_matrix::Canvas;
 using rgb_matrix::Color;
 using rgb_matrix::Font;
@@ -21,7 +20,8 @@ Color colorGrey       = Color(64, 64, 64);
 Color colorLightGrey  = Color(128, 128, 128);
 Color colorWhite      = Color(255, 255, 255);
 // Color colorDate       = Color(125, 200, 255);
-Color colorDate       = Color(96, 148, 192);
+// Color colorDate       = Color(96, 148, 192);
+Color colorDate       = Color(96, 128, 148);
 // Color colorTime     = Color(250, 80, 0);
 Color colorTime       = Color(248, 96, 8);
 // Color colorText     = Color(125, 200, 255);
@@ -430,7 +430,7 @@ void drawIcon(int x, int y, int width, int height, const uint8_t *image)
 // Show the day of week, date and time
 void displayClock(bool force)
 {
-  char monthText[6], dayText[6];
+  char buffer[6];
   static uint8_t lMinute = 0;
 
   time_t local = time(0);
@@ -462,16 +462,16 @@ void displayClock(bool force)
   drawText(clockX + offset, rowDayStart, colorDate, s_weekday(localtm), clockFont);
 
   // Render the date
-  snprintf(monthText, 6, "%d/%d", month(localtm), day(localtm));
-  renderLen = textRenderLength(monthText, clockFont);
+  snprintf(buffer, 6, "%d/%d", month(localtm), day(localtm));
+  renderLen = textRenderLength(buffer, clockFont);
   offset = (clockWidth / 2) - (renderLen / 2);
-  drawText(clockX + offset, rowDateStart, colorDate, monthText, clockFont, true);
+  drawText(clockX + offset, rowDateStart, colorDate, buffer, clockFont, true);
 
   // Render the time
-  snprintf(monthText, 6, "%d:%02d", hour(localtm), minute(localtm));
-  renderLen = textRenderLength(monthText, clockFont);
+  snprintf(buffer, 6, "%d:%02d", hour(localtm), minute(localtm));
+  renderLen = textRenderLength(buffer, clockFont);
   offset = (clockWidth / 2) - (renderLen / 2);
-  drawText(clockX + offset, rowTimeStart, colorTime, monthText, clockFont, true);
+  drawText(clockX + offset, rowTimeStart, colorTime, buffer, clockFont, true);
 }
 
 // Debugging routine to draw some rainbow stripes
