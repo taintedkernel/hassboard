@@ -55,5 +55,5 @@ logger.o : logger.cpp include/logger.h
 secrets.o : secrets.cpp
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
 
-font.o : font.cpp include/logger.h
+font.o : font.cpp include/font.h include/logger.h
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<

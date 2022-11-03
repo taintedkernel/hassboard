@@ -38,8 +38,8 @@ char* tempC2FHelper(char *payload)
 {
   char *buffer = new char[WIDGET_TEXT_LEN];
 
-  snprintf(buffer, WIDGET_TEXT_LEN, "%d",
-    int(atof(payload) * 9 / 5 + 32));
+  snprintf(buffer, WIDGET_TEXT_LEN, "%d%c",
+    int(atof(payload) * 9 / 5 + 32), 176);
 
   return buffer;
 }
