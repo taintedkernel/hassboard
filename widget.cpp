@@ -91,21 +91,6 @@ const char* weatherIconHelper(char *condition)
   }
 }
 
-/* // Calculate color from hex value + brightness
-Color colorBright(uint16_t value, int br) {
-  unsigned r = (value & 0xF800) >> 8;       // rrrrr... ........ -> rrrrr000
-  unsigned g = (value & 0x07E0) >> 3;       // .....ggg ggg..... -> gggggg00
-  unsigned b = (value & 0x1F) << 3;         // ............bbbbb -> bbbbb000
-
-  return colorBright(r, g, b, br);
-}
-    r & 248 (0b 1111 1000) << 8
-      +
-    g & 252 (0b 1111 1100) << 3
-      +
-    b >> 3
-*/
-
 // Convert a 565-encoded color to individual RGB values
 void color565_2RGB(uint16_t value, uint8_t *rgb) {
   uint8_t r = (value & 0xF800) >> 8;       // rrrrr... ........ -> rrrrr000

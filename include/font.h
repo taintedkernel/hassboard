@@ -88,7 +88,5 @@ public:
 
 uint16_t textRenderLength(const char *text, GirderFont *font);
 void drawText(uint8_t, uint8_t, Color, const char *, GirderFont* = NULL, bool = false);
-void drawTextCustom(uint8_t, uint8_t, Color, const char *,
-  GirderFont* = NULL, bool = false);
 
 #endif

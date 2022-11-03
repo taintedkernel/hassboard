@@ -11,8 +11,7 @@
 #define WIDGET_TEXT_LEN         256
 #define WIDGET_DATA_LEN         32
 
-// #define WIDGET_WIDTH_SMALL      28
-#define WIDGET_WIDTH_SMALL      25
+#define WIDGET_WIDTH_SMALL      26
 #define WIDGET_HEIGHT_SMALL     FONT_DEFAULT_HEIGHT
 
 #define WIDGET_WIDTH_LARGE      32
@@ -28,15 +27,6 @@
 
 #define TEXT_RENDER_SIG         (uint8_t x, uint8_t y, Color color, const char *text, \
     GirderFont *font, bool vWidth)
-
-#define ICON_WEATHER_SUNNY            "icons/sun-1.0.png"
-#define ICON_WEATHER_PCLOUDY          "icons/clouds_sun-1.0.png"
-#define ICON_WEATHER_CLOUDY           "icons/clouds-1.0.png"
-#define ICON_WEATHER_RAINY            "icons/clouds_showers-1.1.png"
-#define ICON_WEATHER_SNOWY            "icons/clouds_snow-1.0.png"
-#define ICON_WEATHER_FOG              "icons/fog-1.0.png"
-#define ICON_WEATHER_CLEAR_NIGHT      "icons/moon-1.0.png"
-#define ICON_WEATHER_EXCEPTIONAL      "icons/clouds_exceptional-1.0.png"
 
 
 using rgb_matrix::Color;

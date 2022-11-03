@@ -31,11 +31,11 @@ uint8_t calendarOffset = 1;
 uint8_t clockWidth = 32;
 
 uint8_t colOneStart = dashOffset;
-uint8_t colTwoStart = dashOffset + 30;
+uint8_t colTwoStart = dashOffset + 28;
 
 uint8_t weatherOffsetY = 2;
-uint8_t rowDayStart = 2;
-uint8_t rowDateStart = rowDayStart + 10;
+uint8_t rowDayStart = 1;
+uint8_t rowDateStart = rowDayStart + 9;
 uint8_t rowTimeStart = rowDateStart + 10;
 uint8_t rowTempStart = 26;
 
@@ -76,7 +76,7 @@ extern bool forceRefresh;
 extern uint8_t refreshActiveDelay;
 extern rgb_matrix::Color colorText, colorTextDay, colorTextNight;
 extern rgb_matrix::Color colorWhite, colorGrey, colorTextDark, colorAlert;
-extern rgb_matrix::Font *defaultFont;
+extern GirderFont *defaultFont;
 
 
 void setupDashboard()
@@ -89,6 +89,7 @@ void setupDashboard()
   widget->setOrigin(colOneStart, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
+  widget->setVariableWidth(true);
   widget->setIconImage(7, 7, big_house);
   widget->setIconOrigin(0, 1);
   widget->setVisibleTextLength(3);
@@ -100,6 +101,7 @@ void setupDashboard()
   widget->setOrigin(colTwoStart, rowOneStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
+  widget->setVariableWidth(true);
   widget->setIconImage(7, 7, big_house_drop);
   widget->setIconOrigin(1, 1);
   widget->setVisibleTextLength(3);
@@ -112,7 +114,7 @@ void setupDashboard()
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
   widget->setVariableWidth(true);
-  widget->setIconImage(8, 8, rain_gauge);
+  widget->setIconImage(8, 8, ICON_RAIN_GAUGE);
   // This metric updates on slower interval, so default to blank
   widget->updateText((char *)"--", false);
   widget->setVisibleTextLength(3);
@@ -123,6 +125,7 @@ void setupDashboard()
   widget->setOrigin(colTwoStart, rowTwoStart);
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
+  widget->setVariableWidth(true);
   widget->setIconImage(8, 8, droplet);
   widget->setVisibleTextLength(3);
   widgets.addWidget(widget);
@@ -134,7 +137,7 @@ void setupDashboard()
   widget->setSize(DashboardWidget::WIDGET_SMALL);
   widget->autoTextConfig();
   widget->setVariableWidth(true);
-  widget->setIconImage(8, 8, wind);
+  widget->setIconImage(8, 8, ICON_WIND);
   // This metric updates on slower interval, so default to blank
   widget->updateText((char *)"--", false);
   widget->setVisibleTextLength(3);
@@ -157,7 +160,7 @@ void setupDashboard()
   widget = &wOutdoorWeather;
   widget->setOrigin(weatherOffsetX, weatherOffsetY);
   widget->setSize(DashboardWidget::WIDGET_LARGE);
-  widget->setIconImage(32, 25, cloud_sun_new);
+  widget->setIconImage(32, 25, ICON_WEATHER_PCLOUDY);
   widget->setCustomTextConfig(WIDGET_WIDTH_LARGE, rowTempStart,
     colorWhite, DashboardWidget::ALIGN_CENTER, largeFont);
   widget->setBounds(32, 34);
@@ -169,10 +172,9 @@ void setupDashboard()
   widget = &wOutdoorForecast;
   widget->setOrigin(weatherOffsetX, weatherOffsetY);
   widget->setSize(DashboardWidget::WIDGET_LARGE);
-  widget->setIconImage(32, 25, cloud_sun_new);
+  widget->setIconImage(32, 25, ICON_WEATHER_PCLOUDY);
   widget->setCustomTextConfig(WIDGET_WIDTH_LARGE+4, rowTempStart-2,
     colorText, DashboardWidget::ALIGN_CENTER, smallFont);
-  widget->setCustomTextRender(drawTextCustom);
   widget->setBounds(32, 34);
   widget->setActive(false);
   widget->setVisibleTextLength(5);
@@ -182,10 +184,10 @@ void setupDashboard()
   widget = &wCalendar;
   widget->setOrigin(calendarOffset, rowCalendarStart);
   widget->setSize(DashboardWidget::WIDGET_LONG);
-  widget->setIconImage(9, 8, "icons/calendar.png");
+  widget->setIconImage(9, 8, ICON_CALENDAR);
   widget->setCustomTextConfig(WIDGET_WIDTH_LONG, 0,
     colorText, DashboardWidget::ALIGN_LEFT, smallFont);
-  widget->setCustomTextRender(drawTextCustom);
+  widget->setVariableWidth(true);
   widget->setVisibleTextLength(20);
   // widget->setDebug(true);
   widgets.addWidget(widget);
