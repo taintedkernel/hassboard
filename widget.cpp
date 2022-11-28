@@ -552,7 +552,7 @@ int DashboardWidget::renderText()
         tY, color, tData, tFont, tVarWidth);
   else
     drawText(widgetX + offset, widgetY + tY, color,
-        tData, tFont, tVarWidth);
+        tData, tFont, tVarWidth, debug);
 
   return 0;
 }

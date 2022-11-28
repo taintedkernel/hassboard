@@ -29,6 +29,7 @@
 #define FONT_CLOCK_WIDTH        5
 #define FONT_CLOCK_HEIGHT       8
 
+
 using rgb_matrix::Color;
 
 
@@ -59,6 +60,7 @@ public:
 };
 
 uint16_t textRenderLength(const char *text, GirderFont *font);
-void drawText(uint8_t, uint8_t, Color, const char *, GirderFont* = NULL, bool = false);
+void drawText(uint8_t, uint8_t, Color, const char *,
+              GirderFont* = NULL, bool = false, bool = false);
 
 #endif

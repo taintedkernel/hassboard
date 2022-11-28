@@ -34,7 +34,7 @@ uint8_t colOneStart = dashOffset;
 uint8_t colTwoStart = dashOffset + 28;
 
 uint8_t weatherOffsetY = 2;
-uint8_t rowDayStart = 1;
+uint8_t rowDayStart = 2;
 uint8_t rowDateStart = rowDayStart + 9;
 uint8_t rowTimeStart = rowDateStart + 10;
 uint8_t rowTempStart = 26;
@@ -173,11 +173,13 @@ void setupDashboard()
   widget->setOrigin(weatherOffsetX, weatherOffsetY);
   widget->setSize(DashboardWidget::WIDGET_LARGE);
   widget->setIconImage(32, 25, ICON_WEATHER_PCLOUDY);
-  widget->setCustomTextConfig(WIDGET_WIDTH_LARGE+4, rowTempStart-2,
+  widget->setCustomTextConfig(WIDGET_WIDTH_LARGE+1, rowTempStart-2,
     colorText, DashboardWidget::ALIGN_CENTER, smallFont);
-  widget->setBounds(32, 34);
+  widget->setVariableWidth(true);
+  widget->setBounds(34, 34);
   widget->setActive(false);
   widget->setVisibleTextLength(5);
+  // widget->setDebug(true);
   widgets.addWidget(widget);
 
   // Calendar events
