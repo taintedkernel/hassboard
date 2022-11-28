@@ -92,7 +92,8 @@ const char* weatherIconHelper(char *condition)
 }
 
 // Convert a 565-encoded color to individual RGB values
-void color565_2RGB(uint16_t value, uint8_t *rgb) {
+void color565_2RGB(uint16_t value, uint8_t *rgb)
+{
   uint8_t r = (value & 0xF800) >> 8;       // rrrrr... ........ -> rrrrr000
   uint8_t g = (value & 0x07E0) >> 3;       // .....ggg ggg..... -> gggggg00
   uint8_t b = (value & 0x1F) << 3;         // ............bbbbb -> bbbbb000
@@ -126,7 +127,7 @@ uint8_t DashboardWidget::_getWidth() {
 
 // Get widget height
 uint8_t DashboardWidget::_getHeight() {
-    return height;
+  return height;
 }
 
 // Get widget icon size
@@ -351,11 +352,12 @@ void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const uint16_t *img)
   }
 
   // Read old image, convert and write to new buffer
-  for (int src=0, dst=0; src < w*h;) {
-      color565_2RGB(img[src++], rgb);
-      newImg[dst++] = rgb[0];
-      newImg[dst++] = rgb[1];
-      newImg[dst++] = rgb[2];
+  for (int src=0, dst=0; src < w*h;)
+  {
+    color565_2RGB(img[src++], rgb);
+    newImg[dst++] = rgb[0];
+    newImg[dst++] = rgb[1];
+    newImg[dst++] = rgb[2];
   }
 
   setIconImage(w, h, newImg);

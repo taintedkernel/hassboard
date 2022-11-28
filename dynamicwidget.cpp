@@ -22,6 +22,8 @@ void DynamicDashboardWidget::checkTextUpdate()
   }
 }
 
+// Update will rotate through the lines of text
+// (newline-delimited) stored in fullTextData
 void DynamicDashboardWidget::doTextUpdate()
 {
   char *token, *str, *strFree;
@@ -49,5 +51,7 @@ void DynamicDashboardWidget::setText(char *text)
 {
   // _debug("dWidget %s: setting text to: %s", name, text);
   strncpy(fullTextData, text, WIDGET_TEXT_LEN);
+  // Should we reset widget back to the first line when updating?
+  currentTextLine = 0;
   doTextUpdate();
 }

@@ -9,6 +9,10 @@
 
 #define TEXT_UPDATE_PERIOD_MS    3000
 
+// Sub-class to implement a widget that can change
+// the display of rendered contents.  Currently only
+// supports updating text by cycling through seperate
+// lines.
 class DynamicDashboardWidget : public DashboardWidget
 {
 private:
@@ -29,5 +33,10 @@ public:
   void checkTextUpdate();
   void checkUpdate();
 };
+
+// Clock widget
+// Dynamic that it updates
+// But needs no internal data storage
+// Custom rendering
 
 #endif
