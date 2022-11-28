@@ -6,7 +6,7 @@
 
 #include "font.h"
 
-bool setupDisplay();
+bool setupDisplay(uint8_t configNum);
 void shutdownDisplay();
 void setBrightness(uint8_t brightness);
 void drawRect(uint16_t, uint16_t, uint16_t, uint16_t, Color);

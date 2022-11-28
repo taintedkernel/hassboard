@@ -37,7 +37,8 @@ void handleSignal(int signal)
 
 int main(int argc, char **argv)
 {
-  int rc;
+  int rc; //, opt;
+  uint8_t configNum = 0;
 
   _log("starting up");
 
@@ -45,8 +46,43 @@ int main(int argc, char **argv)
   signal(SIGTERM, handleSignal);
   srand((unsigned) time(NULL));
 
+  // while ((opt = getopt(argc, argv, "abc:")) != -1)
+  // {
+  //   switch (opt) {
+  //   case 'c':
+  //     cvalue = optarg;
+  //     break;
+  //   case '?':
+  //     if (optopt == 'c')
+  //       fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+  //     else if (isprint (optopt))
+  //       fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+  //     else
+  //       fprintf (stderr,
+  //                 "Unknown option character `\\x%x'.\n",
+  //                 optopt);
+  //     return 1;
+  //   default:
+  //     abort ();
+  //   }
+  // }
+
+  for (int index = optind; index < argc; index++)
+  {
+    char *arg = argv[index];
+    if (atoi(arg) < 1 || atoi(arg) > 2) {
+      fprintf(stderr, "missing required parameter CONFIG_NUM\n");
+      return 1;
+    }
+    else {
+      configNum = atoi(arg);
+      _log("using girder display config %d", configNum);
+      break;
+    }
+  }
+
   // Display initialization
-  if (!setupDisplay()) {
+  if (!setupDisplay(configNum)) {
     _error("failed to initialize display, exiting");
     return 1;
   }
