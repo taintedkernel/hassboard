@@ -65,12 +65,25 @@ bool setupDisplay(uint8_t configNum)
     displaySettings.pixel_mapper_config = "U-mapper";
     displaySettings.brightness = 50;
     displaySettings.led_rgb_sequence = "RBG";
+    runtimeSettings.gpio_slowdown = 4;
   }
   // Settings for a 2nd smartgirder, single 128x64 panel
   else if (configNum == 2) {
     displaySettings.cols = 128;
     displaySettings.rows = 64;
     displaySettings.row_address_type = 3;
+    runtimeSettings.gpio_slowdown = 0;
+  }
+  // Settings for the original composite panel, but running on a RPi Zero
+  else if (configNum == 3) {
+    displaySettings.cols = 64;
+    displaySettings.rows = 32;
+    displaySettings.chain_length = 4;
+    displaySettings.parallel = 1;
+    displaySettings.pixel_mapper_config = "U-mapper";
+    displaySettings.brightness = 50;
+    displaySettings.led_rgb_sequence = "RBG";
+    runtimeSettings.gpio_slowdown = 1;
   }
   else {
     _error("unknown config: %d", configNum);
@@ -79,7 +92,6 @@ bool setupDisplay(uint8_t configNum)
 
   runtimeSettings.daemon = 0;
   runtimeSettings.drop_privileges = 1;
-  runtimeSettings.gpio_slowdown = 4;
 
   // Initialize matrix
   matrix = RGBMatrix::CreateFromOptions(displaySettings, runtimeSettings);

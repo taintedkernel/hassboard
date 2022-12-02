@@ -70,7 +70,7 @@ int main(int argc, char **argv)
   for (int index = optind; index < argc; index++)
   {
     char *arg = argv[index];
-    if (atoi(arg) < 1 || atoi(arg) > 2) {
+    if (atoi(arg) < 1 || atoi(arg) > 3) {
       fprintf(stderr, "missing required parameter CONFIG_NUM\n");
       return 1;
     }
