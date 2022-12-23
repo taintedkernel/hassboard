@@ -40,6 +40,7 @@ int main(int argc, char **argv)
   int rc; //, opt;
   uint8_t configNum = 0;
 
+  initLogger();
   _log("starting up");
 
   signal(SIGINT, handleSignal);
@@ -164,6 +165,7 @@ int main(int argc, char **argv)
   _log("closing matrix");
   shutdownDisplay();
   mqttShutdown();
+  shutdownLogger();
 
   return 0;
 }
