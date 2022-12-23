@@ -75,6 +75,12 @@ const char* weatherIconHelper(char *condition)
   else if (strcmp(condition, "rainy") == 0) {
     return(ICON_WEATHER_RAINY);
   }
+  else if (strcmp(condition, "rainy-snowy") == 0) {
+    return(ICON_WEATHER_SNOWY_RAINY);
+  }
+  else if (strcmp(condition, "snowy-rainy") == 0) {
+    return(ICON_WEATHER_SNOWY_RAINY);
+  }
   else if (strcmp(condition, "snowy") == 0) {
     return(ICON_WEATHER_SNOWY);
   }
