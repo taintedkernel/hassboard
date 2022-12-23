@@ -95,8 +95,8 @@ protected:
   char iData[WIDGET_DATA_LEN+1];
 
   // Initialization / config
-  clock_t resetTime;        // Track when temp brightness resets
-  clock_t resetActiveTime;  // Track when active toggles
+  time_t resetTime;        // Track when temp brightness resets
+  time_t resetActiveTime;  // Track when active toggles
 
   /*** FUNCTIONS ***/
   // Getters/setters/helpers

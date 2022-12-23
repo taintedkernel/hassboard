@@ -10,6 +10,7 @@ unsigned int hour(tm *ts);
 unsigned int minute(tm *ts);
 unsigned int second(tm *ts);
 char* s_weekday(tm *ts);
-char* timestamp(void);
+char* timestamp();
+time_t clock_ts(void);
 
 #endif

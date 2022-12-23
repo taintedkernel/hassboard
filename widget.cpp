@@ -1,3 +1,4 @@
+#include "datetime.h"
 #include "display.h"
 #include "widget.h"
 #include "logger.h"
@@ -304,13 +305,18 @@ void DashboardWidget::updateText(char *text, bool brighten)
   if (strncmp(text, tData, WIDGET_TEXT_LEN) == 0)
     return;
 
+  char updateEnd[10];
+  time_t ts = clock_ts() + refreshDelay;
+  time_t local = time(&ts);
+  tm *localtm = localtime(&local);
+  snprintf(updateEnd, 9, "%02d:%02d:%02d", hour(localtm), minute(localtm), second(localtm));
+
   _debug("widget %s: updating to '%s' from old text: '%s', "
-    "bright until cycle %d", name, text, tData,
-    cycle + refreshDelay);
+    "bright until %s", name, text, tData, updateEnd);
 
   setText(text);
   if (brighten) {
-    resetTime = clock() + refreshDelay * CLOCKS_PER_SEC;
+    resetTime = clock_ts() + refreshDelay;
     tempAdjustBrightness(boldBrightnessIncrease, BRIGHT_TEXT);
   }
 
@@ -614,7 +620,7 @@ void DashboardWidget::updateBrightness()
 // Checks if temporary brightness duration has elapsed and reset if necessary
 void DashboardWidget::checkResetBrightness()
 {
-  if (resetTime > 0 && clock() >= resetTime)
+  if (resetTime > 0 && clock_ts() >= resetTime)
   {
     _logName();
     _log("- resetting brightness");
@@ -641,7 +647,7 @@ void DashboardWidget::tempAdjustBrightness(uint8_t tempBright, brightType bType 
 // Check if temporary active duration has elapsed and reset if necessary
 void DashboardWidget::checkResetActive()
 {
-  if (resetActiveTime > 0 && clock() >= resetActiveTime)
+  if (resetActiveTime > 0 && clock_ts() >= resetActiveTime)
   {
     _logName();
     _log("- resetting active to: %d", !(active));
@@ -653,13 +659,27 @@ void DashboardWidget::checkResetActive()
 }
 
 // Set the time to reset the active state
-void DashboardWidget::setResetActiveTime(clock_t time) {
+void DashboardWidget::setResetActiveTime(time_t time)
+{
   resetActiveTime = time;
+
+  char updateEnd[10];
+  tm *localtm = localtime(&time);
+  snprintf(updateEnd, 9, "%02d:%02d:%02d", hour(localtm), minute(localtm), second(localtm));
+
+  _debug("widget %s: setting active until %s", name, updateEnd);
 }
 
 // Set the time to reset the active state to now
-void DashboardWidget::setResetActiveTime(uint16_t delay) {
-  resetActiveTime = clock() + delay * CLOCKS_PER_SEC;
+void DashboardWidget::setResetActiveTime(uint16_t delay)
+{
+  resetActiveTime = clock_ts() + delay;
+
+  char updateEnd[10];
+  tm *localtm = localtime(&resetActiveTime);
+  snprintf(updateEnd, 9, "%02d:%02d:%02d", hour(localtm), minute(localtm), second(localtm));
+
+  _debug("widget %s: setting active until %s", name, updateEnd);
 }
 
 void DashboardWidget::checkUpdate() {}

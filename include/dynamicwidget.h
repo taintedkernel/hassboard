@@ -16,8 +16,8 @@
 class DynamicDashboardWidget : public DashboardWidget
 {
 private:
-  clock_t lastUpdateTime = 0;
-  uint16_t textUpdatePeriod = TEXT_UPDATE_PERIOD_MS;
+  time_t lastUpdateTime = 0;
+  uint16_t textUpdatePeriod = TEXT_UPDATE_PERIOD_MS / 1000;
   uint8_t currentTextLine = 0;
   char fullTextData[WIDGET_TEXT_LEN+1];
 

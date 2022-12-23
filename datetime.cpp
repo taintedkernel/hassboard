@@ -31,15 +31,21 @@ char* s_weekday(tm *ts) {
   }
 }
 
-char* timestamp(void)
+char* timestamp()
 {
-  char* buffer = (char *)malloc(20);
+  static char* buffer = (char *)malloc(20);
 
   time_t local = time(0);
   tm *localtm = localtime(&local);
 
-  snprintf(buffer, 20, "%4d-%02d-%02d %02d:%02d",
+  snprintf(buffer, 20, "%4d-%02d-%02d %02d:%02d:%02d",
     year(localtm), month(localtm), day(localtm),
-    hour(localtm), minute(localtm));
+    hour(localtm), minute(localtm), second(localtm));
+
   return buffer;
+}
+
+time_t clock_ts(void)
+{
+  return time(0);
 }

@@ -1,4 +1,5 @@
 #include "dynamicwidget.h"
+#include "datetime.h"
 #include "logger.h"
 
 #include <time.h>
@@ -14,9 +15,8 @@ void DynamicDashboardWidget::checkUpdate() {
 
 void DynamicDashboardWidget::checkTextUpdate()
 {
-  // _debug("checkTextUpdate @ %ld: last update=%ld", clock(), lastUpdateTime);
-  if (clock() >= lastUpdateTime +
-          textUpdatePeriod / 1000 * CLOCKS_PER_SEC) {
+  // _debug("checkTextUpdate @ %ld: last update=%ld", clock_ts(), lastUpdateTime);
+  if (clock_ts() >= lastUpdateTime + textUpdatePeriod) {
     currentTextLine = 1 - currentTextLine;
     doTextUpdate();
   }
@@ -41,7 +41,7 @@ void DynamicDashboardWidget::doTextUpdate()
     }
   }
 
-  lastUpdateTime = clock();
+  lastUpdateTime = clock_ts();
   free(strFree);
   render();
 }
