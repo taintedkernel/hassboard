@@ -72,7 +72,9 @@ bool setupDisplay(uint8_t configNum)
     displaySettings.cols = 128;
     displaySettings.rows = 64;
     displaySettings.row_address_type = 3;
-    runtimeSettings.gpio_slowdown = 0;
+    displaySettings.brightness = 50;
+    displaySettings.pwm_lsb_nanoseconds = 50;
+    runtimeSettings.gpio_slowdown = 4;
   }
   // Settings for the original composite panel, but running on a RPi Zero
   else if (configNum == 3) {
