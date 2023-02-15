@@ -98,7 +98,7 @@ const char* weatherIconHelper(char *condition)
     return(ICON_WEATHER_EXCEPTIONAL);
   }
   else {
-    return(condition);
+    return(ICON_WEATHER_UNKNOWN);
   }
 }
 
@@ -398,7 +398,7 @@ void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const char* iconFile)
     image.read(iconFile);
   } else {
     _error("image %s not found, using default", iconFile);
-    image.read("icons/sun-1.0.png");
+    image.read("icons/clouds_unknown-1.0.png");
   }
 
   if (w > image.get_width() || h > image.get_height()) {
