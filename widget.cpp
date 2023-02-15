@@ -18,6 +18,7 @@ uint16_t sunLocal[ICON_SZ], cloudsShowersLocal[ICON_SZ];
 
 uint8_t refreshDelay = 5, refreshActiveDelay = 10;
 
+extern bool daytime;
 extern uint8_t brightness;
 extern uint8_t boldBrightnessIncrease;
 extern uint32_t cycle;
@@ -66,8 +67,11 @@ const char* weatherIconHelper(char *condition)
   if (strcmp(condition, "sunny") == 0) {
     return(ICON_WEATHER_SUNNY);
   }
-  else if (strcmp(condition, "partlycloudy") == 0) {
+  else if (strcmp(condition, "partlycloudy") == 0 && daytime) {
     return(ICON_WEATHER_PCLOUDY);
+  }
+  else if (strcmp(condition, "partlycloudy") == 0 && !daytime) {
+    return(ICON_WEATHER_PCLOUDY_NIGHT);
   }
   else if (strcmp(condition, "cloudy") == 0) {
     return(ICON_WEATHER_CLOUDY);
