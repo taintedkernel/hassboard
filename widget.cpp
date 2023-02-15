@@ -586,6 +586,20 @@ void DashboardWidget::renderIcon()
       iHeight, iImage);
 }
 
+// Clear the icon
+void DashboardWidget::clearIcon()
+{
+  if (!iInit) {
+    _error("clearIcon(%s) called without config, aborting", name);
+    return;
+  }
+
+  if (!active)
+    return;
+
+  drawRect(widgetX + iX, widgetY + iY, iWidth, iHeight, colorBlack);
+}
+
 /*
   ----==== [ Color/Brightness Functions ] ====----
 */

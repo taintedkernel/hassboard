@@ -145,6 +145,7 @@ public:
   // Functions - Rendering
   void clear(bool = false);
   void render();
+  void clearIcon();
 protected:
   virtual int renderText();
   void renderIcon();

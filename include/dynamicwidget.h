@@ -7,13 +7,13 @@
 #include <graphics.h>
 #include <time.h>
 
-#define TEXT_UPDATE_PERIOD_MS    3000
+#define TEXT_UPDATE_PERIOD_MS    5000
 
 // Sub-class to implement a widget that can change
 // the display of rendered contents.  Currently only
 // supports updating text by cycling through seperate
 // lines.
-class DynamicDashboardWidget : public DashboardWidget
+class MultilineWidget : public DashboardWidget
 {
 private:
   time_t lastUpdateTime = 0;
@@ -25,7 +25,7 @@ private:
   void doTextUpdate();
 
 public:
-  DynamicDashboardWidget(const char *name):DashboardWidget(name) {}
+  MultilineWidget(const char *name):DashboardWidget(name) {}
 
   // void updateText(char *text, bool brighten = true);
 

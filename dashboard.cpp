@@ -27,6 +27,7 @@ uint8_t dashOffset = 72;
 uint8_t clockOffset = 38;
 uint8_t weatherOffsetX = 5;
 uint8_t calendarOffset = 1;
+uint8_t weatherAlertsOffset = 1;
 
 uint8_t clockWidth = 32;
 
@@ -44,6 +45,7 @@ uint8_t rowOneStart = 1;
 uint8_t rowTwoStart = rowOneStart + FONT_DEFAULT_HEIGHT + rowSpacing;
 uint8_t rowThreeStart = rowTwoStart + FONT_DEFAULT_HEIGHT + rowSpacing;
 uint8_t rowCalendarStart = rowThreeStart + (FONT_DEFAULT_HEIGHT + rowSpacing) + 8;
+uint8_t rowWeatherAlertStart = rowCalendarStart + (FONT_DEFAULT_HEIGHT + rowSpacing);
 
 // *TODO*: Wire up photocell and use to determine brightness
 // Control brightness by adjusting RGB values. Brightness is a
@@ -63,7 +65,8 @@ DashboardWidget wOutdoorWind("outdoorWind");
 DashboardWidget wOutdoorPM25("outdoorPM25");
 DashboardWidget wOutdoorWeather("outdoorWeather");
 DashboardWidget wOutdoorForecast("outdoorForecast");
-DynamicDashboardWidget wCalendar("calendar");
+MultilineWidget wCalendar("calendar");
+MultilineWidget wWeatherAlerts("weatherAlerts");
 
 // TODO: fix this, eg: add a widget manager
 DashboardWidget *widget;
@@ -187,6 +190,18 @@ void setupDashboard()
   widget->setOrigin(calendarOffset, rowCalendarStart);
   widget->setSize(DashboardWidget::WIDGET_LONG);
   widget->setIconImage(9, 8, ICON_CALENDAR);
+  widget->setCustomTextConfig(WIDGET_WIDTH_LONG, 0,
+    colorText, DashboardWidget::ALIGN_LEFT, smallFont);
+  widget->setVariableWidth(true);
+  widget->setVisibleTextLength(20);
+  // widget->setDebug(true);
+  widgets.addWidget(widget);
+
+  // Weather alerts
+  widget = &wWeatherAlerts;
+  widget->setOrigin(calendarOffset, rowWeatherAlertStart);
+  widget->setSize(DashboardWidget::WIDGET_LONG);
+  widget->setIconImage(9, 8, ICON_ALERT);
   widget->setCustomTextConfig(WIDGET_WIDTH_LONG, 0,
     colorText, DashboardWidget::ALIGN_LEFT, smallFont);
   widget->setVariableWidth(true);

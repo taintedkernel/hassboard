@@ -209,10 +209,13 @@ static const uint16_t threed[49] = {
 #define ICON_WEATHER_SNOWY_RAINY      "icons/clouds_rain_snow-1.0.png"
 #define ICON_WEATHER_FOG              "icons/fog-1.1.png"
 #define ICON_WEATHER_CLEAR_NIGHT      "icons/moon-1.0.png"
+#define ICON_WEATHER_PCLOUDY_NIGHT    "icons/clouds_moon-1.0.png"
 #define ICON_WEATHER_EXCEPTIONAL      "icons/clouds_exceptional-1.0.png"
+#define ICON_WEATHER_UNKNOWN          "icons/clouds_unknown-1.0.png"
 
 #define ICON_RAIN_GAUGE               "icons/raingauge-1.1.png"
 #define ICON_WIND                     "icons/wind-1.0.png"
 #define ICON_CALENDAR                 "icons/calendar.png"
+#define ICON_ALERT                    "icons/alert-1.0.png"
 
 #endif

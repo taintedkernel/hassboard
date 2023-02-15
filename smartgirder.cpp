@@ -14,6 +14,7 @@
 #include "mqtt.h"
 // #include "datetime.h"
 #include "widget.h"
+#include "dynamicwidget.h"
 #include "widgetmanager.h"
 
 
@@ -27,6 +28,7 @@ uint32_t refreshCycle = 0;
 extern st_mqttClient mqtt;
 extern uint8_t numWidgets;
 extern WidgetManager widgets;
+extern MultilineWidget wWeatherAlerts;
 
 
 void handleSignal(int signal)
@@ -156,6 +158,7 @@ int main(int argc, char **argv)
     // Pause between cycles, after startup has finished
     if (clock() > 5.0 * CLOCKS_PER_SEC) {
       sleep(0.1);
+      wWeatherAlerts.clearIcon();
     }
 
     // Update any dynamic widgets

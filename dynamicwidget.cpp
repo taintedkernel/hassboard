@@ -5,15 +5,15 @@
 #include <time.h>
 #include <string.h>
 
-void DynamicDashboardWidget::setTextUpdatePeriod(uint16_t period) {
+void MultilineWidget::setTextUpdatePeriod(uint16_t period) {
   textUpdatePeriod = period;
 }
 
-void DynamicDashboardWidget::checkUpdate() {
+void MultilineWidget::checkUpdate() {
   checkTextUpdate();
 }
 
-void DynamicDashboardWidget::checkTextUpdate()
+void MultilineWidget::checkTextUpdate()
 {
   // _debug("checkTextUpdate @ %ld: last update=%ld", clock_ts(), lastUpdateTime);
   if (clock_ts() >= lastUpdateTime + textUpdatePeriod) {
@@ -24,7 +24,7 @@ void DynamicDashboardWidget::checkTextUpdate()
 
 // Update will rotate through the lines of text
 // (newline-delimited) stored in fullTextData
-void DynamicDashboardWidget::doTextUpdate()
+void MultilineWidget::doTextUpdate()
 {
   char *token, *str, *strFree;
   int i = 0;
@@ -47,7 +47,7 @@ void DynamicDashboardWidget::doTextUpdate()
 }
 
 // Set widget text
-void DynamicDashboardWidget::setText(char *text)
+void MultilineWidget::setText(char *text)
 {
   // _debug("dWidget %s: setting text to: %s", name, text);
   strncpy(fullTextData, text, WIDGET_TEXT_LEN);
