@@ -53,7 +53,7 @@ int createMqttClient()
 
   mqtt.port = 1883;
   mqtt.keepalive = 60;
-  mqtt.server = mqtt_server;
+  mqtt.server = MQTT_HOST;
   snprintf(mqtt.clientId, MQTT_CLIENT_ID_LEN, "%s-%d", MQTT_CLIENT_DEFAULT, rand() % 65536);
 
   _debug("New MQTT connect client ID: %s", mqtt.clientId);

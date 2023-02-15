@@ -22,7 +22,7 @@
 #define DEBUG_SCROLL_DELAY  "debug/scroll/delay"
 #define DEBUG_SCROLL_STATE  "debug/scroll/state"
 
-#define ICON_HOST           "10.4.3.10"
+#define MQTT_HOST           "10.4.5.2"
 
 #define MQTT_CLIENT_DEFAULT     "girder"
 #define MQTT_CLIENT_ID_LEN      64
@@ -31,7 +31,6 @@
 
 
 extern volatile bool girderRunning;
-extern char mqtt_server[];
 extern char mqtt_username[];
 extern char mqtt_password[];
 
