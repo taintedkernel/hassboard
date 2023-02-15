@@ -19,6 +19,7 @@
 #define THERMOSTAT_STATE    "thermostat/state"
 #define CALENDAR_EVENT      "calendar/event"
 #define SIGN_BRIGHTNESS     "sign/brightness"
+#define DEBUG_WIDGET        "debug/widget"
 #define DEBUG_SCROLL_DELAY  "debug/scroll/delay"
 #define DEBUG_SCROLL_STATE  "debug/scroll/state"
 

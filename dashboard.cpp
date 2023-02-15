@@ -407,4 +407,9 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     setBrightness(brightness);
     displayDashboard(true);
   }
+
+  else if (strcmp(topic, DEBUG_WIDGET) == 0)
+  {
+    showMessage(topic, payloadAsChars);
+  }
 }
