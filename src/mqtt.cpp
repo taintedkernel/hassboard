@@ -1,6 +1,8 @@
 #include "mqtt.h"
 #include "logger.h"
 
+#include <cstring>
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -53,7 +55,7 @@ int createMqttClient()
 
   mqtt.port = 1883;
   mqtt.keepalive = 60;
-  mqtt.server = MQTT_HOST;
+  mqtt.server = (char *)MQTT_HOST;
   snprintf(mqtt.clientId, MQTT_CLIENT_ID_LEN, "%s-%d", MQTT_CLIENT_DEFAULT, rand() % 65536);
 
   _debug("New MQTT connect client ID: %s", mqtt.clientId);
