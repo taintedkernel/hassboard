@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "/root/rpi-rgb-led-matrix/include/**",
-                "/root/smartgirder/include/**",
+                "/root/smartgirder/src/include/**",
                 "/usr/include/GraphicsMagick/**",
                 "${workspaceFolder}/**"
             ],
@@ -16,11 +16,10 @@
             "browse": {
                 "path": [
                     "/root/rpi-rgb-led-matrix/include",
-                    "/root/smartgirder/include",
+                    "/root/smartgirder/src/include",
                     "${workspaceFolder}"
                 ]
-            },
-            "configurationProvider": "ms-vscode.makefile-tools"
+            }
         }
     ],
     "version": 4
