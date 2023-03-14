@@ -5,6 +5,7 @@
 #include <time.h>
 #include <string.h>
 
+
 void MultilineWidget::setTextUpdatePeriod(uint16_t period) {
   textUpdatePeriod = period;
 }
@@ -55,3 +56,56 @@ void MultilineWidget::setText(char *text)
   currentTextLine = 0;
   doTextUpdate();
 }
+
+/*** AnimatedWidget ***/
+
+void AnimatedWidget::setImageUpdatePeriod(uint16_t period) {
+  imageUpdatePeriod = period;
+}
+
+void AnimatedWidget::checkUpdate() {
+  checkImageUpdate();
+}
+
+void AnimatedWidget::checkImageUpdate()
+{
+  // _debug("checkTextUpdate @ %ld: last update=%ld", clock_ts(), lastUpdateTime);
+  if (clock_ts() >= lastImageTime + imageUpdatePeriod) {
+    // currentTextLine = 1 - currentTextLine;
+    doImageUpdate();
+  }
+}
+
+// Update will rotate through the lines of text
+// (newline-delimited) stored in fullTextData
+void AnimatedWidget::doImageUpdate()
+{
+  // char *token, *str, *strFree;
+  // int i = 0;
+
+  // if (strcmp(fullTextData, "") == 0)
+  //   return;
+
+  // strFree = str = strdup(fullTextData);
+  // while ((token = strsep(&str, "\n"))) {
+  //   if (i++ == currentTextLine) {
+  //     // _debug("dWidget: %s: updating text to %s", name, token);
+  //     strncpy(tData, token, WIDGET_TEXT_LEN);
+  //     break;
+  //   }
+  // }
+  // free(strFree);
+
+  lastImageTime = clock_ts();
+  render();
+}
+
+// Set widget text
+// void AnimatedWidget::setText(char *text)
+// {
+//   // _debug("dWidget %s: setting text to: %s", name, text);
+//   strncpy(fullTextData, text, WIDGET_TEXT_LEN);
+//   // Should we reset widget back to the first line when updating?
+//   currentTextLine = 0;
+//   doTextUpdate();
+// }

@@ -158,7 +158,7 @@ void setupDashboard()
   widget->setAlertLevel(20.0, colorAlert);
   widgets.addWidget(widget);
 
-  // Main, current weather row (2nd display)
+  // Primary Weather Widget
   largeFont = new GirderFont(GirderFont::FONT_LARGE);
   widget = &wOutdoorWeather;
   widget->setOrigin(weatherOffsetX, weatherOffsetY);
