@@ -8,7 +8,7 @@
 #include <time.h>
 
 #define TEXT_UPDATE_PERIOD_MS    5000
-#define FRAME_UPDATE_PERIOD_MS   1000
+#define FRAME_UPDATE_PERIOD_MS    900
 
 // Sub-class to implement a widget that can change
 // the display of rendered contents.  Currently only
@@ -40,12 +40,14 @@ class AnimatedWidget : public DashboardWidget
 private:
   time_t lastImageTime = 0;
   uint16_t imageUpdatePeriod = FRAME_UPDATE_PERIOD_MS / 1000;
-  // uint8_t currentFrame = 0;
 
-  void doImageUpdate();
+  virtual void doImageUpdate();
+
+protected:
+  bool aInit = false;
 
 public:
-  AnimatedWidget(const char *name):DashboardWidget(name) {}
+  AnimatedWidget(const char *name) : DashboardWidget(name) {}
 
   void setImageUpdatePeriod(uint16_t period);
   void checkImageUpdate();

@@ -410,6 +410,7 @@ void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const char* iconFile)
   }
 
   // Allocate storage for new image format
+  // TODO: Free old image?
   uint8_t *newImg = (uint8_t *)malloc(w * h * 3 * sizeof(uint8_t));
   uint16_t idx = 0;
 
@@ -433,7 +434,7 @@ void DashboardWidget::setIconImage(uint8_t w, uint8_t h, const char* iconFile)
 
 // Call helper to determine icon, then render
 // Note: No brightness logic similar to updateText()
-void DashboardWidget::updateIcon(char *data, const char* (helperFunc)(char*))
+void DashboardWidget::updateIcon(const char *data, const char* (helperFunc)(char*))
 {
   if (data != NULL) {
     strncpy(iData, data, WIDGET_DATA_LEN);
@@ -441,6 +442,18 @@ void DashboardWidget::updateIcon(char *data, const char* (helperFunc)(char*))
   _debug("setting icon to %s", iData);
 
   setIconImage(iWidth, iHeight, helperFunc(iData));
+  render();
+}
+
+// New version, without helper function
+void DashboardWidget::updateIcon(std::string data)
+{
+  if (data != "") {
+    strncpy(iData, data.c_str(), WIDGET_DATA_LEN);
+  }
+  _debug("setting icon to %s", iData);
+
+  setIconImage(iWidth, iHeight, iData);
   render();
 }
 
@@ -669,6 +682,7 @@ void DashboardWidget::tempAdjustBrightness(uint8_t tempBright, brightType bType 
 }
 
 // Check if temporary active duration has elapsed and reset if necessary
+// checkSetInactive?
 void DashboardWidget::checkResetActive()
 {
   if (resetActiveTime > 0 && clock_ts() >= resetActiveTime)
@@ -682,7 +696,7 @@ void DashboardWidget::checkResetActive()
   }
 }
 
-// Set the time to reset the active state
+// Set the time at which point the active state is reset
 void DashboardWidget::setResetActiveTime(time_t time)
 {
   resetActiveTime = time;
@@ -706,4 +720,7 @@ void DashboardWidget::setResetActiveTime(uint16_t delay)
   _debug("widget %s: setting active until %s", name, updateEnd);
 }
 
+// Virtual method, called from WidgetManager
+// Standard DashboardWidgets do not have any updating actions
+// This is overridden in any child classes that support this
 void DashboardWidget::checkUpdate() {}

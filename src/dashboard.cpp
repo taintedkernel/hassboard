@@ -3,6 +3,7 @@
 #include "widget.h"
 #include "widgetmanager.h"
 #include "dynamicwidget.h"
+#include "weatherwidget.h"
 #include "icons.h"
 #include "mqtt.h"
 
@@ -63,7 +64,7 @@ DashboardWidget wOutdoorRainGauge("outdoorRainGauge");
 DashboardWidget wOutdoorDewpoint("outdoorDewpoint");
 DashboardWidget wOutdoorWind("outdoorWind");
 DashboardWidget wOutdoorPM25("outdoorPM25");
-DashboardWidget wOutdoorWeather("outdoorWeather");
+WeatherWidget wOutdoorWeather("outdoorWeather");
 DashboardWidget wOutdoorForecast("outdoorForecast");
 MultilineWidget wCalendar("calendar");
 MultilineWidget wWeatherAlerts("weatherAlerts");
@@ -300,7 +301,7 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   else if (strcmp(topic, WEATHER_NOW_STATE) == 0)
   {
     showMessage(topic, payloadAsChars);
-    wOutdoorWeather.updateIcon(payloadAsChars, weatherIconHelper);
+    wOutdoorWeather.updateWeather(payloadAsChars, daytime);
   }
 
   // Weather: Condition/state forecast

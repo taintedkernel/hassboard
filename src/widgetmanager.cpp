@@ -14,6 +14,8 @@ void WidgetManager::addWidget(DashboardWidget *widget) {
   widgets.push_back(widget);
 }
 
+// Check to see any widgets need updating
+// Called in the main application loop
 void WidgetManager::checkUpdate(void) {
   for (uint16_t i = 0; i < widgets.size(); i++) {
     widgets[i]->checkUpdate();

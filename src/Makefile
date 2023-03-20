@@ -1,4 +1,5 @@
-CXXFLAGS=-O3 -W -Wall -Wextra -Wno-unused-parameter -g -D_FILE_OFFSET_BITS=64
+CXXFLAGS=-O3 -std=c++17 -W -Wall -Wextra -Wno-unused-parameter -g -D_FILE_OFFSET_BITS=64
+# CXXFLAGS=-O3 -W -Wall -Wextra -Wno-unused-parameter -g -D_FILE_OFFSET_BITS=64
 MAGICK_CFLAGS?=$(shell GraphicsMagick++-config --cppflags --cxxflags)
 LIBPNG_CFLAGS?=$(shell libpng-config --cflags)
 
@@ -8,8 +9,8 @@ LDFLAGS=-L$(HOME)/rpi-rgb-led-matrix/lib -lpthread -lrt -lm -lmosquitto -lrgbmat
 
 INCDIR=-I$(HOME)/rpi-rgb-led-matrix/include -I./include
 
-OBJECTS=smartgirder.o widget.o display.o dashboard.o mqtt.o logger.o secrets.o datetime.o dynamicwidget.o widgetmanager.o font.o
-HEADERS=widget.h display.h dashboard.h mqtt.h logger.h secrets.h datetime.h icons.h dynamicwidget.h widgetmanager.h font.h
+OBJECTS=smartgirder.o widget.o display.o dashboard.o mqtt.o logger.o secrets.o datetime.o dynamicwidget.o widgetmanager.o font.o weatherwidget.o weather.o
+HEADERS=widget.h display.h dashboard.h mqtt.h logger.h secrets.h datetime.h dynamicwidget.h widgetmanager.h font.h weatherwidget.h weather.h icons.h
 BINARIES=smartgirder
 
 all : smartgirder
@@ -26,7 +27,7 @@ smartgirder: smartgirder.o $(OBJECTS)
 smartgirder.o : smartgirder.cpp include/dashboard.h include/logger.h include/display.h include/mqtt.h include/widget.h
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
 
-dashboard.o : dashboard.cpp include/dashboard.h include/logger.h include/widget.h include/icons.h include/mqtt.h
+dashboard.o : dashboard.cpp weatherwidget.cpp dynamicwidget.cpp weather.cpp include/dashboard.h include/logger.h include/widget.h include/icons.h include/mqtt.h include/weatherwidget.h include/weather.h include/dynamicwidget.h
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
 
 widgetmanager.o : widgetmanager.cpp include/widgetmanager.h include/widget.h include/dashboard.h
@@ -35,7 +36,13 @@ widgetmanager.o : widgetmanager.cpp include/widgetmanager.h include/widget.h inc
 widget.o : widget.cpp include/display.h include/logger.h include/widget.h include/icons.h
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
 
-dynamicwidget.o: dynamicwidget.cpp include/dynamicwidget.h
+dynamicwidget.o: dynamicwidget.cpp include/dynamicwidget.h include/datetime.h include/logger.h
+	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+
+weather.o: weather.cpp include/weather.h include/icons.h
+	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
+
+weatherwidget.o: weatherwidget.cpp include/weatherwidget.h include/dynamicwidget.h include/weather.h include/logger.h include/datetime.h
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
 
 display.o : display.cpp include/display.h include/logger.h include/widget.h include/datetime.h include/font.h

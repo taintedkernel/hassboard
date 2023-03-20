@@ -7,6 +7,8 @@
 #include <graphics.h>
 #include <time.h>
 
+#include <string>
+
 #define WIDGET_NAME_LEN         32
 #define WIDGET_TEXT_LEN         256
 #define WIDGET_DATA_LEN         32
@@ -92,7 +94,7 @@ protected:
   uint8_t iBrightness = 0;
   uint8_t iTempBrightness = 0;
   const uint8_t *iImage = NULL;
-  char iData[WIDGET_DATA_LEN+1];
+  char iData[WIDGET_DATA_LEN+1];  // Icon filename
 
   // Initialization / config
   time_t resetTime;        // Track when temp brightness resets
@@ -140,7 +142,8 @@ public:
   void setIconImage(uint8_t width, uint8_t height, const char* iconFile);
   void setIconImage(uint8_t width, uint8_t height, const uint16_t *image);
   void setIconImage(uint8_t width, uint8_t height, const uint8_t *image);
-  void updateIcon(char *iconData, const char*(helperFunc)(char*));
+  void updateIcon(const char *iconData, const char*(helperFunc)(char*));
+  void updateIcon(std::string data);
 
   // Functions - Rendering
   void clear(bool = false);
