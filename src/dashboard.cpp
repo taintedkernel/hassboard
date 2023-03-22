@@ -65,7 +65,7 @@ DashboardWidget wOutdoorDewpoint("outdoorDewpoint");
 DashboardWidget wOutdoorWind("outdoorWind");
 DashboardWidget wOutdoorPM25("outdoorPM25");
 WeatherWidget wOutdoorWeather("outdoorWeather");
-DashboardWidget wOutdoorForecast("outdoorForecast");
+WeatherWidget wOutdoorForecast("outdoorForecast");
 MultilineWidget wCalendar("calendar");
 MultilineWidget wWeatherAlerts("weatherAlerts");
 
@@ -315,7 +315,7 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   else if (strcmp(topic, WEATHER_FC_STATE) == 0)
   {
     showMessage(topic, payloadAsChars);
-    wOutdoorForecast.updateIcon(payloadAsChars, weatherIconHelper);
+    wOutdoorForecast.updateWeather(payloadAsChars, daytime);
   }
 
   // Weather: Temperature forecast
