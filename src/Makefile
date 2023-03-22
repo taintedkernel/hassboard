@@ -13,16 +13,18 @@ OBJECTS=smartgirder.o widget.o display.o dashboard.o mqtt.o logger.o secrets.o d
 HEADERS=widget.h display.h dashboard.h mqtt.h logger.h secrets.h datetime.h dynamicwidget.h widgetmanager.h font.h weatherwidget.h weather.h icons.h
 BINARIES=smartgirder
 
-all : smartgirder
+all : smartgirder ../smartgirder
 
 clean:
-	rm *.o ../smartgirder
+	rm *.o smartgirder
+
+../smartgirder: smartgirder
+	cp $(BINARIES) ../$(BINARIES)
 
 smartgirder: smartgirder.o $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(BINARIES) $(LDFLAGS)
 	objdump -Sdr $(BINARIES) > $(BINARIES).txt
 	nm -lnC $(BINARIES) > $(BINARIES).sym
-	cp $(BINARIES) ../$(BINARIES)
 
 smartgirder.o : smartgirder.cpp include/dashboard.h include/logger.h include/display.h include/mqtt.h include/widget.h
 	$(CXX) $(INCDIR) $(CXXFLAGS) -c -o $@ $<
