@@ -12,6 +12,7 @@
 #include <string>
 #include <functional>
 #include <any>
+#include <tuple>
 
 
 using rgb_matrix::Color;
@@ -51,6 +52,32 @@ struct Bounds {
     xTop(xT), yTop(yT), xBot(xB), yBot(yB) {}
 };
 
+class AnimatedConfig
+{
+public:
+  uint8_t *image;
+  const uint8_t *origImage;
+  uint8_t imgWidth;
+  Bounds bounds;
+  weatherType weather;
+
+  AnimatedConfig() {}
+  AnimatedConfig(uint8_t *i, const uint8_t *o,
+    uint8_t w, weatherType wthr) : image(i), origImage(o),
+    imgWidth(w), weather(wthr) {};  
+
+  void setBounds(const Bounds &b) { bounds = b; }
+
+  // Return bounds as a tuple for readability
+  std::tuple<uint8_t, uint8_t, uint8_t, uint8_t> getBounds()
+  {
+    return std::make_tuple(
+      bounds.xTop, bounds.yTop,
+      bounds.xBot, bounds.yBot
+    );
+  }
+};
+
 struct Pixel {
   uint8_t x, y;
   uint8_t num;
@@ -58,48 +85,44 @@ struct Pixel {
   Pixel() : x(0), y(0), num(0), c(Color(0,0,0)) {}
   Pixel(uint8_t x, uint8_t y, uint8_t n, Color c) :
     x(x), y(y), num(n), c(c) {}
-  bool checkBounds(Bounds *b) {
+  bool checkBounds(const Bounds &b) {
     return (checkXBounds(b) && checkYBounds(b));
   }
-  bool checkYBounds(Bounds *b) {
-    return (y >= b->yTop && y <= b->yBot);
+  bool checkYBounds(const Bounds &b) {
+    return (y >= b.yTop && y <= b.yBot);
   }
-  bool checkXBounds(Bounds *b) {
-    return (x >= b->xTop && x <= b->xBot);
+  bool checkXBounds(const Bounds &b) {
+    return (x >= b.xTop && x <= b.xBot);
   }
-  void render(uint8_t *img, uint8_t width) {
-    uint16_t index = imgIndex(x, y, width);
-    img[index]   = c.r;
-    img[index+1] = c.g;
-    img[index+2] = c.b;
+  inline uint16_t index(const uint8_t& width) {
+    return 3 * (y * width + x);
+  }
+  void render(uint8_t *image, const uint8_t& width) {
+    auto idx = index(width);
+    image[idx]   = c.r;
+    image[idx+1] = c.g;
+    image[idx+2] = c.b;
   }
 };
 
-struct AnimatedConfig {
-  uint8_t *image;
-  const uint8_t *origImage;
-  uint8_t width;
-  Bounds *b;
-  weatherType weather;
-};
+// struct AnimatedConfig {
+//   uint8_t *image;
+//   const uint8_t *origImage;
+//   uint8_t width;
+//   Bounds *b;
+//   weatherType weather;
+// };
 
-class GenericDrop
+class GenericDrop : public AnimatedConfig
 {
 private:
   uint8_t x, y, id;
   vector<Pixel> pixels;
-  vector<string> colors;
-  AnimatedConfig *conf;
 
 public:
-  GenericDrop(uint8_t x, uint8_t y, vector<string> colors) :
-      x(x), y(y), colors(colors) {
-    init(3);
-  }
   GenericDrop(uint8_t x, uint8_t y, uint8_t size,
-      uint8_t id, AnimatedConfig *newConf) :
-      x(x), y(y), id(id), conf(newConf) {
-    colors = weatherColors(conf->weather);
+      uint8_t id, const AnimatedConfig& conf) :
+      AnimatedConfig(conf), x(x), y(y), id(id) {
     init(size);
   }
   auto size() {
@@ -107,17 +130,20 @@ public:
   }
 
   // Build a stacked set of several pixels,
-  // starting at our drop origin and growing downwards
+  // starting at our drop origin and growing up
   void init(uint8_t dropSize)
   {
-    auto yP = y;
-
     // Use a fixed size of 3 pixels for now
     // Pull a random color from our color list
-    for (auto i=0; i<dropSize; i++) {
-      // _debug("new pixel %d (count before=%d):", size(), i);
-      Pixel pixel(x, yP--, i, getRandomColor(colors));
-      pixels.push_back(pixel);
+    for (auto i = 0; i < dropSize; i++)
+    {
+      pixels.push_back(
+        Pixel(
+          x, (y - i), i, getRandomColor(
+            weatherColors(weather)
+          )
+        )
+      );
     }
 
     render();
@@ -126,8 +152,8 @@ public:
   void render() {
     for (vector<Pixel>::iterator pxl = pixels.begin();
       pxl != pixels.end(); pxl++) {
-        if (pxl->checkBounds(conf->b))
-          pxl->render(conf->image, conf->width);
+        if (pxl->checkBounds(bounds))
+          pxl->render(image, imgWidth);
     }
   }
 
@@ -135,73 +161,70 @@ public:
   // outside of our bounds
   void move()
   {
-    uint16_t index;
     vector<Pixel>::iterator pxl;
-    // _debug(__METHOD__);
 
     // Clear pixels (copy data from original image)
     for (pxl = pixels.begin(); pxl != pixels.end(); pxl++)
     {
-      index = imgIndex(pxl->x, pxl->y, conf->width);
-      // _debug("drop #%d: pixel #%d (%6d @ %d,%d) r=%3d, "
-      //   "g=%3d, b=%3d", id, pxl->num, index, pxl->x, pxl->y,
-      //   conf->image[index], conf->image[index+1], 
-      //   conf->image[index+2]);
-      memcpy(conf->image+index, conf->origImage+index, sizeof(uint8_t)*3);
+      auto index = pxl->index(imgWidth);
+      memcpy(image+index, origImage+index, sizeof(uint8_t)*3);
     }
 
     // Check bounds, move and render at new location
     for (pxl = pixels.begin(); pxl != pixels.end();)
     {
       // Remove the pixel if it lies outside our bounds
-      if (pxl->y >= conf->b->yBot) {
+      if (pxl->y >= bounds.yBot) {
         pxl = pixels.erase(pxl);
-        // _debug("  pixel outside bounds "
-        //     "(%d,%d)-(%d,%d), removing", conf->b->xTop,
-        //     conf->b->yTop, conf->b->xBot,
-        //     conf->b->yBot);
+        continue;
       }
+
       // Update the position, then set the pixel color
       // in the new location
-      else {
-        pxl->y += 1;
-        if (pxl->checkBounds(conf->b)) {
-          pxl->render(conf->image, conf->width);
-        }
-        // _debug("  pixel moved (%6d @ %d,%d) r=%3d, g=%3d, "
-        //     "b=%3d", index, pxl->x, pxl->y,
-        //     conf->image[index], conf->image[index+1], 
-        //     conf->image[index+2]);
-        pxl++;
+      pxl->y += 1;
+
+      if (pxl->checkBounds(bounds)) {
+        pxl->render(image, imgWidth);
       }
+
+      pxl++;
     }
 
   }
 };
 
 
-// [===--- DropWidget ---===]
-class DropWidget
+// [===--- DropAnimation ---===]
+class DropAnimation
 {
 private:
-  AnimatedConfig *conf;
+  bool init = false;
+  AnimatedConfig conf;
+
   uint8_t dropId = 0;
   vector<GenericDrop> drops;
+
   std::random_device rd;
   std::mt19937 gen;
   distrib *xCloud, *yUnderCloud, *yInCloud, *dropSize;
 
 public:
-  DropWidget() { gen.seed(rd()); }
+  DropAnimation() { gen.seed(rd()); }
 
-  void configDrop(AnimatedConfig *animConf)
+  void configDrop(const AnimatedConfig& animConf)
   {
-    drops.clear();
+    uint8_t xTop, yTop, xBot, yBot;
+
     conf = animConf;
-    xCloud = new distrib(conf->b->xTop, conf->b->xBot);
-    yUnderCloud = new distrib(conf->b->yTop, conf->b->yBot);
-    yInCloud = new distrib(conf->b->yTop-5, conf->b->yTop);
+    std::tie(xTop, yTop, xBot, yBot) = conf.getBounds();
+
+    xCloud = new distrib(xTop, xBot);
+    yUnderCloud = new distrib(yTop, yBot);
+    yInCloud = new distrib(yTop - 5, yTop);
     dropSize = new distrib(2, 3);
+
+    drops.clear();
+    init = true;
   }
 
   // Create a drop at a random location within our bounds
@@ -209,8 +232,8 @@ public:
   // semi-uniform distribution, maybe with a mandatory spacing)
   void addDrop(bool underCloud = false)
   {
-    if (!conf) {
-      _error("%s called without config set, aborting!",
+    if (!init) {
+      _error("%s called without initialization, aborting!",
           __METHOD__);
       return;
     }
@@ -220,25 +243,26 @@ public:
         (uint8_t)(*yInCloud)(gen);
     auto size = (uint8_t)(*dropSize)(gen);
 
-    // _debug("DropWidget::addDrop(%d,%d).start; drops.size=%d",
+    // _debug("DropAnimation::addDrop(%d,%d).start; drops.size=%d",
     //   x, y, drops.size());
     GenericDrop *drop = new GenericDrop(
         x, y, size, dropId++, conf
     );
     drops.push_back(*drop);
-    // _debug("DropWidget::addDrop(%d,%d).end; drops.size=%d",
+    // _debug("DropAnimation::addDrop(%d,%d).end; drops.size=%d",
     //   x, y, drops.size());
   }
 
   // Called via checkUpdate in AnimatedWidget parent class
   void updateAnimation()
   {
-    if (!conf) {
-      _error("%s called without config set,"\
-          "aborting!", __METHOD__);
+    if (!init) {
+      _error("%s called without initialization, aborting!",
+          __METHOD__);
       return;
     }
-    // _debug("DropWidget::updateAnimation() enter drops size=%d", drops.size());
+    // _debug("DropAnimation::updateAnimation() enter drops
+    //  size=%d", drops.size());
 
     // Iterate through our drops
     uint8_t removedDrops = 0;
@@ -260,46 +284,33 @@ public:
     // _debug("%d drops removed (now at %d), adding new",
     //     removedDrops, drops.size());
 
-    for (auto i=0; i<removedDrops; i++) addDrop();
+    for (auto i=0; i<removedDrops; i++, addDrop());
   }
 };
 
-class AConfig
-{
-public:
-  // uint8_t *image;
-  // const uint8_t *origImage;
-  // uint8_t width;
-  // Bounds *b;
-  // weatherType weather;
-  AnimatedConfig *conf;
-
-  void config(AnimatedConfig *animConf) {
-    conf = animConf;
-  }
-  // float getUpdatePeriod() { return 1.0f; }
-};
-
-class SunWidget
+class SunAnimation
 {
 private:
   uint8_t width;
   vector<int> rays;
 };
 
-// [===--- RainWidget ---===]
-class RainWidget : public DropWidget
+// [===--- RainAnimation ---===]
+class RainAnimation : public DropAnimation
 {
 public:
   static const uint8_t numDrops = 16;
-  Bounds bounds = Bounds(8, 15, 27, 23);
+  const Bounds bounds = Bounds(8, 15, 27, 23);
   uint16_t imageUpdatePeriodMs = 800;
 
   // Prepare an animation
-  void config(AnimatedConfig *animConf)
+  void config(AnimatedConfig& animConf)
   {
     _debug(__METHOD__);
-    animConf->b = &bounds;
+
+    // Set bounds for our rain animation, pass
+    // config to parent DropAnimation class
+    animConf.setBounds(bounds);
     configDrop(animConf);
 
     // Create some drops
@@ -328,8 +339,8 @@ private:
   uint16_t imageUpdatePeriod = FRAME_UPDATE_PERIOD_MS / 1000;
 
   std::map<weatherType, std::any> widgetMap;
-  RainWidget rainWidget;
-  SunWidget sunWidget;
+  RainAnimation rainWidget;
+  SunAnimation sunWidget;
 
 public:
   WeatherWidget(const char *name) : AnimatedWidget(name) {
@@ -340,8 +351,6 @@ public:
   // string and update our widget based on that 
   void updateWeather(const char *nws, bool daytime)
   {
-    // _debug(__METHOD__);
-    // _debug("nws=%s", nws);
     updateWeather(
       nwsWeatherTypeLookup(nws, (daytime) ?
         DAY_TIME : NIGHT_TIME)
@@ -350,24 +359,41 @@ public:
 
   // Lookup our icon filename from our
   // weather type and load the icon
-  void updateWeather(weatherType weatherUpdate)
+  void updateWeather(weatherType newWeather)
   {
-    weather = weatherUpdate;
-    string iconName = weatherIconLookup(weather);
+    // Update our widget icon
+    weather = newWeather;
+    updateIcon(
+      weatherIconLookup(weather)
+    );
 
-    _debug(__METHOD_ARG__(weatherStr(weather)));
-    // _debug("new icon=%s", iconName.c_str());
-    updateIcon(iconName);
-    initAnimation();
+    // Make a copy of our icon image
+    // Used in animation as a "background layer" reference
+    if (iImageOrig)
+      delete iImageOrig;
+    
+    auto size = iWidth * iHeight * 3;
+    iImageOrig = new uint8_t[size];
+  
+    if (!iImageOrig) {
+      _error("%s : unable to allocate buffer for icon "\
+        "image, aborting!",
+        __METHOD_ARG__(weatherStr(weather))
+      );
+      return;
+    }
+    
+    memcpy((void *)iImageOrig, iImage, size);
 
-    // iImage & iWidth set by updateIcon() above
+    // iImage/iWidth set in DashboardWidget::updateIcon()
     // iImageOrig created by initAnimation() above
     animConf = {(uint8_t *)iImage, iImageOrig, iWidth,
-        NULL, weather};
+        weather};
+    aInit = true;
 
     switch (weather) {
     case WEATHER_RAINY:
-      rainWidget.config(&animConf);
+      rainWidget.config(animConf);
       setImageUpdatePeriod(rainWidget.getUpdatePeriod());
       break;
     default:
@@ -375,27 +401,11 @@ public:
     }
   }
 
-  // Prepare an animation
-  // Must be called after setting icon
-  void initAnimation()
-  {
-    if (!iInit) return;
-    // _debug(__METHOD__);
-
-    // Make a copy of our icon image
-    // This is referenced as the background
-    // layer when we do our animation effects
-    auto size = iWidth * iHeight * 3;
-    iImageOrig = new uint8_t[size];
-    if (!iImageOrig) return;
-    memcpy((void *)iImageOrig, iImage, size);
-
-    aInit = true;
-  }
-
   void doImageUpdate()
   {
-    if (!aInit) return;
+    if (!aInit) {
+      return;
+    }
 
     switch (weather) {
     case WEATHER_RAINY:
