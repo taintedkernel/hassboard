@@ -101,7 +101,7 @@ string weatherIconLookup(weatherType wType)
   return weatherIconFn[WEATHER_UNDEFINED];
 }
 
-std::vector<string> weatherColorsLookup(weatherType wType)
+std::vector<string> weatherColors(weatherType wType)
 {
   if (auto search = weatherColorsAnim.find(wType);
       search != weatherColorsAnim.end())
@@ -109,7 +109,7 @@ std::vector<string> weatherColorsLookup(weatherType wType)
   return weatherColorsAnim[WEATHER_UNDEFINED];
 }
 
-string printWeather(weatherType wType) {
+string weatherStr(weatherType wType) {
   if (auto search = weatherCondNWS.find(wType);
       search != weatherCondNWS.end())
     return search->second;

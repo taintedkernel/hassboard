@@ -60,7 +60,7 @@ enum weatherType { WEATHER_CONF };
 weatherType nwsWeatherTypeLookup(string);
 weatherType nwsWeatherTypeLookup(string, dayTimeType);
 string weatherIconLookup(weatherType wType);
-std::vector<string> weatherColorsLookup(weatherType wType);
-string printWeather(weatherType wType);
+std::vector<string> weatherColors(weatherType wType);
+string weatherStr(weatherType wType);
 
 #endif
