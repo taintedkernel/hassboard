@@ -42,6 +42,5 @@ rgb_matrix::Color getRandomColor(std::vector<string> colors)
   auto green = (colorNum & 0x00ff00) >> 0x08;
   auto blue = (colorNum & 0x0000ff);
 
-  // _debug("  randomColor(%2u)=%s (%6x): R=%3u G=%3u B=%3u", idx, colors[idx].c_str(), colorNum, red, green, blue);
   return rgb_matrix::Color(red, green, blue);
 }

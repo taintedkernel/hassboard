@@ -445,7 +445,8 @@ void DashboardWidget::updateIcon(const char *data, const char* (helperFunc)(char
   render();
 }
 
-// New version, without helper function
+// Update icon
+// Note: No brightness logic similar to updateText()
 void DashboardWidget::updateIcon(std::string data)
 {
   if (data != "") {
