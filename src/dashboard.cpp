@@ -324,13 +324,19 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   {
     showMessage(topic, payloadAsChars);
 
+    // Limit the number of characters rendered
+    char temp[7];
+    memset(temp, ' ', 6);
+    strncpy(temp, payloadAsChars, 6);
+    temp[6] = '\0';
+
     // Note: Currently when rendering an inactive widget nothing is done
     // (eg: clearing not performed).  This allows us to avoid race
     // conditions here, where outdoorWeather is set back to active
     // before outdoorForecast is deactivated (and thus cleared,
     // resulting in a blank widget)
     wOutdoorForecast.setResetActiveTime((uint16_t)refreshActiveDelay);
-    wOutdoorForecast.updateText(payloadAsChars);
+    wOutdoorForecast.updateText(temp);
     wOutdoorForecast.setActive(true);
     wOutdoorForecast.render();
     wOutdoorWeather.setActive(false);

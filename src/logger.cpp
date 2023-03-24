@@ -28,43 +28,11 @@ void _error(const char *fmt, ...)
   va_end(argptr);
 }
 
-void _error(std::string fmt, ...)
-{
-  va_list argptr;
-  va_start(argptr, fmt);
-  _error(fmt.c_str(), argptr);
-  va_end(argptr);
-}
-
 void _warn(const char *fmt, ...)
 {
   va_list argptr;
   va_start(argptr, fmt);
   __logHelper(TERM_YELLOW "[warn] ", fmt, argptr);
-  va_end(argptr);
-}
-
-void _warn(std::string fmt, ...)
-{
-  va_list argptr;
-  va_start(argptr, fmt);
-  _warn(fmt.c_str(), argptr);
-  va_end(argptr);
-}
-
-void _debug(const char *fmt, ...)
-{
-  va_list argptr;
-  va_start(argptr, fmt);
-  __logHelper("[dbg]  ", fmt, argptr);
-  va_end(argptr);
-}
-
-void _debug(std::string fmt, ...)
-{
-  va_list argptr;
-  va_start(argptr, fmt);
-  _debug(fmt.c_str(), argptr);
   va_end(argptr);
 }
 
@@ -76,11 +44,44 @@ void _log(const char *fmt, ...)
   va_end(argptr);
 }
 
+void _debug(const char *fmt, ...)
+{
+  va_list argptr;
+  va_start(argptr, fmt);
+  __logHelper("[dbg]  ", fmt, argptr);
+  va_end(argptr);
+}
+
+
+void _error(std::string fmt, ...)
+{
+  va_list argptr;
+  va_start(argptr, fmt);
+  _error(fmt.c_str(), argptr);
+  va_end(argptr);
+}
+
+void _warn(std::string fmt, ...)
+{
+  va_list argptr;
+  va_start(argptr, fmt);
+  _warn(fmt.c_str(), argptr);
+  va_end(argptr);
+}
+
 void _log(std::string fmt, ...)
 {
   va_list argptr;
   va_start(argptr, fmt);
   _log(fmt.c_str(), argptr);
+  va_end(argptr);
+}
+
+void _debug(std::string fmt, ...)
+{
+  va_list argptr;
+  va_start(argptr, fmt);
+  _debug(fmt.c_str(), argptr);
   va_end(argptr);
 }
 
