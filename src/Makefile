@@ -1,24 +1,32 @@
-CXXFLAGS=-O3 -std=c++17 -W -Wall -Wextra -Wno-unused-parameter -g -D_FILE_OFFSET_BITS=64
-# CXXFLAGS=-O3 -W -Wall -Wextra -Wno-unused-parameter -g -D_FILE_OFFSET_BITS=64
+# compiler flags
+CXXFLAGS=-O3 -std=c++20 -W -Wall -Wextra -Wno-unused-parameter -g -D_FILE_OFFSET_BITS=64
 MAGICK_CFLAGS?=$(shell GraphicsMagick++-config --cppflags --cxxflags)
 LIBPNG_CFLAGS?=$(shell libpng-config --cflags)
 
+# linker flags
 MAGICK_LDFLAGS?=$(shell GraphicsMagick++-config --ldflags --libs)
 LIBPNG_LDFLAGS?=$(shell libpng-config --ldflags --libs)
 LDFLAGS=-L$(HOME)/rpi-rgb-led-matrix/lib -lpthread -lrt -lm -lmosquitto -lrgbmatrix -lpthread $(LIBPNG_LDFLAGS) $(MAGICK_LDFLAGS)
 
+# includes flags
 INCDIR=-I$(HOME)/rpi-rgb-led-matrix/include -I./include
 
+# sources
 OBJECTS=smartgirder.o widget.o display.o dashboard.o mqtt.o logger.o secrets.o datetime.o dynamicwidget.o widgetmanager.o font.o weatherwidget.o weather.o
 HEADERS=widget.h display.h dashboard.h mqtt.h logger.h secrets.h datetime.h dynamicwidget.h widgetmanager.h font.h weatherwidget.h weather.h icons.h
+
+# output
 BINARIES=smartgirder
 
+# targets
 all : smartgirder ../smartgirder
 
 clean:
 	rm *.o smartgirder
 
 ../smartgirder: smartgirder
+	pkill $(BINARIES)
+	-rm ../$(BINARIES) 2>/dev/null
 	cp $(BINARIES) ../$(BINARIES)
 
 smartgirder: smartgirder.o $(OBJECTS)

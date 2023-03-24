@@ -61,47 +61,6 @@ char* floatStrLen(char *payload)
   return buffer;
 }
 
-// Translate weather condition to matching icon, return filename
-const char* weatherIconHelper(char *condition)
-{
-  if (strcmp(condition, "sunny") == 0) {
-    return(ICON_WEATHER_SUNNY);
-  }
-  else if (strcmp(condition, "partlycloudy") == 0 && daytime) {
-    return(ICON_WEATHER_PCLOUDY);
-  }
-  else if (strcmp(condition, "partlycloudy") == 0 && !daytime) {
-    return(ICON_WEATHER_PCLOUDY_NIGHT);
-  }
-  else if (strcmp(condition, "cloudy") == 0) {
-    return(ICON_WEATHER_CLOUDY);
-  }
-  else if (strcmp(condition, "rainy") == 0) {
-    return(ICON_WEATHER_RAINY);
-  }
-  else if (strcmp(condition, "rainy-snowy") == 0) {
-    return(ICON_WEATHER_SNOWY_RAINY);
-  }
-  else if (strcmp(condition, "snowy-rainy") == 0) {
-    return(ICON_WEATHER_SNOWY_RAINY);
-  }
-  else if (strcmp(condition, "snowy") == 0) {
-    return(ICON_WEATHER_SNOWY);
-  }
-  else if (strcmp(condition, "fog") == 0) {
-    return(ICON_WEATHER_FOG);
-  }
-  else if (strcmp(condition, "clear-night") == 0) {
-    return(ICON_WEATHER_CLEAR_NIGHT);
-  }
-  else if (strcmp(condition, "exceptional") == 0) {
-    return(ICON_WEATHER_EXCEPTIONAL);
-  }
-  else {
-    return(ICON_WEATHER_UNKNOWN);
-  }
-}
-
 // Convert a 565-encoded color to individual RGB values
 void color565_2RGB(uint16_t value, uint8_t *rgb)
 {
@@ -289,7 +248,6 @@ void DashboardWidget::setVariableWidth(bool vWidth)
 {
   tVarWidth = vWidth;
 }
-
 
 // Set an alert level and color (currently on text)
 // Note: This currently only supports upper-bounds levels

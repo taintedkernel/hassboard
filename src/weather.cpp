@@ -36,13 +36,6 @@ std::map<weatherType, dayTimeType> weatherTypeTime {
 };
 #undef X
 
-// Mapping between our legacy daytime boolean
-// and our new dayTimeType
-std::map<bool, dayTimeType> boolDayTime {
-  { true, DAY_TIME },
-  { false, NIGHT_TIME },
-};
-
 //
 // Mapping between type and a color palette
 // Used in animated icon types that support dynamic
@@ -92,7 +85,7 @@ weatherType nwsWeatherTypeLookup(
   return WEATHER_UNDEFINED;
 }
 
-// Helper function to get an icon filename from weather type
+// Find icon filename for a weather type
 string weatherIconLookup(weatherType wType)
 {
   if (auto search = weatherIconFn.find(wType);
@@ -101,6 +94,7 @@ string weatherIconLookup(weatherType wType)
   return weatherIconFn[WEATHER_UNDEFINED];
 }
 
+// Find color palette for a weather type
 std::vector<string> weatherColors(weatherType wType)
 {
   if (auto search = weatherColorsAnim.find(wType);
@@ -109,6 +103,7 @@ std::vector<string> weatherColors(weatherType wType)
   return weatherColorsAnim[WEATHER_UNDEFINED];
 }
 
+// Find string representation for a weather type
 string weatherStr(weatherType wType) {
   if (auto search = weatherCondNWS.find(wType);
       search != weatherCondNWS.end())
