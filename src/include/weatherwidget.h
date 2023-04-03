@@ -59,7 +59,7 @@ public:
   Bounds bounds;
   weatherType weather;
 
-  AnimatedConfig() {}
+  AnimatedConfig() {};
   AnimatedConfig(uint8_t *i, const uint8_t *o,
     uint8_t w, weatherType wthr) : image(i), origImage(o),
     imgWidth(w), weather(wthr) {};  
