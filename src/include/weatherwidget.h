@@ -10,8 +10,9 @@
 #include <string.h>
 #include <random>
 #include <string>
+#include <ranges>
 #include <tuple>
-
+#include <functional>
 
 using rgb_matrix::Color;
 using std::vector;
@@ -59,12 +60,19 @@ public:
   Bounds bounds;
   weatherType weather;
 
+  int8_t (*pixelGenX)(int8_t);
+  int8_t (*pixelGenY)(int8_t);
+
   AnimatedConfig() {};
   AnimatedConfig(uint8_t *i, const uint8_t *o,
     uint8_t w, weatherType wthr) : image(i), origImage(o),
-    imgWidth(w), weather(wthr) {};  
+    imgWidth(w), weather(wthr) {};
 
   void setBounds(const Bounds &b) { bounds = b; }
+  void setPixelGen(int8_t (*x)(int8_t), int8_t (*y)(int8_t)) {
+    pixelGenX = x;
+    pixelGenY = y;
+  }
 
   // Return bounds as a tuple for readability
   std::tuple<uint8_t, uint8_t, uint8_t, uint8_t> getBounds()
@@ -121,25 +129,28 @@ private:
   vector<Pixel> pixels;
 
 public:
-  GenericDrop(uint8_t x, uint8_t y, uint8_t size,
-      uint8_t id, const AnimatedConfig& conf) :
-      AnimatedConfig(conf), x(x), y(y), id(id) {
-    init(size);
-  }
+  GenericDrop(uint8_t id, const AnimatedConfig& conf) :
+      AnimatedConfig(conf), id(id) {}
   auto size() {
     return pixels.size();
   }
 
   // Build a stacked set of several pixels,
   // starting at our drop origin and growing up
-  void init(uint8_t dropSize)
+  void init(uint8_t iX, uint8_t iY, uint8_t pixelCount)
   {
+    // Set our base coordinates
+    x = iX; y = iY;
+
     // Sample random colors from our color list to use 
-    for (auto i = 0; i < dropSize; i++)
+    for (auto i = 0; i < pixelCount; i++)
     {
+      // _debug("%s: pixel %d, y: %d", __METHOD__, i, pixelGenY(i));
       pixels.push_back(
         Pixel(
-          x, (y - i), i, getRandomColor(
+          x + pixelGenX(i),
+          y + pixelGenY(i),
+          i, getRandomColor(
             weatherColors(weather)
           )
         )
@@ -209,29 +220,18 @@ class DropAnimation
 {
 private:
   bool init = false;
-  AnimatedConfig conf;
-
-  uint8_t dropId = 0;
   vector<GenericDrop> drops;
 
-  std::random_device rd;
-  std::mt19937 gen;
-  distrib *xCloud, *yUnderCloud, *yInCloud, *dropSize;
+protected:
+  uint8_t dropId = 0;
+  AnimatedConfig conf;
 
 public:
-  DropAnimation() { gen.seed(rd()); }
+  virtual GenericDrop* makeDrop(bool) {}
 
   void configDrop(const AnimatedConfig& animConf)
   {
-    uint8_t xTop, yTop, xBot, yBot;
     conf = animConf;
-
-    std::tie(xTop, yTop, xBot, yBot) = conf.getBounds();
-    xCloud = new distrib(xTop, xBot);
-    yUnderCloud = new distrib(yTop, yBot);
-    yInCloud = new distrib(yTop - 7, yTop);
-    dropSize = new distrib(2, 3);
-
     drops.clear();
     init = true;
   }
@@ -239,21 +239,13 @@ public:
   // Create a drop at a random location within our bounds
   // TODO: Add some logic to prevent "clustering" (eg: ensure
   // semi-uniform distribution, maybe with a mandatory spacing)
-  void addDrop(bool underCloud = false)
+  void addDrop(bool inCloud = true)
   {
     if (!init) {
       _error(__METHOD__);
       _error("  called without initialization, aborting!");
       return;
     }
-
-    // Choose random X and size parameters
-    // Y random bounds depend if drop is "in" or "under"
-    // the cloud
-    auto size = (uint8_t)(*dropSize)(gen);
-    auto y = (underCloud) ? (uint8_t)(*yUnderCloud)(gen) : 
-        (uint8_t)(*yInCloud)(gen);
-    auto x = (uint8_t)(*xCloud)(gen);
 
     // uint8_t i, xC, yC;
     // bool valid = false;
@@ -265,17 +257,12 @@ public:
     //           && conf.image[idx+2] == 0) {
     //         valid = true;
     //       } else {
-    //         x = (uint8_t)(*xCloud)(gen);
+    //         x = (uint8_t)(*xDrop)(gen);
     //       }
     //     }
     //   }
     // }
-
-    // Create the drop and add to our list (vector)
-    GenericDrop *drop = new GenericDrop(
-        x, y, size, dropId++, conf
-    );
-    drops.push_back(*drop);
+    drops.push_back(*makeDrop(inCloud));
   }
 
   void updateDropAnimation()
@@ -361,7 +348,75 @@ class RainAnimation : public DropAnimation, AnimationBase
 public:
   static const uint8_t numDrops = 16;
   const Bounds bounds = Bounds(8, 15, 27, 23);
-  const milliseconds imageUpdatePeriodMs = 800ms;
+  const milliseconds imageUpdatePeriodMs = 250ms;
+
+  std::random_device rd;
+  std::mt19937 gen;
+  distrib *dropDistX, *dropDistY, *dropDistYCloud, *dropSize;
+
+  RainAnimation()
+  {
+    dropDistX = new distrib(bounds.xTop, bounds.xBot);
+    dropDistY = new distrib(bounds.yTop, bounds.yBot);
+    dropDistYCloud = new distrib(bounds.yTop - 5, bounds.yTop);
+    dropSize = new distrib(2, 3);
+  }
+
+  // Functions to generate pixel coordinates from an index
+  static int8_t pixelGenX(int8_t idx) { return 0; }
+  static int8_t pixelGenY(int8_t idx) { return -1 * idx; }
+
+  GenericDrop* makeDrop(bool inCloud = true)
+  {
+    auto dX = (uint8_t)(*dropDistX)(gen);
+    auto dY = inCloud ? (uint8_t)(*dropDistYCloud)(gen) :
+        (uint8_t)(*dropDistY)(gen);
+    auto size = (uint8_t)(*dropSize)(gen);
+
+    GenericDrop *drop = new GenericDrop(dropId++, conf);
+    drop->init(dX, dY, size);
+    return drop;
+  }
+
+  // Prepare an animation
+  void config(AnimatedConfig& animConf)
+  {
+    // Set bounds for our rain animation, pass
+    // config to parent DropAnimation class
+    animConf.setBounds(bounds);
+    animConf.setPixelGen(&pixelGenX, &pixelGenY);
+    configDrop(animConf);
+
+    // Create some drops
+    for (auto i=0; i<numDrops; i++) {
+      addDrop(false);
+    }
+  }
+
+  // How frequently we update our animation
+  milliseconds getUpdatePeriod() {
+    return milliseconds(imageUpdatePeriodMs);
+  }
+
+  void updateAnimation() {
+    updateDropAnimation();
+  }
+};
+
+//
+// [===--- SnowAnimation ---===]
+//
+// Class to define parameters for a snow
+// animation graphic. Built mostly upon a
+// "DropAnimation" base class, which does
+// most of the heavy lifting.
+//
+class SnowAnimation : public DropAnimation, AnimationBase
+{
+public:
+  static const uint8_t numDrops = 12;
+  const Bounds bounds = Bounds(8, 15, 27, 23);
+  const milliseconds imageUpdatePeriodMs = 1200ms;
 
   // Prepare an animation
   void config(AnimatedConfig& animConf)
@@ -373,7 +428,7 @@ public:
 
     // Create some drops
     for (auto i=0; i<numDrops; i++) {
-      addDrop(true);
+      addDrop();
     }
   }
 
@@ -482,6 +537,7 @@ public:
       setImageUpdatePeriod(
           anim->getUpdatePeriod()
       );
+      _debug("animationPeriod: %ld", anim->getUpdatePeriod());
       anim->setInit(true);
     }
     else {
