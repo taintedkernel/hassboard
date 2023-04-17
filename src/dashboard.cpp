@@ -77,7 +77,7 @@ GirderFont *largeFont, *smallFont;
 
 extern uint32_t cycle;
 extern bool forceRefresh;
-extern uint8_t refreshActiveDelay;
+extern milliseconds refreshActiveDelay;
 extern rgb_matrix::Color colorText, colorTextDay, colorTextNight;
 extern rgb_matrix::Color colorWhite, colorGrey, colorTextDark, colorAlert;
 extern GirderFont *defaultFont;
@@ -109,6 +109,7 @@ void setupDashboard()
   widget->setIconImage(7, 7, big_house_drop);
   widget->setIconOrigin(1, 1);
   widget->setVisibleTextLength(3);
+  // widget->setDebug(true);
   widgets.addWidget(widget);
 
   // Row 2
@@ -122,6 +123,7 @@ void setupDashboard()
   // This metric updates on slower interval, so default to blank
   widget->updateText((char *)"--", false);
   widget->setVisibleTextLength(3);
+  // widget->setDebug(true);
   widgets.addWidget(widget);
 
   // Dewpoint
@@ -132,6 +134,7 @@ void setupDashboard()
   widget->setVariableWidth(true);
   widget->setIconImage(8, 8, droplet);
   widget->setVisibleTextLength(3);
+  // widget->setDebug(true);
   widgets.addWidget(widget);
 
   // Row 3
@@ -169,6 +172,7 @@ void setupDashboard()
     colorWhite, DashboardWidget::ALIGN_CENTER, largeFont);
   widget->setBounds(32, 34);
   widget->setVisibleTextLength(3);
+  // widget->setDebug(true);
   widgets.addWidget(widget);
 
   // Alternate forecast widget, to show over current weather
@@ -335,12 +339,13 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
     // conditions here, where outdoorWeather is set back to active
     // before outdoorForecast is deactivated (and thus cleared,
     // resulting in a blank widget)
-    wOutdoorForecast.setResetActiveTime((uint16_t)refreshActiveDelay);
+    wOutdoorForecast.setResetActiveTime(milliseconds(refreshActiveDelay));
     wOutdoorForecast.updateText(temp);
     wOutdoorForecast.setActive(true);
     wOutdoorForecast.render();
+  
     wOutdoorWeather.setActive(false);
-    wOutdoorWeather.setResetActiveTime((uint16_t)refreshActiveDelay);
+    wOutdoorWeather.setResetActiveTime(milliseconds(refreshActiveDelay));
   }
 
   // "Weather": Sun position

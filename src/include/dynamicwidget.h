@@ -1,14 +1,16 @@
 #ifndef DYNAMICWIDGET_H
 #define DYNAMICWIDGET_H
 
+#include "smartgirder.h"
 #include "widget.h"
 #include "display.h"
 
 #include <graphics.h>
 #include <time.h>
 
-#define TEXT_UPDATE_PERIOD_MS    5000
-#define FRAME_UPDATE_PERIOD_MS    900
+
+#define TEXT_UPDATE_PERIOD_MS     5s
+#define FRAME_UPDATE_PERIOD_MS    900ms
 
 // Sub-class to implement a widget that can change
 // the display of rendered contents.  Currently only
@@ -17,8 +19,8 @@
 class MultilineWidget : public DashboardWidget
 {
 private:
-  time_t lastUpdateTime = 0;
-  uint16_t textUpdatePeriod = TEXT_UPDATE_PERIOD_MS / 1000;
+  system_clock::time_point lastUpdateTime;
+  milliseconds textUpdatePeriod = TEXT_UPDATE_PERIOD_MS;
   uint8_t currentTextLine = 0;
   char fullTextData[WIDGET_TEXT_LEN+1];
 
@@ -30,7 +32,7 @@ public:
 
   // void updateText(char *text, bool brighten = true);
 
-  void setTextUpdatePeriod(uint16_t period);
+  void setTextUpdatePeriod(milliseconds period);
   void checkTextUpdate();
   void checkUpdate();
 };
@@ -38,8 +40,8 @@ public:
 class AnimatedWidget : public DashboardWidget
 {
 private:
-  time_t lastImageTime = 0;
-  uint16_t imageUpdatePeriod = FRAME_UPDATE_PERIOD_MS / 1000;
+  system_clock::time_point lastImageTime;
+  milliseconds imageUpdatePeriod = FRAME_UPDATE_PERIOD_MS;
 
   virtual void doImageUpdate();
 
@@ -49,7 +51,7 @@ protected:
 public:
   AnimatedWidget(const char *name) : DashboardWidget(name) {}
 
-  void setImageUpdatePeriod(uint16_t period);
+  void setImageUpdatePeriod(milliseconds period);
   void checkImageUpdate();
   void checkUpdate();
 };

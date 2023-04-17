@@ -1,3 +1,4 @@
+#include "smartgirder.h"
 #include "dynamicwidget.h"
 #include "datetime.h"
 #include "logger.h"
@@ -6,7 +7,7 @@
 #include <string.h>
 
 
-void MultilineWidget::setTextUpdatePeriod(uint16_t period) {
+void MultilineWidget::setTextUpdatePeriod(milliseconds period) {
   textUpdatePeriod = period;
 }
 
@@ -17,10 +18,10 @@ void MultilineWidget::checkUpdate() {
 void MultilineWidget::checkTextUpdate()
 {
   // _debug("checkTextUpdate @ %ld: last update=%ld", clock_ts(), lastUpdateTime);
-  if (clock_ts() >= lastUpdateTime + textUpdatePeriod) {
+  if (system_clock::now() >= lastUpdateTime + textUpdatePeriod) {
     currentTextLine = 1 - currentTextLine;
     doTextUpdate();
-    lastUpdateTime = clock_ts();
+    lastUpdateTime = system_clock::now();
   }
 }
 
@@ -62,7 +63,7 @@ void MultilineWidget::setText(char *text)
 
 /*** AnimatedWidget ***/
 
-void AnimatedWidget::setImageUpdatePeriod(uint16_t period) {
+void AnimatedWidget::setImageUpdatePeriod(milliseconds period) {
   imageUpdatePeriod = period;
 }
 
@@ -72,10 +73,10 @@ void AnimatedWidget::checkUpdate() {
 
 void AnimatedWidget::checkImageUpdate()
 {
-  // _debug("checkTextUpdate @ %ld: last update=%ld", clock_ts(), lastUpdateTime);
-  if (clock_ts() >= lastImageTime + imageUpdatePeriod) {
+  // _debug("checkImageUpdate @ %ld: last update=%ld", clock_ts(), lastImageTime);
+  if (system_clock::now() >= lastImageTime + imageUpdatePeriod) {
     doImageUpdate();
-    lastImageTime = clock_ts();
+    lastImageTime = system_clock::now();
   }
 }
 

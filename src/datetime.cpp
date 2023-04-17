@@ -3,6 +3,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
+using std::chrono::time_point;
+using std::chrono::system_clock;
+
+
 unsigned int year(tm *ts) { return ts->tm_year + 1900; }
 unsigned int month(tm *ts) { return ts->tm_mon + 1; }
 unsigned int day(tm *ts) { return ts->tm_mday; }
@@ -49,3 +54,11 @@ time_t clock_ts(void)
 {
   return time(0);
 }
+
+// float getClock(void)
+// {
+//   // return std::chrono::duration_cast<std::chrono::milliseconds>(system_clock::now().time_since_epoch());
+//   return system_clock::now().time_since_epoch() / 
+//       std::chrono::milliseconds(1);
+// }
+

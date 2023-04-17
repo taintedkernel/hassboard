@@ -1,9 +1,11 @@
+#include "smartgirder.h"
 #include "datetime.h"
 #include "display.h"
 #include "widget.h"
 #include "logger.h"
 #include "icons.h"
 
+#include <chrono>
 #include <cstring>
 #include <algorithm>
 
@@ -12,11 +14,13 @@
 
 #include <led-matrix.h>
 
+using namespace std::chrono;
+
 
 uint16_t cloudsLocal[ICON_SZ], cloudsSunLocal[ICON_SZ];
 uint16_t sunLocal[ICON_SZ], cloudsShowersLocal[ICON_SZ];
 
-uint8_t refreshDelay = 5, refreshActiveDelay = 10;
+milliseconds refreshDelay = 5s, refreshActiveDelay = 5s;
 
 extern bool daytime;
 extern uint8_t brightness;
@@ -273,18 +277,16 @@ void DashboardWidget::updateText(char *text, bool brighten)
   if (strncmp(text, tData, WIDGET_TEXT_LEN) == 0)
     return;
 
-  char updateEnd[10];
-  time_t ts = clock_ts() + refreshDelay;
-  time_t local = time(&ts);
-  tm *localtm = localtime(&local);
-  snprintf(updateEnd, 9, "%02d:%02d:%02d", hour(localtm), minute(localtm), second(localtm));
+  // std::string ts = 
+  // std::chrono::hh_mm_ss ts(system_clock::now() + refreshDelay);
 
   _debug("widget %s: updating to '%s' from old text: '%s', "
-    "bright until %s", name, text, tData, updateEnd);
+    "bright for %d ms", name, text, tData,
+    milliseconds(refreshDelay));
 
   setText(text);
   if (brighten) {
-    resetTime = clock_ts() + refreshDelay;
+    resetTime = system_clock::now() + refreshDelay;
     tempAdjustBrightness(boldBrightnessIncrease, BRIGHT_TEXT);
   }
 
@@ -465,7 +467,7 @@ int DashboardWidget::renderText()
 {
   Color color;
   int16_t offset;
-  bool localDebug = true;
+  bool localDebug = false; //true;
 
   // Verify initialization & active status
   if (!tInit) {
@@ -616,11 +618,11 @@ void DashboardWidget::updateBrightness()
 // Checks if temporary brightness duration has elapsed and reset if necessary
 void DashboardWidget::checkResetBrightness()
 {
-  if (resetTime > 0 && clock_ts() >= resetTime)
+  if ((iTempBrightness > 0 || tTempBrightness > 0) && 
+      system_clock::now() >= resetTime)
   {
     _logName();
     _log("- resetting brightness");
-    resetTime = 0;
     resetBrightness(BRIGHT_BOTH);
     iTempBrightness = tTempBrightness = 0;
     render();
@@ -641,42 +643,39 @@ void DashboardWidget::tempAdjustBrightness(uint8_t tempBright, brightType bType 
 }
 
 // Check if temporary active duration has elapsed and reset if necessary
-// checkSetInactive?
 void DashboardWidget::checkResetActive()
 {
-  if (resetActiveTime > 0 && clock_ts() >= resetActiveTime)
+  /* if ((strcmp(name, "outdoorForecast") == 0) ||
+      (strcmp(name, "outdoorWeather") == 0)) {
+    _log(__METHOD__);
+    _log("- %s", name);
+    _log("- %d - %d", active, tempActive);
+  } */
+  if (tempActive && system_clock::now() >= resetActiveTime)
   {
     _logName();
     _log("- resetting active to: %d", !(active));
-    resetActiveTime = 0;
+    tempActive = false;
     setActive(!(active));
     clear();
     render();
   }
 }
 
-// Set the time at which point the active state is reset
-void DashboardWidget::setResetActiveTime(time_t time)
+// Set the time to reset the active state
+void DashboardWidget::setResetActiveTime(milliseconds delay)
 {
-  resetActiveTime = time;
+  _logName();
+  _log(__METHOD__);
+  resetActiveTime = system_clock::now() + delay;
+  tempActive = true;
 
-  char updateEnd[10];
-  tm *localtm = localtime(&time);
-  snprintf(updateEnd, 9, "%02d:%02d:%02d", hour(localtm), minute(localtm), second(localtm));
+  // char updateEnd[10];
+  // tm *localtm = localtime(&resetActiveTime);
+  // snprintf(updateEnd, 9, "%02d:%02d:%02d", hour(timeOfDay), minute(timeOfDay), second(timeOfDay));
+  // std::chrono::hh_mm_ss ts(system_clock::now() + refreshDelay);
 
-  _debug("widget %s: setting active until %s", name, updateEnd);
-}
-
-// Set the time to reset the active state to now
-void DashboardWidget::setResetActiveTime(uint16_t delay)
-{
-  resetActiveTime = clock_ts() + delay;
-
-  char updateEnd[10];
-  tm *localtm = localtime(&resetActiveTime);
-  snprintf(updateEnd, 9, "%02d:%02d:%02d", hour(localtm), minute(localtm), second(localtm));
-
-  _debug("widget %s: setting active until %s", name, updateEnd);
+  _debug("widget %s: setting active for %d ms", name, delay);
 }
 
 // Virtual method, called from WidgetManager

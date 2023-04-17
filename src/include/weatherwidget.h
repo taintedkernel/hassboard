@@ -327,8 +327,8 @@ public:
   virtual void config(AnimatedConfig& animConf) {}
 
   // Provide update interval to weather widget
-  virtual float getUpdatePeriod() {
-    return DEFAULT_INTERVAL_MS / 1000.0f;
+  virtual milliseconds getUpdatePeriod() {
+    return milliseconds(DEFAULT_INTERVAL_MS);
   }
 
   // Render next animation frame
@@ -361,7 +361,7 @@ class RainAnimation : public DropAnimation, AnimationBase
 public:
   static const uint8_t numDrops = 16;
   const Bounds bounds = Bounds(8, 15, 27, 23);
-  const uint16_t imageUpdatePeriodMs = 800;
+  const milliseconds imageUpdatePeriodMs = 800ms;
 
   // Prepare an animation
   void config(AnimatedConfig& animConf)
@@ -378,8 +378,8 @@ public:
   }
 
   // How frequently we update our animation
-  float getUpdatePeriod() {
-    return imageUpdatePeriodMs / 1000.0;
+  milliseconds getUpdatePeriod() {
+    return milliseconds(imageUpdatePeriodMs);
   }
 
   void updateAnimation() {
@@ -408,8 +408,8 @@ private:
   const uint8_t *iImageOrig;
 
   // Animation timing
-  time_t lastImageTime = 0;
-  uint16_t imageUpdatePeriod = FRAME_UPDATE_PERIOD_MS / 1000;
+  float lastImageTime = 0;
+  milliseconds imageUpdatePeriod = FRAME_UPDATE_PERIOD_MS;
 
   // Animations & management
   RainAnimation aRain;

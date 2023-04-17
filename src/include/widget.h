@@ -1,6 +1,7 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
+#include "smartgirder.h"
 #include "display.h"
 
 #include <png++/png.hpp>
@@ -8,6 +9,7 @@
 #include <time.h>
 
 #include <string>
+
 
 #define WIDGET_NAME_LEN         32
 #define WIDGET_TEXT_LEN         256
@@ -54,6 +56,7 @@ protected:
   /*** ATTRIBUTES ***/
   char name[WIDGET_NAME_LEN+1];   // Name of widget
   bool active = true;
+  bool tempActive = false;
   bool debug = false;
 
   uint8_t widgetX = 0;
@@ -96,9 +99,10 @@ protected:
   const uint8_t *iImage = NULL;
   char iData[WIDGET_DATA_LEN+1];  // Icon filename
 
-  // Initialization / config
-  time_t resetTime;        // Track when temp brightness resets
-  time_t resetActiveTime;  // Track when active toggles
+  // Track when brightness resets
+  time_point<system_clock> resetTime;
+  // Track when active toggles
+  time_point<system_clock> resetActiveTime;
 
   /*** FUNCTIONS ***/
   // Getters/setters/helpers
@@ -162,8 +166,7 @@ public:
 
   // Functions - "Active-ness" adjustments
   void checkResetActive();
-  void setResetActiveTime(clock_t time);
-  void setResetActiveTime(uint16_t delay);
+  void setResetActiveTime(milliseconds delay);
 
   // Functions - Generic periodic updates
   virtual void checkUpdate();
