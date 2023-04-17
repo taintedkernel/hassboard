@@ -277,7 +277,7 @@ void drawText(uint8_t x, uint8_t y, Color color, const char *text,
       xStart += vGlyphWidth(glyph, font);
       if (debug) {
         matrix->SetPixel(xStart, y+font->height, 0, 0, 192);
-        _debug("new xStart: %d", xStart);
+        // _debug("new xStart: %d", xStart);
       }
     }
   }

@@ -1,4 +1,5 @@
 #include "weather.h"
+#include "logger.h"
 
 #include <string>
 #include <vector>
@@ -48,6 +49,15 @@ std::map<weatherType, std::vector<string>> weatherColorsAnim{
   {WEATHER_RAINY, rainColors},
 };
 
+// Mappings for animation drops
+std::map<weatherType, uint8_t> dropWidth {
+    {WEATHER_RAINY, 1},
+};
+
+std::map<weatherType, uint8_t> dropHeight {
+    {WEATHER_RAINY, 3},
+};
+
 // Helper function to do a reverse mapping lookup
 // from a NWS condition string to weather type
 weatherType nwsWeatherTypeLookup(string nws)
@@ -57,6 +67,8 @@ weatherType nwsWeatherTypeLookup(string nws)
       return it.first;
     }
   }
+  _error(__METHOD_ARG__(nws));
+  _error("weather type undefined for condition");
   return WEATHER_UNDEFINED;
 }
 
@@ -82,6 +94,8 @@ weatherType nwsWeatherTypeLookup(
       return it.first;
     }
   }
+  _error(__METHOD_ARG__(nws));
+  _error("weather type undefined for condition");
   return WEATHER_UNDEFINED;
 }
 
@@ -91,6 +105,8 @@ string weatherIconLookup(weatherType wType)
   if (auto search = weatherIconFn.find(wType);
       search != weatherIconFn.end())
     return search->second;
+  _error(__METHOD_ARG__(weatherStr(wType)));
+  _error("icon undefined for weather type");
   return weatherIconFn[WEATHER_UNDEFINED];
 }
 
@@ -100,6 +116,8 @@ std::vector<string> weatherColors(weatherType wType)
   if (auto search = weatherColorsAnim.find(wType);
       search != weatherColorsAnim.end())
     return search->second;
+  _error(__METHOD_ARG__(weatherStr(wType)));
+  _error("animation colors undefined for weather type");
   return weatherColorsAnim[WEATHER_UNDEFINED];
 }
 

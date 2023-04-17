@@ -56,7 +56,14 @@
 			"ranges": "cpp",
 			"stdexcept": "cpp",
 			"streambuf": "cpp",
-			"any": "cpp"
-		}
+			"any": "cpp",
+			"variant": "cpp",
+			"chrono": "cpp",
+			"ratio": "cpp",
+			"sstream": "cpp"
+		},
+		"editor.stickyTabStops": true,
+		"editor.tabSize": 2,
+		"editor.indentSize": "tabSize"
 	}
 }

@@ -25,9 +25,11 @@ clean:
 	rm *.o smartgirder
 
 ../smartgirder: smartgirder
-	pkill $(BINARIES)
+	-pkill $(BINARIES)
 	-rm ../$(BINARIES) 2>/dev/null
 	cp $(BINARIES) ../$(BINARIES)
+
+nokill: smartgirder
 
 smartgirder: smartgirder.o $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(BINARIES) $(LDFLAGS)
