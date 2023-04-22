@@ -244,7 +244,7 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   - Outdoor AQI? (eh, PM is there and covers it)
   - Pressure?
   - Weather alerts (in progress)
-  - Calendar notifications
+  - Calendar notifications (done)
   - Garage door open?
   - Chores/reminders
   - Other TBD alerts?
@@ -307,7 +307,6 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   }
 
   // Weather: Current conditions/state
-  // TODO: Animated icons?
   else if (strcmp(topic, WEATHER_NOW_STATE) == 0)
   {
     showMessage(topic, payloadAsChars);
@@ -320,7 +319,8 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   // and rendering to screen; eg: an update of forecast topic should
   // not automatically trigger display and rendering of it.  We need
   // a timer to show this at some interval, rather then whenever
-  // new MQTT data is posted to the relevant topics
+  // new MQTT data is posted to the relevant topics, though this
+  // is done at regular intervals itself.
   //
   else if (strcmp(topic, WEATHER_FC_STATE) == 0)
   {
