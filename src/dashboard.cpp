@@ -39,7 +39,7 @@ uint8_t weatherOffsetY = 2;
 uint8_t rowDayStart = 2;
 uint8_t rowDateStart = rowDayStart + 9;
 uint8_t rowTimeStart = rowDateStart + 10;
-uint8_t rowTempStart = 26;
+uint8_t rowTempStart = 27;
 
 uint8_t rowSpacing = 3;
 uint8_t rowOneStart = 1;
@@ -170,7 +170,6 @@ void setupDashboard()
   widget->setIconImage(32, 25, ICON_WEATHER_PCLOUDY);
   widget->setCustomTextConfig(WIDGET_WIDTH_LARGE, rowTempStart,
     colorWhite, DashboardWidget::ALIGN_CENTER, largeFont);
-  widget->setBounds(32, 34);
   widget->setVisibleTextLength(3);
   // widget->setDebug(true);
   widgets.addWidget(widget);
@@ -181,10 +180,10 @@ void setupDashboard()
   widget->setOrigin(weatherOffsetX, weatherOffsetY);
   widget->setSize(DashboardWidget::WIDGET_LARGE);
   widget->setIconImage(32, 25, ICON_WEATHER_PCLOUDY);
-  widget->setCustomTextConfig(WIDGET_WIDTH_LARGE+1, rowTempStart-2,
-    colorText, DashboardWidget::ALIGN_CENTER, smallFont);
+  widget->setCustomTextConfig(WIDGET_WIDTH_LARGE+1,
+    rowTempStart-1, colorText, DashboardWidget::ALIGN_CENTER,
+    smallFont);
   widget->setVariableWidth(true);
-  widget->setBounds(34, 34);
   widget->setActive(false);
   widget->setVisibleTextLength(5);
   // widget->setDebug(true);
