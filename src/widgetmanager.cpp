@@ -17,14 +17,14 @@ void WidgetManager::addWidget(DashboardWidget *widget) {
 // Check to see any widgets need updating
 // Called in the main application loop
 void WidgetManager::checkUpdate(void) {
-  for (uint16_t i = 0; i < widgets.size(); i++) {
+  for (auto i = 0; i < widgets.size(); i++) {
     widgets[i]->checkUpdate();
   }
 }
 
 void WidgetManager::checkResetUpdateBrightness(bool force)
 {
-  for (uint16_t i = 0; i < widgets.size(); i++)
+  for (auto i = 0; i < widgets.size(); i++)
   {
     widgets[i]->checkResetBrightness();
     widgets[i]->checkResetActive();
@@ -35,7 +35,7 @@ void WidgetManager::checkResetUpdateBrightness(bool force)
 }
 
 void WidgetManager::displayDashboard(void) {
-  for (uint16_t i = 0; i < widgets.size(); i++) {
+  for (auto i = 0; i < widgets.size(); i++) {
     widgets[i]->render();
   }
 }

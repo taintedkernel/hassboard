@@ -29,8 +29,8 @@
 #define ICON_SZ                 800
 #define ICON_SZ_BYTES           ICON_SZ * sizeof(uint16_t)
 
-#define TEXT_RENDER_SIG         (uint8_t x, uint8_t y, Color color, const char *text, \
-    GirderFont *font, bool vWidth)
+#define TEXT_RENDER_SIG         (uint8_t x, uint8_t y, Color color,\
+    const char *text, GirderFont *font, bool vWidth)
 
 
 using rgb_matrix::Color;
@@ -131,22 +131,27 @@ protected:
 public:
   void setVisibleTextLength(u_int16_t);
   void autoTextConfig(Color = colorText, textAlignType = ALIGN_RIGHT);
-  void setCustomTextConfig(uint8_t textX, uint8_t textY, Color color = colorText,
-    textAlignType = ALIGN_RIGHT, GirderFont *font = NULL);
-    // bool clearText = true);
+  void setCustomTextConfig(uint8_t textX, uint8_t textY,
+      Color color = colorText, textAlignType = ALIGN_RIGHT,
+      GirderFont *font = NULL);
   void setCustomTextRender(void (render)TEXT_RENDER_SIG);
   void setVariableWidth(bool);
   void setAlertLevel(float, rgb_matrix::Color);
   void setTextColor(rgb_matrix::Color);
   void updateText(char *text, bool brighten = true);
-  void updateText(char *text, char*(helperFunc)(char*), bool brighten = true);
+  void updateText(char *text, char*(helperFunc)(char*),
+      bool brighten = true);
 
   // Functions - Icon
   void setIconOrigin(uint8_t x, uint8_t y);
-  void setIconImage(uint8_t width, uint8_t height, const char* iconFile);
-  void setIconImage(uint8_t width, uint8_t height, const uint16_t *image);
-  void setIconImage(uint8_t width, uint8_t height, const uint8_t *image);
-  void updateIcon(const char *iconData, const char*(helperFunc)(char*));
+  void setIconImage(uint8_t width, uint8_t height,
+      const char* iconFile);
+  void setIconImage(uint8_t width, uint8_t height,
+      const uint16_t *image);
+  void setIconImage(uint8_t width, uint8_t height,
+      const uint8_t *image);
+  void updateIcon(const char *iconData,
+      const char*(helperFunc)(char*));
   void updateIcon(std::string data);
 
   // Functions - Rendering
