@@ -244,7 +244,7 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   - Indoor VOC (need to build)
   - Outdoor AQI? (eh, PM is there and covers it)
   - Pressure?
-  - Weather alerts
+  - Weather alerts (in progress)
   - Calendar notifications
   - Garage door open?
   - Chores/reminders
@@ -298,6 +298,13 @@ void mqttOnMessage(struct mosquitto *mosq, void *obj, const struct mosquitto_mes
   {
     showMessage(topic, payloadAsChars);
     wOutdoorRainGauge.updateText(payloadAsChars, floatStrLen);
+  }
+
+  // Weather: Alerts
+  else if (strcmp(topic, WEATHER_ALERT) == 0)
+  {
+    showMessage(topic, payloadAsChars);
+    wWeatherAlerts.updateText(payloadAsChars);
   }
 
   // Weather: Current conditions/state

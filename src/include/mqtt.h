@@ -16,6 +16,7 @@
 #define WEATHER_FC_STATE    "weather/forecast/state"
 #define WEATHER_NOW_STATE   "weather/current/state"
 #define WEATHER_SUN         "weather/sun"
+#define WEATHER_ALERT       "weather/alert"
 #define THERMOSTAT_STATE    "thermostat/state"
 #define CALENDAR_EVENT      "calendar/event"
 #define SIGN_BRIGHTNESS     "sign/brightness"

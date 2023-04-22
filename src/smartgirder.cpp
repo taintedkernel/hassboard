@@ -156,10 +156,10 @@ int main(int argc, char **argv)
     }
 
     // Pause between cycles, after startup has finished
-    if (clock() > 5.0 * CLOCKS_PER_SEC) {
-      sleep(0.1);
-      wWeatherAlerts.clearIcon();
-    }
+    // if (clock() > 5.0 * CLOCKS_PER_SEC) {
+    //   sleep(0.1);
+    //   // wWeatherAlerts.clearIcon();
+    // }
 
     // Update any dynamic widgets
     widgets.checkUpdate();
