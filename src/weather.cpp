@@ -47,15 +47,18 @@ std::map<weatherType, dayTimeType> weatherTypeTime {
 //
 std::map<weatherType, std::vector<string>> weatherColorsAnim{
   {WEATHER_RAINY, rainColors},
+  {WEATHER_STORMY, rainColors},
 };
 
 // Mappings for animation drops
 std::map<weatherType, uint8_t> dropWidth {
     {WEATHER_RAINY, 1},
+    {WEATHER_STORMY, 1},
 };
 
 std::map<weatherType, uint8_t> dropHeight {
     {WEATHER_RAINY, 3},
+    {WEATHER_STORMY, 3},
 };
 
 // Helper function to do a reverse mapping lookup

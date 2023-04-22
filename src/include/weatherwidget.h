@@ -6,8 +6,11 @@
 #include "weather.h"
 #include "logger.h"
 
-#include <time.h>
+#include <png++/png.hpp>
+#include <sys/stat.h>
 #include <string.h>
+#include <time.h>
+
 #include <random>
 #include <string>
 #include <ranges>
@@ -345,9 +348,12 @@ private:
 class RainAnimation : public DropAnimation, AnimationBase
 {
 public:
+  uint8_t boundWidth;
   static const uint8_t numDrops = 16;
   const Bounds bounds = Bounds(8, 15, 27, 23);
-  const milliseconds imageUpdatePeriodMs = 250ms;
+  const milliseconds imageUpdatePeriodMs = 200ms;
+  vector<uint8_t> columnDropHold;
+  uint8_t maxDropAttempts = 50;
 
   std::random_device rd;
   std::mt19937 gen;
@@ -355,10 +361,147 @@ public:
 
   RainAnimation()
   {
+    gen.seed(rd());
     dropDistX = new distrib(bounds.xTop, bounds.xBot);
     dropDistY = new distrib(bounds.yTop, bounds.yBot);
     dropDistYCloud = new distrib(bounds.yTop - 5, bounds.yTop);
     dropSize = new distrib(2, 3);
+    boundWidth = bounds.xBot - bounds.xTop;
+    columnDropHold = vector<uint8_t>(bounds.xBot - bounds.xTop, 0);
+  }
+
+  // Functions to generate pixel coordinates from an index
+  static int8_t pixelGenX(int8_t idx) { return 0; }
+  static int8_t pixelGenY(int8_t idx) { return -1 * idx; }
+
+  GenericDrop* makeDrop(bool inCloud = true)
+  {
+    // _debug(__METHOD__);
+    // for (auto i=0; i<columnDropHold.size(); i++) {
+      // _debug("columnDropHold[%d]=%d", i, columnDropHold[i]);
+    // }    
+
+    // Try to space raindrops out to avoid clumping, which
+    // tends to occur when using strictly random spacing.
+    // This is a naive approach, if random dX isn't valid
+    // then just try again, up until an attempt limit.
+    //
+    // With some additional logic we could optimize this,
+    // tracking the previous guesses to cap the max number
+    // of attempts to the total number of possible options.
+    //
+    // But it would likely be somewhat complicated, having
+    // to change the random distribution bounds after each
+    // attempt; may not be worth the effort.
+    uint8_t count = 0;
+    uint8_t dX = (uint8_t)(*dropDistX)(gen);
+    while (columnDropHold[dX-bounds.xTop] > 0 && count++ < maxDropAttempts) {
+      dX = (uint8_t)(*dropDistX)(gen);
+    }
+    uint8_t size = (uint8_t)(*dropSize)(gen);
+    uint8_t dY = inCloud ? (uint8_t)(*dropDistYCloud)(gen) :
+        (uint8_t)(*dropDistY)(gen);
+
+    // _debug("RainAnimation::makeDrop(): choosing dX=%d, dY=%d, size=%d, iterations=%d", dX, dY, size, count);
+
+    // Mark off some rough boundries to prevent
+    // other raindrops from spawning nearby
+    // Note: This still needs to take into account dY
+    if (dX > bounds.xTop) 
+      columnDropHold[dX-bounds.xTop-1] = size+2;
+    columnDropHold[dX-bounds.xTop] = size+2;
+    if (dX < bounds.xTop)
+      columnDropHold[dX-bounds.xTop+1] = size+2;
+
+    GenericDrop *drop = new GenericDrop(dropId++, conf);
+    drop->init(dX, dY, size);
+    return drop;
+  }
+
+  // Prepare an animation
+  void config(AnimatedConfig& animConf)
+  {
+    // Set bounds for our rain animation, pass
+    // config to parent DropAnimation class
+    animConf.setBounds(bounds);
+    animConf.setPixelGen(&pixelGenX, &pixelGenY);
+    configDrop(animConf);
+
+    // Create some drops
+    for (auto i=0; i<numDrops; i++) {
+      addDrop(false);
+    }
+  }
+
+  // How frequently we update our animation
+  milliseconds getUpdatePeriod() {
+    return milliseconds(imageUpdatePeriodMs);
+  }
+
+  void updateAnimation()
+  {
+    updateDropAnimation();
+    for (auto i=0; i<columnDropHold.size(); i++) {
+      columnDropHold[i] = std::max(columnDropHold[i] - 1, 0);
+    }
+  }
+};
+
+class LightningRainAnimation : public DropAnimation, AnimationBase
+{
+public:
+  static const uint8_t numDrops = 16;
+  const Bounds bounds = Bounds(8, 15, 27, 23);
+  const milliseconds imageUpdatePeriodMs = 50ms;
+  // const milliseconds imageRainPeriodMs = 200ms;
+
+  uint16_t frame = 0;
+  std::random_device rd;
+  std::mt19937 gen;
+  distrib *dropDistX, *dropDistY, *dropDistYCloud, *dropSize;
+  uint8_t *lImage;
+  uint32_t lWidth, lHeight;
+
+  LightningRainAnimation()
+  {
+    dropDistX = new distrib(bounds.xTop, bounds.xBot);
+    dropDistY = new distrib(bounds.yTop, bounds.yBot);
+    dropDistYCloud = new distrib(bounds.yTop - 5, bounds.yTop);
+    dropSize = new distrib(2, 3);
+
+    // Load lightning bolt image into buffer
+    png::image<png::rgb_pixel> imagePNG;
+    struct stat buffer;
+
+    if (stat(ICON_LIGHTNING_BOLT, &buffer) == 0) {
+      imagePNG.read(ICON_LIGHTNING_BOLT);
+    } else {
+      _error("unable to find storm image %s", ICON_LIGHTNING_BOLT);
+      return;
+    }
+
+    // _log(ICON_LIGHTNING_BOLT);
+    lWidth = imagePNG.get_width();
+    lHeight = imagePNG.get_height();
+    // printf("width: %d, height: %d\n", lWidth, lHeight);
+    lImage = (uint8_t *)malloc(lWidth * lHeight * 3 * sizeof(uint8_t));
+    if (lImage == NULL) {
+      _error("unable to allocate buffer for icon, aborting");
+      return;
+    }
+    // _log(__METHOD__);
+    // _log("width: %d, height: %d", lWidth, lHeight);
+    // _log("width: %d, height: %d", imagePNG.get_width(), imagePNG.get_height());
+
+    uint16_t idx = 0;
+    for (uint16_t y = 0; y < lHeight; y++) {
+      for (uint16_t x = 0; x < lWidth; x++) {
+        png::rgb_pixel pixel = imagePNG.get_pixel(x, y);
+        lImage[idx++] = pixel.red;
+        lImage[idx++] = pixel.green;
+        lImage[idx++] = pixel.blue;
+      }
+    }
   }
 
   // Functions to generate pixel coordinates from an index
@@ -397,8 +540,48 @@ public:
     return milliseconds(imageUpdatePeriodMs);
   }
 
-  void updateAnimation() {
+  void updateBackground(bool drawLightning)
+  {
+    // _log("updateBackground(%d)", drawLightning);
+
+    uint8_t *origImage = (uint8_t *)conf.origImage;
+    uint8_t *image = (uint8_t *)conf.image;
+    uint16_t idx = 0;
+    for (uint16_t y = 0; y < lHeight; y++) {
+      for (uint16_t x = 0; x < lWidth; x++)
+      {
+        idx = 3 * (y * lWidth + x);
+        if (lImage[idx] == 0 &&
+            lImage[idx+1] == 0 &&
+            lImage[idx+2] == 0)
+          continue;
+
+        // _log("x,y: %d,%d; image[idx:+2]: %d, %d, %d; lImage[idx:+2]: %d, %d, %d", x, y, image[idx], image[idx+1], image[idx+2], lImage[idx], lImage[idx+1], lImage[idx+2]);
+
+        if (drawLightning) {
+          memcpy(image+idx, lImage+idx, sizeof(uint8_t)*3);
+          memcpy(origImage+idx, lImage+idx, sizeof(uint8_t)*3);
+        } else {
+          memset(image+idx, 0, sizeof(uint8_t)*3);
+          memset(origImage+idx, 0, sizeof(uint8_t)*3);
+        }
+      }
+    }
+  }
+
+  void updateAnimation()
+  {
+    frame++;
     updateDropAnimation();
+
+    if (frame % 15 == 0)
+      updateBackground(true);
+    if (frame % 15 == 1)
+      updateBackground(false);
+    if (frame % 15 == 2)
+      updateBackground(true);
+    if (frame % 15 == 3)
+      updateBackground(false);
   }
 };
 
@@ -466,6 +649,7 @@ private:
   milliseconds imageUpdatePeriod = FRAME_UPDATE_PERIOD_MS;
 
   // Animations & management
+  LightningRainAnimation aStorm;
   RainAnimation aRain;
   SunAnimation aSun;
   std::map<weatherType, AnimationBase*> animationMap;
@@ -474,6 +658,7 @@ public:
   WeatherWidget(const char *name) : AnimatedWidget(name) {
     animationMap[WEATHER_RAINY] = (AnimationBase*)&aRain;
     animationMap[WEATHER_SUNNY] = (AnimationBase*)&aSun;
+    animationMap[WEATHER_STORMY] = (AnimationBase*)&aStorm;
   }
 
   AnimationBase* getAnimation(weatherType weather)
@@ -554,6 +739,9 @@ public:
     // for a brief time upon startup. Animation config
     // update is only triggered after a weather state
     // MQTT message
+
+    // TODO: Check to see if animation is actually active/
+    // visible (eg: background weather forecast widget)
     auto anim = getAnimation(weather);
     if (!anim || !anim->isInit())
         return;
