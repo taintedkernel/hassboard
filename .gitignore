@@ -5,3 +5,6 @@ smartgirder
 smartgirder.txt
 fonts/*
 icons/render/**
+rotary.py
+rotary2.py
+src/include/date.h
