@@ -1,4 +1,4 @@
-# smartgirder
+# hassboard
 Raspberry Pi and Home Assistant-based RGB LED matrix display
 
 ![Front image](./images/front-display.jpg)
